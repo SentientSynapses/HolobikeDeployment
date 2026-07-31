@@ -1,6 +1,6 @@
 # Intelligence Integration
 
-This facet integrates `ai_kit/drAIs`.
+This integration connects `ai_kit/drAIs`.
 
 drAIs remains authoritative for the local assistant runtime, coordination,
 context construction, skills, model-provider adapters, sandbox policy,

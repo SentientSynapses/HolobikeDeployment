@@ -5,7 +5,7 @@ tools required to assemble and emulate HoloBike.
 
 The current workstation layout is:
 
-| Facet | Local checkout |
+| Integration | Local checkout |
 |---|---|
 | uroborOS | `/home/odin/Documents/git_projects/os_kit/uroborOS` |
 | HexAtlas | `/home/odin/Documents/git_projects/geo_kit/HexAtlas` |

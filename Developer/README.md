@@ -6,11 +6,13 @@ release is admitted to production provisioning.
 The domains are intentionally separate:
 
 - `Environment/` discovers and validates the developer host.
-- `Assembly/` resolves selected facet revisions and stages their outputs.
+- `Assembly/` resolves selected source revisions and stages their outputs.
 - `Emulation/` runs an assembled stack against simulated or virtualized
   dependencies.
-- `Facets/` defines how the aggregator interacts with each authoritative
-  repository.
+
+These workflows consume the product-wide contracts under top-level
+`Integrations/`. Integration contracts do not live under `Developer/` because
+production provisioning consumes the same boundaries.
 
 Developer workflows may use local checkouts and disposable credentials, but
 they must not silently weaken production policy. Every generated file belongs

@@ -1,6 +1,6 @@
 # Bike-Runtime Integration
 
-This facet integrates `bike_kit/HolobikeCore`.
+This integration connects `bike_kit/HolobikeCore`.
 
 HolobikeCore remains authoritative for on-device services, firmware,
 hardware-facing configuration, device protocols, and aggregate bike health.

@@ -1,6 +1,6 @@
 # Athlete-Identity Integration
 
-This facet integrates `id_kit/AthleteIdentity`.
+This integration connects `id_kit/AthleteIdentity`.
 
 AthleteIdentity remains authoritative for identity schemas, provider-neutral
 client behavior, authentication flows, local identity storage, cryptography,

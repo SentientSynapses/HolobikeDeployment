@@ -1,6 +1,6 @@
 # Geography Integration
 
-This facet integrates `geo_kit/HexAtlas`.
+This integration connects `geo_kit/HexAtlas`.
 
 HexAtlas remains authoritative for geographic ingestion, SourceAtlas and
 MasterAtlas construction, atlas schemas, serving, client caching, and atlas

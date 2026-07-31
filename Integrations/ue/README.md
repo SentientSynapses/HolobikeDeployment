@@ -1,6 +1,6 @@
 # Unreal-Engine Integration
 
-This facet integrates the Unreal Engine product and its reusable HoloBike
+This integration connects the Unreal Engine product and its reusable HoloBike
 plugins.
 
 Current source checkouts:

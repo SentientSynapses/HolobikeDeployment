@@ -15,8 +15,8 @@ Expected workflows include:
 
 This domain orchestrates existing emulators, Labs, fixtures, and public control
 surfaces. Test harness logic should remain with the repository that owns the
-underlying behavior unless the behavior exists only at the cross-facet product
-boundary.
+underlying behavior unless the behavior exists only at the cross-repository
+product boundary.
 
 An emulation run must record its assembly identity, configuration, results,
 logs, and artifact locations. It must label simulated capabilities clearly and
