@@ -2,6 +2,10 @@
 
 This integration connects `id_kit/AthleteIdentity`.
 
+Repository adapter:
+
+- [`AthleteIdentity/`](AthleteIdentity/README.md)
+
 AthleteIdentity remains authoritative for identity schemas, provider-neutral
 client behavior, authentication flows, local identity storage, cryptography,
 and provider adapters. HoloBike Deployment selects a compatible client

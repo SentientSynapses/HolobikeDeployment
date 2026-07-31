@@ -7,10 +7,10 @@ Current source checkouts:
 
 | Role | Repository |
 |---|---|
-| Product project | `ue_kit/HolobikeExperience` |
-| Device transport | `ue_kit/HolobikeDevice_uplugin` |
-| Rider systems | `ue_kit/HolobikeRider_uplugin` |
-| World composition | `ue_kit/HolobikeWorlds_uplugin` |
+| Product project | [`HolobikeExperience/`](HolobikeExperience/README.md) |
+| Device transport | [`HolobikeDevice/`](HolobikeDevice/README.md) |
+| Rider systems | [`HolobikeRider/`](HolobikeRider/README.md) |
+| World composition | [`HolobikeWorlds/`](HolobikeWorlds/README.md) |
 
 The corresponding project locations are:
 

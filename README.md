@@ -30,24 +30,34 @@ keys, athlete credentials, provider secrets, or device-specific secret values.
 
 | Domain | Authoritative repository | Deployment concern |
 |---|---|---|
-| Operating system | `uroborOS` | Images, modes, services, boot policy, hardware integration |
-| Geography | `HexAtlas` | Atlas production, serving, client data, and world-data compatibility |
-| Bike runtime | `HolobikeCore` | Device services, firmware, health, and hardware-facing configuration |
-| Athlete identity | `AthleteIdentity` | On-device identity client, provider selection, and identity contracts |
-| Intelligence | `drAIs` | Local assistant runtime, skills, models, and sandbox policy |
-| Experience | `HolobikeExperience` | Packaged Unreal Engine product and project configuration |
-| Unreal integrations | `HolobikeDevice`, `HolobikeRider`, `HolobikeWorlds` | Reusable engine plugins and compatibility with the experience |
+| Operating system | [`uroborOS`](Integrations/os/uroborOS/README.md) | Images, modes, services, boot policy, hardware integration |
+| Geography | [`HexAtlas`](Integrations/geo/HexAtlas/README.md), [`Assetscape`](Integrations/geo/Assetscape/README.md) | World facts, asset palette, serving, and engine compatibility |
+| Bike runtime | [`HolobikeCore`](Integrations/bike/HolobikeCore/README.md) | Device services, firmware, health, and hardware-facing configuration |
+| Athlete identity | [`AthleteIdentity`](Integrations/id/AthleteIdentity/README.md) | On-device identity client, provider selection, and identity contracts |
+| Intelligence | [`drAIs`](Integrations/ai/drAIs/README.md) | Local assistant runtime, skills, models, and sandbox policy |
+| Experience | [`HolobikeExperience`](Integrations/ue/HolobikeExperience/README.md) | Packaged Unreal Engine product and project configuration |
+| Unreal integrations | [`HolobikeDevice`](Integrations/ue/HolobikeDevice/README.md), [`HolobikeRider`](Integrations/ue/HolobikeRider/README.md), [`HolobikeWorlds`](Integrations/ue/HolobikeWorlds/README.md) | Reusable engine plugins and compatibility with the experience |
 
 ## Repository Shape
 
 ```text
 Integrations/
-  os/            operating-system images, modes, services, and boot contracts
-  geo/           atlas software, data, and world-data compatibility
-  id/            athlete identity client and provider contracts
-  ue/            Unreal product, plugins, packaging, and smoke tests
-  ai/            assistant runtime, tools, models, and sandbox policy
-  bike/          device services, firmware, protocols, and health
+  os/
+    uroborOS/
+  geo/
+    HexAtlas/
+    Assetscape/
+  id/
+    AthleteIdentity/
+  ue/
+    HolobikeExperience/
+    HolobikeDevice/
+    HolobikeRider/
+    HolobikeWorlds/
+  ai/
+    drAIs/
+  bike/
+    HolobikeCore/
 Developer/
   Assembly/      deterministic source selection, build invocation, and staging
   Emulation/     integrated simulated and virtualized product workflows

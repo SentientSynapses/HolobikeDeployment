@@ -9,6 +9,7 @@ The current workstation layout is:
 |---|---|
 | uroborOS | `/home/odin/Documents/git_projects/os_kit/uroborOS` |
 | HexAtlas | `/home/odin/Documents/git_projects/geo_kit/HexAtlas` |
+| Assetscape | `/home/odin/Documents/git_projects/geo_kit/Assetscape` |
 | HolobikeCore | `/home/odin/Documents/git_projects/bike_kit/HolobikeCore` |
 | AthleteIdentity | `/home/odin/Documents/git_projects/id_kit/AthleteIdentity` |
 | drAIs | `/home/odin/Documents/git_projects/ai_kit/drAIs` |

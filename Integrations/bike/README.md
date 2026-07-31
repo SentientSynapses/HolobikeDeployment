@@ -2,6 +2,10 @@
 
 This integration connects `bike_kit/HolobikeCore`.
 
+Repository adapter:
+
+- [`HolobikeCore/`](HolobikeCore/README.md)
+
 HolobikeCore remains authoritative for on-device services, firmware,
 hardware-facing configuration, device protocols, and aggregate bike health.
 HoloBike Deployment selects compatible service and firmware artifacts,
