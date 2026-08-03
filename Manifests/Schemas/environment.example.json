@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "checkouts": {
+    "uroborOS": "/home/example/git_projects/os_kit/uroborOS",
+    "HexAtlas": "/home/example/git_projects/geo_kit/HexAtlas",
+    "Assetscape": "/home/example/git_projects/geo_kit/Assetscape",
+    "HolobikeCore": "/home/example/git_projects/bike_kit/HolobikeCore",
+    "AthleteIdentity": "/home/example/git_projects/id_kit/AthleteIdentity",
+    "drAIs": "/home/example/git_projects/ai_kit/drAIs",
+    "HolobikeExperience": "/home/example/git_projects/ue_kit/HolobikeExperience",
+    "HolobikeDevice": "/home/example/git_projects/ue_kit/HolobikeDevice_uplugin",
+    "HolobikeRider": "/home/example/git_projects/ue_kit/HolobikeRider_uplugin",
+    "HolobikeWorlds": "/home/example/git_projects/ue_kit/HolobikeWorlds_uplugin"
+  },
+  "toolchains": {
+    "unreal_engine": "/home/example/git_projects/third_party/UnrealEngine-5.7.4-release",
+    "vcpkg": "/home/example/git_projects/third_party/vcpkg"
+  }
+}

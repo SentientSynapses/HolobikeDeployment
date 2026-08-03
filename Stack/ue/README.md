@@ -4,8 +4,13 @@ This integration connects the Unreal Engine product and its reusable HoloBike
 plugins.
 
 This domain carries a `<kind>` level because its artifacts deploy
-differently: `engine/` is a build dependency, `plugins/` are libraries
-synchronized against a project, and `project/` is the packaged product.
+differently: `plugins/` are libraries synchronized against a project, and
+`project/` is the packaged product.
+
+The engine itself is not here. Unreal is third-party software, not a HoloBike
+integration: environment preflight locates and validates it from the path
+declared in `.local/environment.json`, and a release records the engine version
+that produced the build.
 
 Current source checkouts:
 

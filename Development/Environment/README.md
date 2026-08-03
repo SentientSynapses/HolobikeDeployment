@@ -3,28 +3,41 @@
 Environment integration discovers local source checkouts and validates the
 tools required to assemble and emulate HoloBike.
 
-The current workstation layout is:
+## The mapping is data, not documentation
 
-| Integration | Local checkout |
-|---|---|
-| uroborOS | `/home/odin/Documents/git_projects/os_kit/uroborOS` |
-| HexAtlas | `/home/odin/Documents/git_projects/geo_kit/HexAtlas` |
-| Assetscape | `/home/odin/Documents/git_projects/geo_kit/Assetscape` |
-| HolobikeCore | `/home/odin/Documents/git_projects/bike_kit/HolobikeCore` |
-| AthleteIdentity | `/home/odin/Documents/git_projects/id_kit/AthleteIdentity` |
-| drAIs | `/home/odin/Documents/git_projects/ai_kit/drAIs` |
-| HolobikeExperience | `/home/odin/Documents/git_projects/ue_kit/HolobikeExperience` |
-| HolobikeDevice | `/home/odin/Documents/git_projects/ue_kit/HolobikeDevice_uplugin` |
-| HolobikeRider | `/home/odin/Documents/git_projects/ue_kit/HolobikeRider_uplugin` |
-| HolobikeWorlds | `/home/odin/Documents/git_projects/ue_kit/HolobikeWorlds_uplugin` |
+Checkout locations differ per workstation, so they are declared in
+`.local/environment.json`, which is gitignored and never committed. The
+committed artifacts are its schema and an example:
 
-These paths are development defaults, not deployment contracts. Future tooling
-should accept an ignored local environment file under `.local/`, normalize and
-validate every path, and report source revision and dirty state before invoking
-any build.
+```text
+Manifests/Schemas/environment.schema.json    the contract
+Manifests/Schemas/environment.example.json   the shape, with example paths
+.local/environment.json                      your machine (untracked)
+```
 
-Environment preflight should eventually cover required compilers, CMake,
-Ninja, vcpkg, Unreal Engine, virtualization, GPU tooling, storage capacity, and
-access to any explicitly selected development provider. Secrets must come from
-an external secret facility and must never be written into an environment
-report.
+To set up a workstation, copy the example to `.local/environment.json` and
+correct the paths. The schema closes the integration roster deliberately: a
+misspelled name fails validation rather than silently deselecting an
+integration.
+
+These paths are development defaults, not deployment contracts. Production
+provisioning derives nothing from them.
+
+## Preflight
+
+Preflight is the first thing this repository should be able to execute, and it
+is read-only by design: it must be safe to run before anything is trusted.
+
+It should normalize and validate every declared path, report each integration's
+source revision and dirty state before any build is invoked, and check the
+tools a selected workflow needs — compilers, CMake, Ninja, vcpkg, Unreal
+Engine, virtualization, GPU tooling, storage capacity, and access to any
+explicitly selected development provider.
+
+Third-party toolchains are declared under `toolchains` rather than as `Stack/`
+members, because they are not HoloBike software. The Unreal engine is the
+clearest case: preflight locates and validates it, a release records the
+version that produced the build, and no part of it is an integrated component.
+
+Secrets must come from an external secret facility and must never be written
+into an environment report.

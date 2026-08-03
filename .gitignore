@@ -1,6 +1,6 @@
 /.local/
 /Artifacts/
-/Developer/Assembly/Generated/
-/Developer/Emulation/Generated/
-/Developer/Environment/Generated/
+/Development/Assembly/Generated/
+/Development/Emulation/Generated/
+/Development/Environment/Generated/
 /Production/Provisioning/Generated/

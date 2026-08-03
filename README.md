@@ -41,7 +41,9 @@ keys, athlete credentials, provider secrets, or device-specific secret values.
 ## Repository Shape
 
 ```text
-Stack/            the integrated software, grouped by domain
+Manifests/        declared: what a release is made of, reviewed in pull requests
+  Schemas/          canonical shape of every declared kind
+Stack/            how to drive one repository, grouped by domain
   os/
     uroborOS/
   geo/
@@ -50,7 +52,6 @@ Stack/            the integrated software, grouped by domain
   id/
     AthleteIdentity/
   ue/
-    engine/
     plugins/
       HolobikeDevice/
       HolobikeRider/
@@ -67,12 +68,51 @@ Development/      workflows run before a release is admitted to production
   Environment/   developer-host discovery, prerequisites, and local mapping
 Production/       the admission and delivery boundary
   Provisioning/  release installation, enrollment, validation, and evidence
+Releases/         resolved: what was produced and what admitted it
 ```
+
+Two directories carry the repository's stated purpose — owning "the contracts
+between those repositories and the evidence that a selected set of revisions
+works as one product". `Manifests/` is what a person declares; `Releases/` is
+what a run resolved and attested. The dividing rule against `Stack/`: **if it
+names more than one repository it is a manifest; if it describes how to drive
+one repository it belongs to that repository's adapter.**
+
+Third-party toolchains are not `Stack/` members. The Unreal engine is located
+and validated by environment preflight and recorded as a release fact; it is
+not HoloBike software and has no integration directory.
 
 `Development/Assembly/` is the domain. A future `holobike-assemble` command may
 serve as its CLI, but the implementation should remain a consumer of declared
 manifests and repository-owned tools rather than becoming another build
 system.
+
+## Growth Order
+
+The order follows from `Development/Assembly/README.md`, which asks for "a
+versioned manifest schema and a read-only preflight command" before anything
+stages an artifact:
+
+1. **Schemas and the environment mapping** — the first declared kind, so
+   workstation paths become validated data instead of documentation.
+2. **Read-only preflight** — discover checkouts, report revision and dirty
+   state, validate tools. No side effects, so it is safe to build first.
+3. **Revision selection and compatibility** — a release line becomes a
+   reviewable diff.
+4. **Assembly staging with an inventory and digests** — the first real release
+   record.
+5. **Emulation** orchestrated against a recorded assembly identity.
+6. **Provisioning**, which its own README correctly blocks behind the uroborOS
+   image, encrypted-root path, key custody, rollback, recovery, and hardware
+   acceptance gates.
+
+Every workflow emits a record from step 1 onward. The cheapest moment to make
+provenance mandatory is before any workflow exists.
+
+Two decisions are deliberately still open: the implementation language for the
+executable layer, and exactly what a release record must contain. Neither is
+blocked by the structure above, because schemas are language-neutral and the
+record's schema lands with the first assembly that writes one.
 
 ## Initial State
 

@@ -30,6 +30,16 @@ code. They are not clone destinations, submodules, or copies of source trees.
 | `ai` | [`drAIs`](ai/drAIs/README.md) |
 | `bike` | [`HolobikeCore`](bike/HolobikeCore/README.md) |
 
+`Stack/` is mechanism, not declaration. If a document names more than one
+repository — which revisions compose, which versions are compatible, which
+gates admit a release — it is a manifest and belongs under `Manifests/`. What
+stays here is how to drive one repository and the contract that repository
+exposes.
+
+Third-party software is not a domain member. Toolchains such as the Unreal
+engine and vcpkg are located by environment preflight and recorded as release
+facts; only HoloBike-owned software appears under `Stack/`.
+
 An integration may:
 
 - locate or fetch an explicitly selected source revision;
