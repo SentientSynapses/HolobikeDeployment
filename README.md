@@ -30,18 +30,18 @@ keys, athlete credentials, provider secrets, or device-specific secret values.
 
 | Domain | Authoritative repository | Deployment concern |
 |---|---|---|
-| Operating system | [`uroborOS`](Integrations/os/uroborOS/README.md) | Images, modes, services, boot policy, hardware integration |
-| Geography | [`HexAtlas`](Integrations/geo/HexAtlas/README.md), [`Assetscape`](Integrations/geo/Assetscape/README.md) | World facts, asset palette, serving, and engine compatibility |
-| Bike runtime | [`HolobikeCore`](Integrations/bike/HolobikeCore/README.md) | Device services, firmware, health, and hardware-facing configuration |
-| Athlete identity | [`AthleteIdentity`](Integrations/id/AthleteIdentity/README.md) | On-device identity client, provider selection, and identity contracts |
-| Intelligence | [`drAIs`](Integrations/ai/drAIs/README.md) | Local assistant runtime, skills, models, and sandbox policy |
-| Experience | [`HolobikeExperience`](Integrations/ue/HolobikeExperience/README.md) | Packaged Unreal Engine product and project configuration |
-| Unreal integrations | [`HolobikeDevice`](Integrations/ue/HolobikeDevice/README.md), [`HolobikeRider`](Integrations/ue/HolobikeRider/README.md), [`HolobikeWorlds`](Integrations/ue/HolobikeWorlds/README.md) | Reusable engine plugins and compatibility with the experience |
+| Operating system | [`uroborOS`](Stack/os/uroborOS/README.md) | Images, modes, services, boot policy, hardware integration |
+| Geography | [`HexAtlas`](Stack/geo/HexAtlas/README.md), [`Assetscape`](Stack/geo/Assetscape/README.md) | World facts, asset palette, serving, and engine compatibility |
+| Bike runtime | [`HolobikeCore`](Stack/bike/HolobikeCore/README.md) | Device services, firmware, health, and hardware-facing configuration |
+| Athlete identity | [`AthleteIdentity`](Stack/id/AthleteIdentity/README.md) | On-device identity client, provider selection, and identity contracts |
+| Intelligence | [`drAIs`](Stack/ai/drAIs/README.md) | Local assistant runtime, skills, models, and sandbox policy |
+| Experience | [`HolobikeExperience`](Stack/ue/project/HolobikeExperience/README.md) | Packaged Unreal Engine product and project configuration |
+| Unreal integrations | [`HolobikeDevice`](Stack/ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](Stack/ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](Stack/ue/plugins/HolobikeWorlds/README.md) | Reusable engine plugins and compatibility with the experience |
 
 ## Repository Shape
 
 ```text
-Integrations/
+Stack/            the integrated software, grouped by domain
   os/
     uroborOS/
   geo/
@@ -50,23 +50,26 @@ Integrations/
   id/
     AthleteIdentity/
   ue/
-    HolobikeExperience/
-    HolobikeDevice/
-    HolobikeRider/
-    HolobikeWorlds/
+    engine/
+    plugins/
+      HolobikeDevice/
+      HolobikeRider/
+      HolobikeWorlds/
+    project/
+      HolobikeExperience/
   ai/
     drAIs/
   bike/
     HolobikeCore/
-Developer/
+Development/      workflows run before a release is admitted to production
   Assembly/      deterministic source selection, build invocation, and staging
   Emulation/     integrated simulated and virtualized product workflows
   Environment/   developer-host discovery, prerequisites, and local mapping
-Production/
+Production/       the admission and delivery boundary
   Provisioning/  release installation, enrollment, validation, and evidence
 ```
 
-`Developer/Assembly/` is the domain. A future `holobike-assemble` command may
+`Development/Assembly/` is the domain. A future `holobike-assemble` command may
 serve as its CLI, but the implementation should remain a consumer of declared
 manifests and repository-owned tools rather than becoming another build
 system.

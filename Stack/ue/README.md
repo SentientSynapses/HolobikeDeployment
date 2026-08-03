@@ -3,14 +3,18 @@
 This integration connects the Unreal Engine product and its reusable HoloBike
 plugins.
 
+This domain carries a `<kind>` level because its artifacts deploy
+differently: `engine/` is a build dependency, `plugins/` are libraries
+synchronized against a project, and `project/` is the packaged product.
+
 Current source checkouts:
 
 | Role | Repository |
 |---|---|
-| Product project | [`HolobikeExperience/`](HolobikeExperience/README.md) |
-| Device transport | [`HolobikeDevice/`](HolobikeDevice/README.md) |
-| Rider systems | [`HolobikeRider/`](HolobikeRider/README.md) |
-| World composition | [`HolobikeWorlds/`](HolobikeWorlds/README.md) |
+| Product project | [`HolobikeExperience/`](project/HolobikeExperience/README.md) |
+| Device transport | [`HolobikeDevice/`](plugins/HolobikeDevice/README.md) |
+| Rider systems | [`HolobikeRider/`](plugins/HolobikeRider/README.md) |
+| World composition | [`HolobikeWorlds/`](plugins/HolobikeWorlds/README.md) |
 
 The corresponding project locations are:
 

@@ -1,4 +1,4 @@
-# Developer Environment
+# Development Environment
 
 Environment integration discovers local source checkouts and validates the
 tools required to assemble and emulate HoloBike.

@@ -8,5 +8,5 @@ release policy, and canonical validation evidence. They must fail closed on a
 missing digest, incompatible integration, dirty source, unsigned artifact,
 absent hardware capability, or incomplete release gate.
 
-Developer path mappings, mutable checkouts, emulation-only providers, test
+Development path mappings, mutable checkouts, emulation-only providers, test
 credentials, and scaffold modes are not production inputs.
