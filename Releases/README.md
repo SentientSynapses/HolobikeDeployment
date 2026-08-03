@@ -1,11 +1,12 @@
 # Releases
 
 `Releases/` holds what actually happened: for each release, the **resolved**
-form of the Spec that declared it, plus the validation that admitted it.
+form of the declarations that composed it, plus the validation that admitted
+it.
 
-A release record is the Spec, resolved. The declaration under `Spec/` says
-`AthleteIdentity @ main`; the record says `AthleteIdentity @ 5619c33, clean,
-sha256:…`. One is intent, reviewed in a pull request; the other is fact,
+A release record is the declarations, resolved. The revision manifest under
+`Revisions/` says `AthleteIdentity @ main`; the record says `AthleteIdentity
+@ 5619c33, clean, sha256:…`. One is intent, reviewed in a pull request; the other is fact,
 written by a run and never edited afterward. Correcting a record means
 recording a new release, not amending an old one.
 
@@ -35,7 +36,8 @@ provider token, signing key, or raw Secret Keeper value.
 ## Shape
 
 The layout is one directory per release, and the file names carry the
-resolved sense — a record resolves the Spec rather than restating it:
+resolved sense — a record resolves the declarations rather than restating
+them:
 
 ```text
 Releases/<version>/

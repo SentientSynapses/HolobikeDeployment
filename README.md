@@ -6,9 +6,11 @@ developer environments, emulated systems, release candidates, and provisioned
 HoloBike devices.
 
 This is an aggregator, not a source monorepo. Each source repository remains
-authoritative for its own implementation, tests, and domain decisions. This
-repository owns the contracts between those repositories and the evidence that
-a selected set of revisions works as one product.
+authoritative for its own implementation, tests, and domain decisions. **This
+repository is the specification of the deployed HoloBike software stack, the
+machine that realizes it, and the record of what it realized.** There is no
+wrapper directory holding "the spec" — the declarations are the repository,
+organized by role (`Docs/Decisions/0001`).
 
 ## Responsibilities
 
@@ -30,96 +32,107 @@ keys, athlete credentials, provider secrets, or device-specific secret values.
 
 | Domain | Authoritative repository | Deployment concern |
 |---|---|---|
-| Operating system | [`uroborOS`](Spec/Stack/os/uroborOS/README.md) | Images, modes, services, boot policy, hardware integration |
-| Geography | [`HexAtlas`](Spec/Stack/geo/HexAtlas/README.md), [`Assetscape`](Spec/Stack/geo/Assetscape/README.md) | World facts, asset palette, serving, and engine compatibility |
-| Bike runtime | [`HolobikeCore`](Spec/Stack/bike/HolobikeCore/README.md) | Device services, firmware, health, and hardware-facing configuration |
-| Athlete identity | [`AthleteIdentity`](Spec/Stack/id/AthleteIdentity/README.md) | On-device identity client, provider selection, and identity contracts |
-| Intelligence | [`drAIs`](Spec/Stack/ai/drAIs/README.md) | Local assistant runtime, skills, models, and sandbox policy |
-| Experience | [`HolobikeExperience`](Spec/Stack/ue/project/HolobikeExperience/README.md) | Packaged Unreal Engine product and project configuration |
-| Unreal integrations | [`HolobikeDevice`](Spec/Stack/ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](Spec/Stack/ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](Spec/Stack/ue/plugins/HolobikeWorlds/README.md) | Reusable engine plugins and compatibility with the experience |
+| Operating system | [`uroborOS`](Stack/os/uroborOS/README.md) | Images, modes, services, boot policy, hardware integration |
+| Geography | [`HexAtlas`](Stack/geo/HexAtlas/README.md), [`Assetscape`](Stack/geo/Assetscape/README.md) | World facts, asset palette, serving, and engine compatibility |
+| Bike runtime | [`HolobikeCore`](Stack/bike/HolobikeCore/README.md) | Device services, firmware, health, and hardware-facing configuration |
+| Athlete identity | [`AthleteIdentity`](Stack/id/AthleteIdentity/README.md) | On-device identity client, provider selection, and identity contracts |
+| Intelligence | [`drAIs`](Stack/ai/drAIs/README.md) | Local assistant runtime, skills, models, and sandbox policy |
+| Experience | [`HolobikeExperience`](Stack/ue/project/HolobikeExperience/README.md) | Packaged Unreal Engine product and project configuration |
+| Unreal integrations | [`HolobikeDevice`](Stack/ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](Stack/ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](Stack/ue/plugins/HolobikeWorlds/README.md) | Reusable engine plugins and compatibility with the experience |
 
 ## Repository Shape
 
+The top level partitions by function — every directory is one role, and
+stages (development versus production) are properties of data, never
+directories:
+
 ```text
-Spec/             intent: the specification of the deployed HoloBike software stack
-  Schemas/          canonical shape of every declared kind
-  Stack/            the integration roster and per-repository contracts
-    os/
-      uroborOS/
-    geo/
-      HexAtlas/
-      Assetscape/
-    id/
-      AthleteIdentity/
-    ue/
-      plugins/
-        HolobikeDevice/
-        HolobikeRider/
-        HolobikeWorlds/
-      project/
-        HolobikeExperience/
-    ai/
-      drAIs/
-    bike/
-      HolobikeCore/
-Development/      process: workflows run before a release is admitted to production
-  Assembly/      deterministic source selection, build invocation, and staging
-  Emulation/     integrated simulated and virtualized product workflows
-  Environment/   developer-host discovery, prerequisites, and local mapping
-Production/       process: the admission and delivery boundary
-  Provisioning/  release installation, enrollment, validation, and evidence
-Releases/         fact: what was produced and what admitted it
+Stack/            declare the members: roster + per-repository integration contracts
+Revisions/        declare the composition: selected revisions per release line
+Policy/           declare the constraints: parity and admission gates
+Schemas/          declare the shapes: canonical JSON Schema for every declared kind
+Conformance/      prove the bindings: accepted and rejected fixtures per schema
+Assembler/        realize: the one executable — preflight | resolve | assemble | emulate
+Releases/         attest: admitted records, written by runs, never edited
+Provisioning/     deliver: device-facing workflows behind the admission boundary
+Docs/Decisions/   why the shape is what it is
 ```
 
-The top level divides by nature — intent, process, fact. Two directories carry
-the repository's stated purpose of owning "the contracts between those
-repositories and the evidence that a selected set of revisions works as one
-product": `Spec/` is the contracts, declared by a person and reviewed;
-`Releases/` is the evidence, resolved by a run and never edited. Within the
-Spec, one rule files everything: a document that names more than one
-repository is a Spec kind; a document that describes how to drive one
-repository belongs to that repository's adapter under `Spec/Stack/`.
+Directories are created by their first content: `Revisions/`, `Policy/`, and
+`Conformance/` are described here and in `Docs/Decisions/0001` rather than
+scaffolded empty. Named product profiles and cross-repository version
+constraints (`Profiles/`, `Compatibility/`) are future kinds on the same
+terms.
 
-Third-party toolchains are not stack members. The Unreal engine is located and
-validated by environment preflight and recorded as a release fact; it is not
-HoloBike software and has no integration directory under `Spec/Stack/`.
+**The filing rule:** if it selects, it is a revision manifest under
+`Revisions/`; if it constrains, it is policy; if it drives one repository, it
+belongs to that repository's leaf under `Stack/`; if it shapes other
+documents, it is a schema. Only the Assembler executes; only a run writes to
+`Releases/`. Nothing else exists.
 
-`Development/Assembly/` is the domain. A future `holobike-assemble` command
-may serve as its CLI, but the implementation should remain a consumer of the
-declared Spec and repository-owned tools rather than becoming another build
-system.
+## Declared and attested
+
+The declarations state intent; `Releases/` attests fact. A revision manifest
+says `AthleteIdentity @ main`; the release record says `AthleteIdentity @
+5619c33, clean, sha256:…`. Same subject, two states — and the same discipline
+the protocol repositories enforce as "no binding without a fixture": a
+release record is to the declarations what a conformance run is to a schema,
+evidence of agreement.
+
+| | declarations | `Releases/` |
+|---|---|---|
+| Written by | a person, in a pull request | the assembler, from a run |
+| States | intent | fact |
+| Changes | when the product changes | never, once recorded |
+
+## Rules
+
+- Declarations never execute. Executable code lives in `Assembler/`, as a
+  consumer of the declarations and of repository-owned entry points.
+- Schemas are canonical; a validator in any language is a binding that must
+  agree with them, proven by fixtures under `Conformance/`.
+- "Manifest" names exactly one declared kind — the revision manifest. A
+  release record resolves a manifest rather than being one.
+- A declared document never contains a secret, a credential, or a private
+  key — not even a path to one that would be meaningful off this machine.
+- A mutable branch name is not a release identity. Declarations may select by
+  branch for development lines; a release line resolves to exact commits.
+- Machine-specific documents are not committed. `Schemas/environment.schema.json`
+  describes one workstation's checkout and toolchain paths; the document
+  itself lives at the gitignored `.local/environment.json`.
+
+Third-party toolchains are not stack members. The Unreal engine is located
+and validated by preflight and recorded as a release fact; it is not HoloBike
+software and has no integration directory under `Stack/`.
 
 ## Growth Order
 
-The order follows from `Development/Assembly/README.md`, which asks for "a
-versioned manifest schema and a read-only preflight command" before anything
-stages an artifact:
+The order follows from `Assembler/README.md`, which requires the versioned
+manifest schema and the read-only preflight before anything stages an
+artifact:
 
 1. **Schemas and the environment mapping** — the first declared kind, so
    workstation paths become validated data instead of documentation.
-2. **Read-only preflight** — discover checkouts, report revision and dirty
-   state, validate tools. No side effects, so it is safe to build first.
+2. **`preflight`** — the Assembler's first verb: discover checkouts, report
+   revision and dirty state, validate tools. No side effects, so it is safe
+   to build first.
 3. **Revision selection and compatibility** — a release line becomes a
    reviewable diff.
-4. **Assembly staging with an inventory and digests** — the first real release
-   record.
-5. **Emulation** orchestrated against a recorded assembly identity.
-6. **Provisioning**, which its own README correctly blocks behind the uroborOS
-   image, encrypted-root path, key custody, rollback, recovery, and hardware
-   acceptance gates.
+4. **`assemble` staging with an inventory and digests** — the first real
+   release record.
+5. **`emulate`** orchestrated against a recorded assembly identity.
+6. **Provisioning**, which its own README correctly blocks behind the
+   uroborOS image, encrypted-root path, key custody, rollback, recovery, and
+   hardware acceptance gates.
 
 Every workflow emits a record from step 1 onward. The cheapest moment to make
 provenance mandatory is before any workflow exists.
 
-Two decisions are deliberately still open: the implementation language for the
-executable layer, and exactly what a release record must contain. Neither is
-blocked by the structure above, because schemas are language-neutral and the
-record's schema lands with the first assembly that writes one.
+## Current State
 
-## Initial State
-
-This first commit establishes role boundaries and records the current source
-repositories. It intentionally adds no submodules, source vendoring, deployment
-credentials, or executable production workflow. Revision manifests and
-automation should be introduced only after their schemas and release semantics
-are decided.
+Documentation and schema only; the Assembler is not yet implemented. The
+shape is settled by `Docs/Decisions/0001` and content arrives in growth
+order. One decision remains deliberately open: exactly what a release record
+must contain — its schema lands with the first `resolve` that writes one,
+aligned with the uroborOS-Lab run-record idiom and SLSA provenance
+vocabulary.
