@@ -6,7 +6,7 @@ device and records evidence of the resulting state.
 The intended high-level transaction is:
 
 1. identify and validate the target hardware;
-2. verify the release manifest, signatures, artifact digests, and compatibility;
+2. verify the release record, signatures, artifact digests, and compatibility;
 3. install the release-qualified uroborOS image;
 4. install mode-selected bike services and the packaged HoloBike experience;
 5. provision public configuration and inject secrets through an external,

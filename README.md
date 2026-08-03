@@ -15,7 +15,7 @@ a selected set of revisions works as one product.
 HoloBike Deployment will own:
 
 - selection of compatible source revisions;
-- cross-repository compatibility and deployment manifests;
+- cross-repository compatibility and the deployed-stack specification;
 - developer environment discovery and preflight;
 - deterministic invocation of repository-owned build and test entry points;
 - assembly of named artifacts into an inspectable product bundle;
@@ -30,61 +30,63 @@ keys, athlete credentials, provider secrets, or device-specific secret values.
 
 | Domain | Authoritative repository | Deployment concern |
 |---|---|---|
-| Operating system | [`uroborOS`](Stack/os/uroborOS/README.md) | Images, modes, services, boot policy, hardware integration |
-| Geography | [`HexAtlas`](Stack/geo/HexAtlas/README.md), [`Assetscape`](Stack/geo/Assetscape/README.md) | World facts, asset palette, serving, and engine compatibility |
-| Bike runtime | [`HolobikeCore`](Stack/bike/HolobikeCore/README.md) | Device services, firmware, health, and hardware-facing configuration |
-| Athlete identity | [`AthleteIdentity`](Stack/id/AthleteIdentity/README.md) | On-device identity client, provider selection, and identity contracts |
-| Intelligence | [`drAIs`](Stack/ai/drAIs/README.md) | Local assistant runtime, skills, models, and sandbox policy |
-| Experience | [`HolobikeExperience`](Stack/ue/project/HolobikeExperience/README.md) | Packaged Unreal Engine product and project configuration |
-| Unreal integrations | [`HolobikeDevice`](Stack/ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](Stack/ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](Stack/ue/plugins/HolobikeWorlds/README.md) | Reusable engine plugins and compatibility with the experience |
+| Operating system | [`uroborOS`](Spec/Stack/os/uroborOS/README.md) | Images, modes, services, boot policy, hardware integration |
+| Geography | [`HexAtlas`](Spec/Stack/geo/HexAtlas/README.md), [`Assetscape`](Spec/Stack/geo/Assetscape/README.md) | World facts, asset palette, serving, and engine compatibility |
+| Bike runtime | [`HolobikeCore`](Spec/Stack/bike/HolobikeCore/README.md) | Device services, firmware, health, and hardware-facing configuration |
+| Athlete identity | [`AthleteIdentity`](Spec/Stack/id/AthleteIdentity/README.md) | On-device identity client, provider selection, and identity contracts |
+| Intelligence | [`drAIs`](Spec/Stack/ai/drAIs/README.md) | Local assistant runtime, skills, models, and sandbox policy |
+| Experience | [`HolobikeExperience`](Spec/Stack/ue/project/HolobikeExperience/README.md) | Packaged Unreal Engine product and project configuration |
+| Unreal integrations | [`HolobikeDevice`](Spec/Stack/ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](Spec/Stack/ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](Spec/Stack/ue/plugins/HolobikeWorlds/README.md) | Reusable engine plugins and compatibility with the experience |
 
 ## Repository Shape
 
 ```text
-Manifests/        declared: what a release is made of, reviewed in pull requests
+Spec/             intent: the specification of the deployed HoloBike software stack
   Schemas/          canonical shape of every declared kind
-Stack/            how to drive one repository, grouped by domain
-  os/
-    uroborOS/
-  geo/
-    HexAtlas/
-    Assetscape/
-  id/
-    AthleteIdentity/
-  ue/
-    plugins/
-      HolobikeDevice/
-      HolobikeRider/
-      HolobikeWorlds/
-    project/
-      HolobikeExperience/
-  ai/
-    drAIs/
-  bike/
-    HolobikeCore/
-Development/      workflows run before a release is admitted to production
+  Stack/            the integration roster and per-repository contracts
+    os/
+      uroborOS/
+    geo/
+      HexAtlas/
+      Assetscape/
+    id/
+      AthleteIdentity/
+    ue/
+      plugins/
+        HolobikeDevice/
+        HolobikeRider/
+        HolobikeWorlds/
+      project/
+        HolobikeExperience/
+    ai/
+      drAIs/
+    bike/
+      HolobikeCore/
+Development/      process: workflows run before a release is admitted to production
   Assembly/      deterministic source selection, build invocation, and staging
   Emulation/     integrated simulated and virtualized product workflows
   Environment/   developer-host discovery, prerequisites, and local mapping
-Production/       the admission and delivery boundary
+Production/       process: the admission and delivery boundary
   Provisioning/  release installation, enrollment, validation, and evidence
-Releases/         resolved: what was produced and what admitted it
+Releases/         fact: what was produced and what admitted it
 ```
 
-Two directories carry the repository's stated purpose — owning "the contracts
-between those repositories and the evidence that a selected set of revisions
-works as one product". `Manifests/` is what a person declares; `Releases/` is
-what a run resolved and attested. The dividing rule against `Stack/`: **if it
-names more than one repository it is a manifest; if it describes how to drive
-one repository it belongs to that repository's adapter.**
+The top level divides by nature — intent, process, fact. Two directories carry
+the repository's stated purpose of owning "the contracts between those
+repositories and the evidence that a selected set of revisions works as one
+product": `Spec/` is the contracts, declared by a person and reviewed;
+`Releases/` is the evidence, resolved by a run and never edited. Within the
+Spec, one rule files everything: a document that names more than one
+repository is a Spec kind; a document that describes how to drive one
+repository belongs to that repository's adapter under `Spec/Stack/`.
 
-Third-party toolchains are not `Stack/` members. The Unreal engine is located
-and validated by environment preflight and recorded as a release fact; it is
-not HoloBike software and has no integration directory.
+Third-party toolchains are not stack members. The Unreal engine is located and
+validated by environment preflight and recorded as a release fact; it is not
+HoloBike software and has no integration directory under `Spec/Stack/`.
 
-`Development/Assembly/` is the domain. A future `holobike-assemble` command may
-serve as its CLI, but the implementation should remain a consumer of declared
-manifests and repository-owned tools rather than becoming another build
+`Development/Assembly/` is the domain. A future `holobike-assemble` command
+may serve as its CLI, but the implementation should remain a consumer of the
+declared Spec and repository-owned tools rather than becoming another build
 system.
 
 ## Growth Order

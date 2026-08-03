@@ -10,8 +10,8 @@ Checkout locations differ per workstation, so they are declared in
 committed artifacts are its schema and an example:
 
 ```text
-Manifests/Schemas/environment.schema.json    the contract
-Manifests/Schemas/environment.example.json   the shape, with example paths
+Spec/Schemas/environment.schema.json    the contract
+Spec/Schemas/environment.example.json   the shape, with example paths
 .local/environment.json                      your machine (untracked)
 ```
 
@@ -34,8 +34,8 @@ tools a selected workflow needs — compilers, CMake, Ninja, vcpkg, Unreal
 Engine, virtualization, GPU tooling, storage capacity, and access to any
 explicitly selected development provider.
 
-Third-party toolchains are declared under `toolchains` rather than as `Stack/`
-members, because they are not HoloBike software. The Unreal engine is the
+Third-party toolchains are declared under `toolchains` rather than as members
+of the stack under `Spec/Stack/`, because they are not HoloBike software. The Unreal engine is the
 clearest case: preflight locates and validates it, a release records the
 version that produced the build, and no part of it is an integrated component.
 

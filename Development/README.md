@@ -10,9 +10,10 @@ The domains are intentionally separate:
 - `Emulation/` runs an assembled stack against simulated or virtualized
   dependencies.
 
-These workflows consume the product-wide contracts under top-level
-`Stack/`. Integration contracts do not live under `Development/` because
-production provisioning consumes the same boundaries.
+These workflows consume the Spec: the per-repository contracts under
+`Spec/Stack/` and the declared kinds beside them. Integration contracts do
+not live under `Development/` because production provisioning consumes the
+same Spec.
 
 Development workflows may use local checkouts and disposable credentials, but
 they must not silently weaken production policy. Every generated file belongs
