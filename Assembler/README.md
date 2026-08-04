@@ -118,3 +118,20 @@ provisioning derives nothing from them.
   committed.
 - Secrets come from an external secret facility and are never written into a
   report or record.
+
+## Layout and running
+
+```text
+src/holobike_assemble/   the package — Python, standard library only
+tests/                   suites that drive the CLI seam, nothing beneath it
+holobike-assemble        launcher shim
+```
+
+From the repository root:
+
+```bash
+./Assembler/holobike-assemble preflight            # human table
+./Assembler/holobike-assemble preflight --json     # the report as JSON
+./Assembler/holobike-assemble preflight --validate-only
+python3 -m unittest discover -s Assembler/tests    # the gate
+```

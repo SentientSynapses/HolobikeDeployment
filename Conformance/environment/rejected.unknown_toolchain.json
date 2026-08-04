@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "checkouts": {},
+  "toolchains": {
+    "unreal": "/home/example/third_party/UnrealEngine-5.7.4-release"
+  }
+}

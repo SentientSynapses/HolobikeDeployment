@@ -58,9 +58,9 @@ Provisioning/     deliver: device-facing workflows behind the admission boundary
 Docs/Decisions/   why the shape is what it is
 ```
 
-Directories are created by their first content: `Revisions/`, `Policy/`, and
-`Conformance/` are described here and in `Docs/Decisions/0001` rather than
-scaffolded empty. `Profiles/` — named product and simulation topologies, the
+Directories are created by their first content: `Revisions/` and `Policy/`
+are described here and in `Docs/Decisions/0001` rather than scaffolded
+empty. `Profiles/` — named product and simulation topologies, the
 declared answer to running the stack without a bike — and cross-repository
 version constraints (`Compatibility/`) are future kinds on the same terms.
 
@@ -136,9 +136,11 @@ provenance mandatory is before any workflow exists.
 
 ## Current State
 
-Documentation and schema only; the Assembler is not yet implemented. The
-shape is settled by `Docs/Decisions/0001` and content arrives in growth
-order. One decision remains deliberately open: exactly what a release record
+The Assembler exists and has its first verb: read-only `preflight`
+(`Assembler/README.md`), with the environment schema's conformance corpus
+live under `Conformance/environment/`. The shape is settled by
+`Docs/Decisions/0001` and content continues to arrive in growth order —
+`bootstrap` and revision selection are next. One decision remains deliberately open: exactly what a release record
 must contain — its schema lands with the first `resolve` that writes one,
 aligned with the uroborOS-Lab run-record idiom and SLSA provenance
 vocabulary.

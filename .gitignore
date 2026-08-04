@@ -2,3 +2,4 @@
 /Artifacts/
 /Assembler/Generated/
 /Provisioning/Generated/
+__pycache__/

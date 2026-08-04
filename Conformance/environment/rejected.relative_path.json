@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "checkouts": {
+    "HexAtlas": "git_projects/geo_kit/HexAtlas"
+  }
+}
