@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "release",
+  "run": {
+    "verb": "assemble",
+    "started_at_utc": "2026-08-04T13:00:00Z",
+    "finished_at_utc": "2026-08-04T13:00:02Z"
+  },
+  "deployment": {
+    "revision": "a652f43a652f43a652f43a652f43a652f43a6520",
+    "dirty": false
+  },
+  "line": "dev",
+  "version": "0.1.0",
+  "profile": "services",
+  "chain": { "resolution": "r.json", "assembly": "a.json", "emulation": null },
+  "attestation": { "gates": "pass", "builds": "pass", "selections": "pass", "emulation": "absent" },
+  "problems": []
+}

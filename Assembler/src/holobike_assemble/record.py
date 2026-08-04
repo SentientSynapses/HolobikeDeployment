@@ -25,13 +25,18 @@ _KIND_KEYS = {
     "bootstrap": ("actions",),
     "assembly": ("profile", "resolution", "builds", "artifacts", "bundle"),
     "emulation": ("profile", "assembly", "members"),
+    "release": ("version", "profile", "chain", "attestation"),
 }
 _KIND_VERBS = {
     "resolution": "resolve",
     "bootstrap": "bootstrap",
     "assembly": "assemble",
     "emulation": "emulate",
+    "release": "admit",
 }
+_VERSION_PATTERN = re.compile(r"^[a-z0-9][a-z0-9.-]*$")
+_CHAIN_KEYS = ("resolution", "assembly", "emulation")
+_ATTESTATION_KEYS = ("gates", "builds", "selections", "emulation")
 _MEMBER_KEYS = ("status", "run", "serve", "probe", "log", "shutdown",
                 "detail")
 _MEMBER_STATUSES = ("healthy", "skipped", "spawn_failed", "exited_early",
@@ -403,6 +408,43 @@ def validate_record_text(text):
                 or bundle.startswith("/"):
             errors.append(
                 "bundle: must be a non-empty artifacts-relative path")
+
+    if kind == "release":
+        version = root["version"]
+        if not isinstance(version, str) \
+                or not _VERSION_PATTERN.fullmatch(version):
+            errors.append("version: must match ^[a-z0-9][a-z0-9.-]*$")
+        profile = root["profile"]
+        if not isinstance(profile, str) \
+                or not _SLUG_PATTERN.fullmatch(profile):
+            errors.append("profile: must match ^[a-z0-9][a-z0-9-]*$")
+        chain = root["chain"]
+        if not isinstance(chain, dict):
+            errors.append("chain: must be an object")
+        else:
+            _check_closed_keys(errors, "chain", chain, _CHAIN_KEYS)
+            _require_string(errors, "chain.resolution",
+                            chain.get("resolution"))
+            _require_string(errors, "chain.assembly", chain.get("assembly"))
+            # emulation is nullable: a release may be admitted un-emulated,
+            # and the attestation says so honestly.
+            if chain.get("emulation") is not None:
+                _require_string(errors, "chain.emulation",
+                                chain.get("emulation"))
+        attestation = root["attestation"]
+        if not isinstance(attestation, dict):
+            errors.append("attestation: must be an object")
+        else:
+            _check_closed_keys(
+                errors, "attestation", attestation, _ATTESTATION_KEYS)
+            for key in ("gates", "builds", "selections"):
+                if attestation.get(key) != "pass":
+                    errors.append(
+                        f"attestation.{key}: an admitted release attests "
+                        "pass")
+            if attestation.get("emulation") not in ("healthy", "absent"):
+                errors.append(
+                    "attestation.emulation: must be healthy or absent")
 
     if kind == "emulation":
         profile = root["profile"]

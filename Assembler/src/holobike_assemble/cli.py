@@ -11,6 +11,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from . import admit
 from . import assemble
 from . import bootstrap
 from . import emulate
@@ -236,6 +237,39 @@ def _build_parser():
         default=5.0,
         help="seconds between SIGTERM and SIGKILL at teardown (default: 5)",
     )
+
+    admit_parser = verbs.add_parser(
+        "admit",
+        help="promote a clean chain into Releases/ — the one writer of the "
+        "committed attestation tier, and the only step that refuses",
+    )
+    admit_parser.add_argument(
+        "--version",
+        required=True,
+        help="the release version, also the Releases/<version>/ directory",
+    )
+    admit_parser.add_argument(
+        "--record",
+        metavar="PATH",
+        help="the assembly record to admit "
+        "(default: the newest assemble record under Artifacts/records/)",
+    )
+    admit_parser.add_argument(
+        "--emulation",
+        metavar="PATH",
+        help="an emulation record whose health gates admission; omit to "
+        "admit un-emulated (the release attests emulation: absent)",
+    )
+    admit_parser.add_argument(
+        "--artifacts",
+        default=str(REPO_ROOT / "Artifacts"),
+        help="untracked root holding the chain records (default: Artifacts/)",
+    )
+    admit_parser.add_argument(
+        "--releases",
+        default=str(REPO_ROOT / "Releases"),
+        help="tracked release tier (default: Releases/)",
+    )
     return parser
 
 
@@ -345,6 +379,26 @@ def main(argv=None):
             repo_root=REPO_ROOT,
             ready_timeout=arguments.ready_timeout,
             terminate_grace=arguments.terminate_grace,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+        )
+    if arguments.verb == "admit":
+        record_path = arguments.record
+        if record_path is None:
+            newest = _newest_record(arguments.artifacts, "assemble-*.json")
+            if newest is None:
+                print(
+                    "no assembly record under Artifacts/records/ — "
+                    "run assemble first", file=sys.stderr)
+                return 2
+            record_path = str(newest)
+        return admit.run(
+            version=arguments.version,
+            assembly_record_path=record_path,
+            emulation_record_path=arguments.emulation,
+            artifacts_root=arguments.artifacts,
+            releases_root=arguments.releases,
+            repo_root=REPO_ROOT,
             stdout=sys.stdout,
             stderr=sys.stderr,
         )

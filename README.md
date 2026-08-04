@@ -155,11 +155,13 @@ report everything else untouched), and `assemble` stages profile bundles —
 repository-owned builds, digested artifacts, and an assembly record naming
 the resolution it was built from. `emulate` runs an
 assembly's members from the bundle — never the workstation, so an
-incomplete bundle is caught by the verb whose job that is — waits for each
-member's own probe, proves coexistence with a settle pass, tears down with
-a guarantee, and closes the provenance chain: emulation → assembly →
-resolution → declaration. The shape is settled by `Docs/Decisions/0001`;
-admission is what remains of the growth order. One decision remains deliberately open: exactly what a release record
+incomplete bundle is caught by the verb whose job that is — and `admit`
+closes the loop: it promotes a clean chain (every gate passed, every
+member built, any emulation healthy) into the tracked, self-contained
+`Releases/` tier, and refuses everything else. The full growth order is
+live; what remains is real content — the dual-copy backports a first
+release will want, and the per-repository prove surfaces the leaves
+record. One decision remains deliberately open: exactly what a release record
 must contain — its schema lands with the first `resolve` that writes one,
 aligned with the uroborOS-Lab run-record idiom and SLSA provenance
 vocabulary.

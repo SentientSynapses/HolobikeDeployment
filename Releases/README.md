@@ -35,20 +35,29 @@ provider token, signing key, or raw Secret Keeper value.
 
 ## Shape
 
-The layout is one directory per release, and the file names carry the
-resolved sense — a record resolves the declarations rather than restating
-them:
+One directory per release, written by `admit` and by nothing else. A
+release is self-contained — it copies the chain it was admitted from in,
+because `Artifacts/` is untracked and ephemeral, and an attestation that
+points at swept evidence attests nothing:
 
 ```text
 Releases/<version>/
-  resolved.json     exact revisions and artifact digests
-  validation.json   which gates ran and what they returned
+  release.json      the admission record: version, the chain, and what was
+                    attested (gates, builds, selections, emulation)
+  resolution.json   the resolved revisions and gate verdicts, copied in
+  assembly.json     the built artifacts with digests, copied in
+  emulation.json    present only when the release was admitted emulated
 ```
 
-**What a record must contain is still open**, and deliberately so. It needs
-to carry at minimum the source identity and dirty state of every integration,
-the artifact inventory with digests, the toolchain versions that produced
-them (including the Unreal engine version, which is a release fact rather
-than a stack member), and the policy that admitted it. Fixing the exact
-fields is the job of the schema that lands with the first assembly that
-writes one.
+Admission promotes only a clean chain: every gate passed, every selection
+resolved, every profile member built and staged, and any incorporated
+emulation healthy. A chain that fails any of these is refused — `Releases/`
+is untouched and the reasons are reported. Records under `Artifacts/` state
+facts; admission is the one step that decides, and the one writer here.
+
+A version is immutable: `admit` refuses a version whose directory already
+exists. Correcting a release means admitting a new version, never editing
+one. The record schema is `Schemas/record.schema.json` (the `release`
+kind); the toolchain versions a release should eventually also carry —
+notably the Unreal engine version — join it as the assembly that stages UE
+artifacts lands.

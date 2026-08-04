@@ -45,19 +45,35 @@
         "properties": { "resolved": false, "gates": false,
                         "actions": false, "resolution": false,
                         "builds": false, "artifacts": false,
-                        "bundle": false }
+                        "bundle": false, "version": false,
+                        "chain": false, "attestation": false }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "release" } } },
+      "then": {
+        "required": ["version", "profile", "chain", "attestation"],
+        "properties": { "resolved": false, "gates": false,
+                        "actions": false, "resolution": false,
+                        "builds": false, "artifacts": false,
+                        "bundle": false, "assembly": false,
+                        "members": false }
       }
     }
   ],
   "properties": {
     "schema_version": { "const": 1 },
-    "kind": { "enum": ["resolution", "bootstrap", "assembly", "emulation"] },
+    "kind": {
+      "enum": ["resolution", "bootstrap", "assembly", "emulation", "release"]
+    },
     "run": {
       "type": "object",
       "additionalProperties": false,
       "required": ["verb", "started_at_utc", "finished_at_utc"],
       "properties": {
-        "verb": { "enum": ["resolve", "bootstrap", "assemble", "emulate"] },
+        "verb": {
+          "enum": ["resolve", "bootstrap", "assemble", "emulate", "admit"]
+        },
         "started_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" },
         "finished_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" }
       }
@@ -174,6 +190,37 @@
                  "HolobikeDevice", "HolobikeRider", "HolobikeWorlds"]
       },
       "additionalProperties": { "$ref": "#/$defs/member" }
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9.-]*$",
+      "description": "release records only: the admitted version, also the Releases/<version>/ directory name."
+    },
+    "chain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resolution", "assembly", "emulation"],
+      "description": "release records only: the records this release was admitted from, copied into the release directory so it references nothing ephemeral. emulation is null when the release was admitted un-emulated.",
+      "properties": {
+        "resolution": { "type": "string", "minLength": 1 },
+        "assembly": { "type": "string", "minLength": 1 },
+        "emulation": {
+          "type": ["string", "null"], "minLength": 1
+        }
+      }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gates", "builds", "selections", "emulation"],
+      "description": "release records only: what admission verified. An admitted release attests pass on gates, builds, and selections; emulation is healthy or honestly absent.",
+      "properties": {
+        "gates": { "const": "pass" },
+        "builds": { "const": "pass" },
+        "selections": { "const": "pass" },
+        "emulation": { "enum": ["healthy", "absent"] }
+      }
     },
     "problems": {
       "type": "array",
