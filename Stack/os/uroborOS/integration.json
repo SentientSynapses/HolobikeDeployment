@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "integration": "uroborOS",
+  "kit": "os_kit",
+  "repository": "uroborOS"
+}

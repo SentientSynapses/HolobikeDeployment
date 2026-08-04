@@ -7,6 +7,7 @@ must agree with it.
 | Schema | Kind |
 |---|---|
 | `environment.schema.json` | One workstation's checkout and toolchain paths. Machine-specific: the document lives at the gitignored `.local/environment.json`, and `environment.example.json` shows its shape. |
+| `integration.schema.json` | One Stack leaf's drive contract: roster identity, kit, repository name, and repository-owned entry points (`prove` first). Instances live at `Stack/<domain>/<Integration>/integration.json`. |
 
 Schemas for profiles, revision manifests, compatibility, and policy arrive
 with the workflows that read them — the first of those is the read-only

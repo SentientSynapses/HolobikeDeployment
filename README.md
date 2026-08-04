@@ -137,8 +137,13 @@ provenance mandatory is before any workflow exists.
 ## Current State
 
 The Assembler exists and has its first verb: read-only `preflight`
-(`Assembler/README.md`), with the environment schema's conformance corpus
-live under `Conformance/environment/`. The shape is settled by
+(`Assembler/README.md`), with conformance corpora live under
+`Conformance/`. The Stack leaves are data: every integration carries an
+`integration.json` drive contract that preflight validates and
+cross-checks against the roster and the workstation's checkouts, with
+repository-owned `prove` entry points declared where they exist — an
+absent entry point is a recorded backlog item for that repository, never
+an invitation to improvise one here. The shape is settled by
 `Docs/Decisions/0001` and content continues to arrive in growth order —
 `bootstrap` and revision selection are next. One decision remains deliberately open: exactly what a release record
 must contain — its schema lands with the first `resolve` that writes one,

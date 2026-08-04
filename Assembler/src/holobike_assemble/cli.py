@@ -16,6 +16,7 @@ from . import preflight
 # .../Assembler/src/holobike_assemble/cli.py -> the repository root.
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ENVIRONMENT = REPO_ROOT / ".local" / "environment.json"
+DEFAULT_STACK = REPO_ROOT / "Stack"
 
 
 def _build_parser():
@@ -38,9 +39,20 @@ def _build_parser():
         "(default: .local/environment.json)",
     )
     preflight_parser.add_argument(
+        "--stack",
+        default=str(DEFAULT_STACK),
+        help="path to the Stack tree of integration contracts "
+        "(default: Stack/)",
+    )
+    preflight_parser.add_argument(
         "--validate-only",
         action="store_true",
         help="judge the environment document and say nothing else",
+    )
+    preflight_parser.add_argument(
+        "--validate-integration",
+        metavar="PATH",
+        help="judge one integration contract document and say nothing else",
     )
     preflight_parser.add_argument(
         "--json",
@@ -55,7 +67,9 @@ def main(argv=None):
     if arguments.verb == "preflight":
         return preflight.run(
             environment_path=arguments.environment,
+            stack_root=arguments.stack,
             validate_only=arguments.validate_only,
+            validate_integration=arguments.validate_integration,
             as_json=arguments.json,
             stdout=sys.stdout,
             stderr=sys.stderr,

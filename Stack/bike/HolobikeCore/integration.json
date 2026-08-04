@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "integration": "HolobikeCore",
+  "kit": "bike_kit",
+  "repository": "HolobikeCore"
+}

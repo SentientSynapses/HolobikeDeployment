@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "integration": "drAIs",
+  "kit": "ai_kit",
+  "repository": "drAIs",
+  "entry_points": {
+    "prove": {
+      "argv": ["bash", "drais.sh", "eval", "all"]
+    }
+  }
+}

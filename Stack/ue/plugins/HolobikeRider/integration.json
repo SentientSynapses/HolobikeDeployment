@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "integration": "HolobikeRider",
+  "kit": "ue_kit",
+  "repository": "HolobikeRider_uplugin"
+}

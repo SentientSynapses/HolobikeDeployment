@@ -40,6 +40,22 @@ def make_git_checkout(path):
     return revision
 
 
+ROSTER = (
+    "uroborOS", "HexAtlas", "Assetscape", "HolobikeCore", "AthleteIdentity",
+    "drAIs", "HolobikeExperience", "HolobikeDevice", "HolobikeRider",
+    "HolobikeWorlds",
+)
+
+
+def minimal_leaf(name, repository=None):
+    return {
+        "schema_version": 1,
+        "integration": name,
+        "kit": "geo_kit",
+        "repository": repository or name,
+    }
+
+
 class PreflightBehaviour(unittest.TestCase):
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory()
@@ -52,9 +68,27 @@ class PreflightBehaviour(unittest.TestCase):
         path.write_text(json.dumps(document), encoding="utf-8")
         return path
 
-    def report_for(self, environment_path):
+    def write_stack(self, leaves):
+        """Fabricate a Stack tree: {directory name: document or raw text}."""
+        stack = self.root / "Stack"
+        for name, document in leaves.items():
+            leaf = stack / name
+            leaf.mkdir(parents=True, exist_ok=True)
+            text = document if isinstance(document, str) \
+                else json.dumps(document)
+            (leaf / "integration.json").write_text(text, encoding="utf-8")
+        stack.mkdir(exist_ok=True)
+        return stack
+
+    def full_stack(self, overrides=None):
+        leaves = {name: minimal_leaf(name) for name in ROSTER}
+        leaves.update(overrides or {})
+        return self.write_stack(leaves)
+
+    def report_for(self, environment_path, stack=None):
         result = run_preflight(
-            "--json", "--environment", str(environment_path))
+            "--json", "--environment", str(environment_path),
+            "--stack", str(stack if stack is not None else self.full_stack()))
         report = json.loads(result.stdout)
         return result, report
 
@@ -133,10 +167,66 @@ class PreflightBehaviour(unittest.TestCase):
         checkout = self.root / "HexAtlas"
         make_git_checkout(checkout)
         environment = self.write_environment({"HexAtlas": str(checkout)})
-        result = run_preflight("--environment", str(environment))
+        result = run_preflight(
+            "--environment", str(environment),
+            "--stack", str(self.full_stack()))
         self.assertEqual(result.returncode, 0)
-        for name in ("INTEGRATION", "HexAtlas", "uroborOS", "undeclared"):
+        for name in ("INTEGRATION", "LEAF", "HexAtlas", "uroborOS",
+                     "undeclared"):
             self.assertIn(name, result.stdout)
+
+    def test_a_missing_leaf_is_a_problem(self):
+        environment = self.write_environment({})
+        leaves = {name: minimal_leaf(name) for name in ROSTER
+                  if name != "HexAtlas"}
+        result, report = self.report_for(
+            environment, self.write_stack(leaves))
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["stack"]["HexAtlas"]["status"],
+                         "leaf_missing")
+
+    def test_an_invalid_leaf_carries_its_errors(self):
+        environment = self.write_environment({})
+        stack = self.full_stack(
+            {"HexAtlas": '{"schema_version": 1, "surprise": true}'})
+        result, report = self.report_for(environment, stack)
+        self.assertEqual(result.returncode, 1)
+        facts = report["stack"]["HexAtlas"]
+        self.assertEqual(facts["status"], "invalid")
+        self.assertTrue(facts["errors"])
+
+    def test_a_leaf_disagreeing_with_its_directory_is_a_mismatch(self):
+        environment = self.write_environment({})
+        stack = self.full_stack(
+            {"HexAtlas": minimal_leaf("Assetscape")})
+        result, report = self.report_for(environment, stack)
+        self.assertEqual(result.returncode, 1)
+        # The document filed itself under Assetscape, so Assetscape sees a
+        # duplicate and HexAtlas sees nothing — both truthfully reported.
+        self.assertEqual(report["stack"]["HexAtlas"]["status"],
+                         "leaf_missing")
+        self.assertEqual(report["stack"]["Assetscape"]["status"],
+                         "duplicate")
+
+    def test_a_leaf_that_contradicts_the_checkout_name_is_a_problem(self):
+        checkout = self.root / "HexAtlas"
+        make_git_checkout(checkout)
+        environment = self.write_environment({"HexAtlas": str(checkout)})
+        stack = self.full_stack(
+            {"HexAtlas": minimal_leaf("HexAtlas",
+                                      repository="HexAtlas_uplugin")})
+        result, report = self.report_for(environment, stack)
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["stack"]["HexAtlas"]["status"],
+                         "checkout_repository_mismatch")
+
+    def test_a_stray_leaf_outside_the_roster_is_a_problem(self):
+        environment = self.write_environment({})
+        stack = self.full_stack(
+            {"Mystery": '{"schema_version": 1}'})
+        result, report = self.report_for(environment, stack)
+        self.assertEqual(result.returncode, 1)
+        self.assertTrue(report["stack_strays"])
 
 
 if __name__ == "__main__":

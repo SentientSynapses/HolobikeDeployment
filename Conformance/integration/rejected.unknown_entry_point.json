@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "integration": "HexAtlas",
+  "kit": "geo_kit",
+  "repository": "HexAtlas",
+  "entry_points": {
+    "deploy": { "argv": ["true"] }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "integration": "HolobikeWorlds",
+  "kit": "ue_kit",
+  "repository": "HolobikeWorlds_uplugin"
+}
