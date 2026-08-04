@@ -2,5 +2,6 @@
   "schema_version": 1,
   "integration": "uroborOS",
   "kit": "os_kit",
-  "repository": "uroborOS"
+  "repository": "uroborOS",
+  "origin": "git@github.com:Saga-Holographic/uroborOS.git"
 }

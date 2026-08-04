@@ -19,7 +19,7 @@ SCHEMA_VERSION = 1
 KITS = ("ai_kit", "bike_kit", "geo_kit", "id_kit", "os_kit", "ue_kit")
 
 _ROOT_KEYS = ("schema_version", "integration", "kit", "repository",
-              "entry_points")
+              "origin", "entry_points")
 _ENTRY_POINTS = ("prove",)
 
 
@@ -28,6 +28,7 @@ class IntegrationDocument:
     integration: str
     kit: str
     repository: str
+    origin: str = ""
     prove_argv: tuple = ()
 
 
@@ -111,6 +112,15 @@ def validate_integration_text(text):
     else:
         _check_repository_name(errors, root["repository"])
 
+    origin = ""
+    if "origin" in root:
+        raw_origin = root["origin"]
+        if not isinstance(raw_origin, str) or not raw_origin \
+                or any(character.isspace() for character in raw_origin):
+            errors.append("origin: must be a non-empty string without spaces")
+        else:
+            origin = raw_origin
+
     prove_argv = ()
     if "entry_points" in root:
         prove_argv = _check_entry_points(errors, root["entry_points"])
@@ -121,6 +131,7 @@ def validate_integration_text(text):
         integration=integration,
         kit=kit,
         repository=root["repository"],
+        origin=origin,
         prove_argv=prove_argv,
     ), []
 

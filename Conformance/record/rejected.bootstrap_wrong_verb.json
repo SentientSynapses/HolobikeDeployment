@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "bootstrap",
+  "run": {
+    "verb": "resolve",
+    "started_at_utc": "2026-08-04T12:00:00Z",
+    "finished_at_utc": "2026-08-04T12:00:09Z"
+  },
+  "deployment": {
+    "revision": "a652f43a652f43a652f43a652f43a652f43a6520",
+    "dirty": false
+  },
+  "line": "dev",
+  "actions": {
+    "HexAtlas": { "status": "up_to_date" }
+  },
+  "problems": []
+}

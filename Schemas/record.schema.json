@@ -5,16 +5,32 @@
   "description": "What one Assembler run resolved and attested. The shape follows the run-record idiom this ecosystem already proved (a run block with timing, a source-identity block, per-subject facts) hardened with provenance vocabulary: 'revision' is a full git commit id and corresponds to SLSA's digest.gitCommit; the deployment block is the record's self-identity, because a resolution that cannot identify itself is not provenance. Records are written by runs into the untracked Artifacts/ directory and are never edited; admission copies a record into Releases/, it does not rewrite one.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "kind", "run", "deployment", "line", "resolved", "gates", "problems"],
+  "required": ["schema_version", "kind", "run", "deployment", "line", "problems"],
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "resolution" } } },
+      "then": {
+        "required": ["resolved", "gates"],
+        "properties": { "actions": false }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "bootstrap" } } },
+      "then": {
+        "required": ["actions"],
+        "properties": { "resolved": false, "gates": false }
+      }
+    }
+  ],
   "properties": {
     "schema_version": { "const": 1 },
-    "kind": { "enum": ["resolution"] },
+    "kind": { "enum": ["resolution", "bootstrap"] },
     "run": {
       "type": "object",
       "additionalProperties": false,
       "required": ["verb", "started_at_utc", "finished_at_utc"],
       "properties": {
-        "verb": { "enum": ["resolve"] },
+        "verb": { "enum": ["resolve", "bootstrap"] },
         "started_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" },
         "finished_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" }
       }
@@ -52,12 +68,46 @@
       "propertyNames": { "pattern": "^[a-z0-9][a-z0-9-]*$" },
       "additionalProperties": { "$ref": "#/$defs/gate_verdict" }
     },
+    "actions": {
+      "type": "object",
+      "description": "bootstrap records only: what materialization did per integration. Bounded mutations exclusively — clone missing, fast-forward clean-on-branch; everything else is a reported status, never a reset.",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "uroborOS": { "$ref": "#/$defs/action" },
+        "HexAtlas": { "$ref": "#/$defs/action" },
+        "Assetscape": { "$ref": "#/$defs/action" },
+        "HolobikeCore": { "$ref": "#/$defs/action" },
+        "AthleteIdentity": { "$ref": "#/$defs/action" },
+        "drAIs": { "$ref": "#/$defs/action" },
+        "HolobikeExperience": { "$ref": "#/$defs/action" },
+        "HolobikeDevice": { "$ref": "#/$defs/action" },
+        "HolobikeRider": { "$ref": "#/$defs/action" },
+        "HolobikeWorlds": { "$ref": "#/$defs/action" }
+      }
+    },
     "problems": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
     }
   },
   "$defs": {
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "enum": ["cloned", "clone_failed", "updated", "up_to_date",
+                   "matched", "dirty_skipped", "selection_mismatch",
+                   "diverged", "fetch_failed", "unclonable",
+                   "unreadable_repository"]
+        },
+        "detail": { "type": "string", "minLength": 1 },
+        "revision_before": { "type": "string" },
+        "revision_after": { "type": "string" }
+      }
+    },
     "gate_verdict": {
       "type": "object",
       "additionalProperties": false,

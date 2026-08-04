@@ -3,9 +3,15 @@
   "integration": "drAIs",
   "kit": "ai_kit",
   "repository": "drAIs",
+  "origin": "git@github.com:Saga-Holographic/drAIs.git",
   "entry_points": {
     "prove": {
-      "argv": ["bash", "drais.sh", "eval", "all"]
+      "argv": [
+        "bash",
+        "drais.sh",
+        "eval",
+        "all"
+      ]
     }
   }
 }

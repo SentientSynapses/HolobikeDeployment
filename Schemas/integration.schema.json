@@ -31,6 +31,12 @@
       "pattern": "^[A-Za-z0-9._-]+$",
       "description": "The checkout directory name under the kit; preflight cross-checks it against the environment mapping's declared path."
     },
+    "origin": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\S+$",
+      "description": "The canonical clone source. bootstrap clones a missing checkout from it; an integration without one cannot be materialized, only reported."
+    },
     "entry_points": {
       "type": "object",
       "additionalProperties": false,

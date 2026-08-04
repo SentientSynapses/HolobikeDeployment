@@ -11,6 +11,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from . import bootstrap
 from . import policy as policy_contract
 from . import preflight
 from . import record as record_contract
@@ -62,6 +63,40 @@ def _build_parser():
         "--json",
         action="store_true",
         help="emit the report as JSON instead of a table",
+    )
+
+    bootstrap_parser = verbs.add_parser(
+        "bootstrap",
+        help="materialize the environment: clone missing checkouts from "
+        "their declared origins, fast-forward clean on-branch ones; "
+        "dirty or diverged trees are reported, never reset",
+    )
+    bootstrap_parser.add_argument(
+        "--line",
+        default="dev",
+        help="the line to materialize: Revisions/<line>.json (default: dev)",
+    )
+    bootstrap_parser.add_argument(
+        "--revisions",
+        metavar="PATH",
+        help="explicit revision manifest path (overrides --line)",
+    )
+    bootstrap_parser.add_argument(
+        "--environment",
+        default=str(DEFAULT_ENVIRONMENT),
+        help="path to the environment mapping "
+        "(default: .local/environment.json)",
+    )
+    bootstrap_parser.add_argument(
+        "--stack",
+        default=str(DEFAULT_STACK),
+        help="path to the Stack tree of integration contracts "
+        "(default: Stack/)",
+    )
+    bootstrap_parser.add_argument(
+        "--artifacts",
+        default=str(REPO_ROOT / "Artifacts"),
+        help="untracked output root for records (default: Artifacts/)",
     )
 
     resolve_parser = verbs.add_parser(
@@ -133,6 +168,18 @@ def main(argv=None):
             validate_only=arguments.validate_only,
             validate_integration=arguments.validate_integration,
             as_json=arguments.json,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+        )
+    if arguments.verb == "bootstrap":
+        revisions_path = arguments.revisions if arguments.revisions \
+            else str(REPO_ROOT / "Revisions" / f"{arguments.line}.json")
+        return bootstrap.run(
+            revisions_path=revisions_path,
+            environment_path=arguments.environment,
+            stack_root=arguments.stack,
+            artifacts_root=arguments.artifacts,
+            repo_root=REPO_ROOT,
             stdout=sys.stdout,
             stderr=sys.stderr,
         )

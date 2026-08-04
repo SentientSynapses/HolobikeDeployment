@@ -16,9 +16,22 @@ from .environment import INTEGRATIONS
 
 SCHEMA_VERSION = 1
 
-_ROOT_KEYS = ("schema_version", "kind", "run", "deployment", "line",
-              "resolved", "gates", "problems")
+_BASE_KEYS = ("schema_version", "kind", "run", "deployment", "line",
+              "problems")
+# Every kind carries the base plus exactly its own keys; a resolution with
+# actions, or a bootstrap with gates, is a category error, not a tolerance.
+_KIND_KEYS = {
+    "resolution": ("resolved", "gates"),
+    "bootstrap": ("actions",),
+}
+_KIND_VERBS = {"resolution": "resolve", "bootstrap": "bootstrap"}
 _RUN_KEYS = ("verb", "started_at_utc", "finished_at_utc")
+_ACTION_KEYS = ("status", "detail", "revision_before", "revision_after")
+_ACTION_STATUSES = (
+    "cloned", "clone_failed", "updated", "up_to_date", "matched",
+    "dirty_skipped", "selection_mismatch", "diverged", "fetch_failed",
+    "unclonable", "unreadable_repository",
+)
 _RESOLUTION_KEYS = ("selected", "status", "revision", "branch", "dirty",
                     "detail")
 _STATUSES = ("resolved", "selection_mismatch", "unresolvable")
@@ -43,17 +56,31 @@ def _check_closed_keys(errors, where, value, allowed):
             errors.append(f"{where}.{key}: unknown name")
 
 
-def _check_run(errors, value):
+def _check_run(errors, value, expected_verb):
     if not isinstance(value, dict):
         errors.append("run: must be an object")
         return
     _check_closed_keys(errors, "run", value, _RUN_KEYS)
-    if value.get("verb") != "resolve":
-        errors.append("run.verb: must be resolve")
+    if value.get("verb") != expected_verb:
+        errors.append(f"run.verb: must be {expected_verb}")
     for key in ("started_at_utc", "finished_at_utc"):
         stamp = value.get(key)
         if not isinstance(stamp, str) or not stamp.endswith("Z"):
             errors.append(f"run.{key}: must be a UTC timestamp ending in Z")
+
+
+def _check_action(errors, where, value):
+    if not isinstance(value, dict):
+        errors.append(f"{where}: must be an object")
+        return
+    _check_closed_keys(errors, where, value, _ACTION_KEYS)
+    if value.get("status") not in _ACTION_STATUSES:
+        errors.append(f"{where}.status: must be one of {_ACTION_STATUSES}")
+    if "detail" in value:
+        _require_string(errors, f"{where}.detail", value["detail"])
+    for key in ("revision_before", "revision_after"):
+        if key in value and not isinstance(value[key], str):
+            errors.append(f"{where}.{key}: must be a string")
 
 
 def _check_deployment(errors, value):
@@ -146,8 +173,13 @@ def validate_record_text(text):
     if not isinstance(root, dict):
         return None, ["document: the root must be an object"]
 
-    _check_closed_keys(errors, "document", root, _ROOT_KEYS)
-    for key in _ROOT_KEYS:
+    kind = root.get("kind")
+    if kind not in _KIND_KEYS:
+        return None, [f"kind: must be one of {tuple(_KIND_KEYS)}"]
+
+    allowed = _BASE_KEYS + _KIND_KEYS[kind]
+    _check_closed_keys(errors, "document", root, allowed)
+    for key in allowed:
         if key not in root:
             errors.append(f"{key}: required")
     if errors:
@@ -157,33 +189,46 @@ def validate_record_text(text):
     if isinstance(version, bool) or not isinstance(version, int) \
             or version != SCHEMA_VERSION:
         errors.append(f"schema_version: must be the integer {SCHEMA_VERSION}")
-    if root["kind"] != "resolution":
-        errors.append("kind: must be resolution")
-    _check_run(errors, root["run"])
+    _check_run(errors, root["run"], _KIND_VERBS[kind])
     _check_deployment(errors, root["deployment"])
     _require_string(errors, "line", root["line"])
 
-    resolved = root["resolved"]
-    if not isinstance(resolved, dict) or not resolved:
-        errors.append("resolved: must be a non-empty object")
-    else:
-        for name in sorted(resolved):
-            if name not in INTEGRATIONS:
-                errors.append(
-                    f"resolved.{name}: unknown name — the roster is closed")
-                continue
-            _check_resolution(errors, f"resolved.{name}", resolved[name])
+    if kind == "resolution":
+        resolved = root["resolved"]
+        if not isinstance(resolved, dict) or not resolved:
+            errors.append("resolved: must be a non-empty object")
+        else:
+            for name in sorted(resolved):
+                if name not in INTEGRATIONS:
+                    errors.append(
+                        f"resolved.{name}: unknown name — the roster is "
+                        "closed")
+                    continue
+                _check_resolution(errors, f"resolved.{name}", resolved[name])
 
-    gate_verdicts = root["gates"]
-    if not isinstance(gate_verdicts, dict):
-        errors.append("gates: must be an object")
-    else:
-        for name in sorted(gate_verdicts):
-            if not _GATE_NAME_PATTERN.fullmatch(name):
-                errors.append(f"gates.{name}: malformed gate name")
-                continue
-            _check_gate_verdict(
-                errors, f"gates.{name}", gate_verdicts[name])
+        gate_verdicts = root["gates"]
+        if not isinstance(gate_verdicts, dict):
+            errors.append("gates: must be an object")
+        else:
+            for name in sorted(gate_verdicts):
+                if not _GATE_NAME_PATTERN.fullmatch(name):
+                    errors.append(f"gates.{name}: malformed gate name")
+                    continue
+                _check_gate_verdict(
+                    errors, f"gates.{name}", gate_verdicts[name])
+
+    if kind == "bootstrap":
+        actions = root["actions"]
+        if not isinstance(actions, dict) or not actions:
+            errors.append("actions: must be a non-empty object")
+        else:
+            for name in sorted(actions):
+                if name not in INTEGRATIONS:
+                    errors.append(
+                        f"actions.{name}: unknown name — the roster is "
+                        "closed")
+                    continue
+                _check_action(errors, f"actions.{name}", actions[name])
 
     problems = root["problems"]
     if not isinstance(problems, list) or any(
