@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import json
 import shutil
-import subprocess
 from pathlib import Path
 
 from . import environment
+from . import gitfacts
 from . import integration as integration_contract
 
 # Tools every current workflow expects to resolve from PATH. Reported, never
@@ -23,16 +23,7 @@ from . import integration as integration_contract
 PATH_TOOLS = ("git", "cmake", "ninja", "node", "npm", "python3")
 
 
-def _git(checkout, *arguments):
-    result = subprocess.run(
-        ["git", "-C", str(checkout), *arguments],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        return None, result.stderr.strip().splitlines()[0] if result.stderr else ""
-    return result.stdout.strip(), ""
+_git = gitfacts.git_query
 
 
 def _inspect_integration(name, document):

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/revisions.schema.json",
+  "title": "Revision manifest",
+  "description": "The declared composition of one line: which integrations it selects and what each selection is. A development line may select by branch; a release line resolves to exact commits — a mutable branch name is never a release identity. Selections are exclusive: exactly one of branch or commit per integration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "line", "selections"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "line": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "The line's name; also the manifest's file name under Revisions/."
+    },
+    "selections": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "uroborOS": { "$ref": "#/$defs/selection" },
+        "HexAtlas": { "$ref": "#/$defs/selection" },
+        "Assetscape": { "$ref": "#/$defs/selection" },
+        "HolobikeCore": { "$ref": "#/$defs/selection" },
+        "AthleteIdentity": { "$ref": "#/$defs/selection" },
+        "drAIs": { "$ref": "#/$defs/selection" },
+        "HolobikeExperience": { "$ref": "#/$defs/selection" },
+        "HolobikeDevice": { "$ref": "#/$defs/selection" },
+        "HolobikeRider": { "$ref": "#/$defs/selection" },
+        "HolobikeWorlds": { "$ref": "#/$defs/selection" }
+      }
+    }
+  },
+  "$defs": {
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "branch": { "type": "string", "minLength": 1 },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "A full 40-hex commit id; abbreviations are ambiguity, not identity."
+        }
+      }
+    }
+  }
+}

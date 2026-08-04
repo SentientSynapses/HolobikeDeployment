@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "resolution",
+  "run": {
+    "verb": "resolve",
+    "started_at_utc": "2026-08-04T12:00:00+02:00",
+    "finished_at_utc": "2026-08-04T12:00:01Z"
+  },
+  "deployment": {
+    "revision": "a652f43a652f43a652f43a652f43a652f43a6520",
+    "dirty": false
+  },
+  "line": "dev",
+  "resolved": {
+    "HexAtlas": { "selected": { "branch": "main" }, "status": "resolved" }
+  },
+  "problems": []
+}

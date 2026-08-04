@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/record.schema.json",
+  "title": "Run record",
+  "description": "What one Assembler run resolved and attested. The shape follows the run-record idiom this ecosystem already proved (a run block with timing, a source-identity block, per-subject facts) hardened with provenance vocabulary: 'revision' is a full git commit id and corresponds to SLSA's digest.gitCommit; the deployment block is the record's self-identity, because a resolution that cannot identify itself is not provenance. Records are written by runs into the untracked Artifacts/ directory and are never edited; admission copies a record into Releases/, it does not rewrite one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "run", "deployment", "line", "resolved", "problems"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "kind": { "enum": ["resolution"] },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verb", "started_at_utc", "finished_at_utc"],
+      "properties": {
+        "verb": { "enum": ["resolve"] },
+        "started_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" },
+        "finished_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision", "dirty"],
+      "properties": {
+        "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "line": { "type": "string", "minLength": 1 },
+    "resolved": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "uroborOS": { "$ref": "#/$defs/resolution" },
+        "HexAtlas": { "$ref": "#/$defs/resolution" },
+        "Assetscape": { "$ref": "#/$defs/resolution" },
+        "HolobikeCore": { "$ref": "#/$defs/resolution" },
+        "AthleteIdentity": { "$ref": "#/$defs/resolution" },
+        "drAIs": { "$ref": "#/$defs/resolution" },
+        "HolobikeExperience": { "$ref": "#/$defs/resolution" },
+        "HolobikeDevice": { "$ref": "#/$defs/resolution" },
+        "HolobikeRider": { "$ref": "#/$defs/resolution" },
+        "HolobikeWorlds": { "$ref": "#/$defs/resolution" }
+      }
+    },
+    "problems": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "$defs": {
+    "resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selected", "status"],
+      "properties": {
+        "selected": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1,
+          "properties": {
+            "branch": { "type": "string", "minLength": 1 },
+            "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+          }
+        },
+        "status": {
+          "enum": ["resolved", "selection_mismatch", "unresolvable"]
+        },
+        "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "branch": { "type": "string" },
+        "dirty": { "type": "boolean" },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

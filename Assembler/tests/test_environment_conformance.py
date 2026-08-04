@@ -40,6 +40,26 @@ def validate_integration(document_path):
     )
 
 
+def validate_revisions(document_path):
+    return subprocess.run(
+        [sys.executable, str(SHIM), "resolve",
+         "--validate-revisions", str(document_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def validate_record(document_path):
+    return subprocess.run(
+        [sys.executable, str(SHIM), "resolve",
+         "--validate-record", str(document_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
 def run_fixture_corpus(test, fixtures_dir, judge):
     fixtures = sorted(fixtures_dir.iterdir())
     test.assertTrue(fixtures, "the conformance corpus must not be empty")
@@ -116,6 +136,58 @@ class IntegrationConformance(unittest.TestCase):
             with self.subTest(leaf=str(leaf.relative_to(REPO_ROOT))):
                 result = validate_integration(leaf)
                 self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class RevisionsConformance(unittest.TestCase):
+    def test_every_fixture_is_classified_and_holds(self):
+        run_fixture_corpus(
+            self, REPO_ROOT / "Conformance" / "revisions", validate_revisions)
+
+    def test_every_committed_line_is_an_accepted_fixture(self):
+        lines = sorted((REPO_ROOT / "Revisions").glob("*.json"))
+        self.assertTrue(lines, "Revisions/ must declare at least one line")
+        for line in lines:
+            with self.subTest(line=line.name):
+                result = validate_revisions(line)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                # The line's name is its file name; a manifest that
+                # disagrees with its own file is filed wrong.
+                document = json.loads(line.read_text(encoding="utf-8"))
+                self.assertEqual(document["line"], line.stem)
+
+    def test_the_binding_matches_the_schema(self):
+        sys.path.insert(0, str(REPO_ROOT / "Assembler" / "src"))
+        from holobike_assemble import environment, revisions
+
+        schema = json.loads(
+            (REPO_ROOT / "Schemas" / "revisions.schema.json")
+            .read_text(encoding="utf-8"))
+        self.assertEqual(
+            set(schema["properties"]["selections"]["properties"]),
+            set(environment.INTEGRATIONS))
+        self.assertEqual(
+            schema["properties"]["schema_version"]["const"],
+            revisions.SCHEMA_VERSION)
+
+
+class RecordConformance(unittest.TestCase):
+    def test_every_fixture_is_classified_and_holds(self):
+        run_fixture_corpus(
+            self, REPO_ROOT / "Conformance" / "record", validate_record)
+
+    def test_the_binding_matches_the_schema(self):
+        sys.path.insert(0, str(REPO_ROOT / "Assembler" / "src"))
+        from holobike_assemble import environment, record
+
+        schema = json.loads(
+            (REPO_ROOT / "Schemas" / "record.schema.json")
+            .read_text(encoding="utf-8"))
+        self.assertEqual(
+            set(schema["properties"]["resolved"]["properties"]),
+            set(environment.INTEGRATIONS))
+        self.assertEqual(
+            schema["properties"]["schema_version"]["const"],
+            record.SCHEMA_VERSION)
 
 
 if __name__ == "__main__":

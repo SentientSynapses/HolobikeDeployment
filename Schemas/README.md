@@ -8,6 +8,8 @@ must agree with it.
 |---|---|
 | `environment.schema.json` | One workstation's checkout and toolchain paths. Machine-specific: the document lives at the gitignored `.local/environment.json`, and `environment.example.json` shows its shape. |
 | `integration.schema.json` | One Stack leaf's drive contract: roster identity, kit, repository name, and repository-owned entry points (`prove` first). Instances live at `Stack/<domain>/<Integration>/integration.json`. |
+| `revisions.schema.json` | One line's declared composition: branch selections for development lines, full 40-hex commits for release lines, exactly one of the two per integration. Instances live at `Revisions/<line>.json`. |
+| `record.schema.json` | What one run resolved and attested: run timing, the deployment repository's self-identity, per-integration pins with dirty state and mismatches, and a flat problems list. Written by runs into the untracked `Artifacts/records/`, never edited. |
 
 Schemas for profiles, revision manifests, compatibility, and policy arrive
 with the workflows that read them — the first of those is the read-only

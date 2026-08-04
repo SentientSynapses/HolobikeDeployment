@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "line": "release-0-1",
+  "selections": {
+    "HexAtlas": { "commit": "0123456789abcdef0123456789abcdef01234567" }
+  }
+}

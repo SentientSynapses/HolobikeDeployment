@@ -143,9 +143,12 @@ The Assembler exists and has its first verb: read-only `preflight`
 cross-checks against the roster and the workstation's checkouts, with
 repository-owned `prove` entry points declared where they exist — an
 absent entry point is a recorded backlog item for that repository, never
-an invitation to improvise one here. The shape is settled by
-`Docs/Decisions/0001` and content continues to arrive in growth order —
-`bootstrap` and revision selection are next. One decision remains deliberately open: exactly what a release record
+an invitation to improvise one here. `Revisions/` declares the dev line, and `resolve` pins it: every run writes
+a self-validated record — exact commits, dirty state, mismatches, and the
+deployment repository's own identity — into the untracked
+`Artifacts/records/`. The shape is settled by `Docs/Decisions/0001` and
+content continues to arrive in growth order — the `Policy/` parity gates
+and `bootstrap` are next. One decision remains deliberately open: exactly what a release record
 must contain — its schema lands with the first `resolve` that writes one,
 aligned with the uroborOS-Lab run-record idiom and SLSA provenance
 vocabulary.
