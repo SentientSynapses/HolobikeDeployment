@@ -3,5 +3,14 @@
   "integration": "uroborOS",
   "kit": "os_kit",
   "repository": "uroborOS",
-  "origin": "git@github.com:Saga-Holographic/uroborOS.git"
+  "origin": "git@github.com:Saga-Holographic/uroborOS.git",
+  "entry_points": {
+    "prove": {
+      "argv": [
+        "./uroboros.sh",
+        "prove",
+        "static"
+      ]
+    }
+  }
 }
