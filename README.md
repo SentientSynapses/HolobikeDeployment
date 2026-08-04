@@ -60,9 +60,9 @@ Docs/Decisions/   why the shape is what it is
 
 Directories are created by their first content: `Revisions/`, `Policy/`, and
 `Conformance/` are described here and in `Docs/Decisions/0001` rather than
-scaffolded empty. Named product profiles and cross-repository version
-constraints (`Profiles/`, `Compatibility/`) are future kinds on the same
-terms.
+scaffolded empty. `Profiles/` — named product and simulation topologies, the
+declared answer to running the stack without a bike — and cross-repository
+version constraints (`Compatibility/`) are future kinds on the same terms.
 
 **The filing rule:** if it selects, it is a revision manifest under
 `Revisions/`; if it constrains, it is policy; if it drives one repository, it
@@ -89,6 +89,10 @@ evidence of agreement.
 
 - Declarations never execute. Executable code lives in `Assembler/`, as a
   consumer of the declarations and of repository-owned entry points.
+- Validation ownership is tiered: each repository proves its own behavior
+  in-repo; this repository proves only the composition; the transitional
+  `*-Lab` repositories are scaffolding, never load-bearing
+  (`Docs/Decisions/0002`).
 - Schemas are canonical; a validator in any language is a binding that must
   agree with them, proven by fixtures under `Conformance/`.
 - "Manifest" names exactly one declared kind — the revision manifest. A
@@ -116,12 +120,14 @@ artifact:
 2. **`preflight`** — the Assembler's first verb: discover checkouts, report
    revision and dirty state, validate tools. No side effects, so it is safe
    to build first.
-3. **Revision selection and compatibility** — a release line becomes a
+3. **`bootstrap`** — materialize declared checkouts and repository-local
+   tooling on a validated host; system tools are reported, never installed.
+4. **Revision selection and compatibility** — a release line becomes a
    reviewable diff.
-4. **`assemble` staging with an inventory and digests** — the first real
+5. **`assemble` staging with an inventory and digests** — the first real
    release record.
-5. **`emulate`** orchestrated against a recorded assembly identity.
-6. **Provisioning**, which its own README correctly blocks behind the
+6. **`emulate`** orchestrated against a recorded assembly identity.
+7. **Provisioning**, which its own README correctly blocks behind the
    uroborOS image, encrypted-root path, key custody, rollback, recovery, and
    hardware acceptance gates.
 

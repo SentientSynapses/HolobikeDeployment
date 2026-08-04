@@ -32,6 +32,16 @@ CMake, Ninja, vcpkg, Unreal Engine, virtualization, GPU tooling, storage
 capacity, and access to any explicitly selected development provider. Safe to
 run before anything is trusted, because it can change nothing.
 
+### `bootstrap` — materialize the environment
+
+Consumes the environment mapping and a revision manifest: clones missing
+checkouts, updates clean ones to declared revisions, and materializes
+repository-local tooling (vcpkg, node modules). A dirty or diverged checkout
+is reported, never reset. System-level tools — compilers, engines, drivers —
+are preflight's to report, never bootstrap's to install: host mutation
+outside the declared checkout roots requires an explicit opt-in, a line this
+ecosystem's incident history has earned.
+
 ### `resolve` — pin a declaration
 
 Reads a revision manifest under `Revisions/`, pins exact commits, dirty
@@ -58,11 +68,19 @@ AthleteIdentity's development provider, running drAIs with explicit
 development providers, and launching HolobikeExperience with a declared
 plugin and data set.
 
-Emulation orchestrates existing emulators, Labs, fixtures, and public
-control surfaces — harness logic stays with the repository that owns the
-underlying behavior unless the behavior exists only at the cross-repository
-product boundary. **Emulation targets virtual machines only, never the
-host** — a rule this ecosystem paid to learn. A run must record its assembly
+Which components run, where they run, and which simulated ports replace
+hardware is declared by a profile under `Profiles/`, not improvised by the
+tool. Emulation orchestrates repository-owned simulators, fixtures, and
+public control surfaces, consumed through the entry points each `Stack/`
+leaf declares. A simulator of one repository's behavior ships inside that
+repository as a first-class development capability — AthleteIdentity's
+LocalMock provider is the model, and simulated drivetrain and handlebar
+ports in HolobikeCore are its kinetics equivalent. Only behavior that exists
+at the cross-repository product boundary is simulated here. The transitional
+`*-Lab` repositories are never composition dependencies: needing a
+capability only a Lab holds today is a signal to promote it
+(`Docs/Decisions/0002`). **Emulation targets virtual machines only, never
+the host** — a rule this ecosystem paid to learn. A run must record its assembly
 identity, configuration, results, logs, and artifact locations, must label
 simulated capabilities clearly, and is never evidence for hardware behavior
 such as production NVIDIA, display, drivetrain, or handlebar performance.
