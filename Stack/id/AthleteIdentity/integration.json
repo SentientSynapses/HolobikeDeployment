@@ -21,7 +21,9 @@
         "--profiles-root",
         "${STATE}/profiles",
         "--provider-root",
-        "${STATE}/provider"
+        "${STATE}/provider",
+        "--endpoint",
+        "./athleteidentity.sock"
       ],
       "env": {
         "ATHLETE_IDENTITY_KEY_PROVIDER": "filesystem"
@@ -30,10 +32,10 @@
     "probe": {
       "argv": [
         "${BUNDLE}/athleteidentity_cli",
-        "--profiles-root",
-        "${STATE}/profiles",
-        "auth",
-        "health"
+        "service",
+        "probe",
+        "--endpoint",
+        "./athleteidentity.sock"
       ]
     }
   },
