@@ -19,6 +19,7 @@ distinction between development scaffolds and production-admissible modes.
 ## Validation
 
 Acceptance requires a clean selected revision, deterministic mode resolution,
-matching artifact digests, and the canonical uroborOS-Lab evidence required by
-the selected release. HoloBike Deployment must not bypass uroborOS image,
+matching artifact digests, and the validation evidence uroborOS publishes for
+the selected release — evidence owned by the repository itself, wherever it
+is produced today (`Docs/Decisions/0002`). HoloBike Deployment must not bypass uroborOS image,
 installer, graphics, boot, account, or Secret Keeper policy.
