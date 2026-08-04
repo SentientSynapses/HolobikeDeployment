@@ -5,7 +5,7 @@
   "description": "What one Assembler run resolved and attested. The shape follows the run-record idiom this ecosystem already proved (a run block with timing, a source-identity block, per-subject facts) hardened with provenance vocabulary: 'revision' is a full git commit id and corresponds to SLSA's digest.gitCommit; the deployment block is the record's self-identity, because a resolution that cannot identify itself is not provenance. Records are written by runs into the untracked Artifacts/ directory and are never edited; admission copies a record into Releases/, it does not rewrite one.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "kind", "run", "deployment", "line", "resolved", "problems"],
+  "required": ["schema_version", "kind", "run", "deployment", "line", "resolved", "gates", "problems"],
   "properties": {
     "schema_version": { "const": 1 },
     "kind": { "enum": ["resolution"] },
@@ -46,12 +46,37 @@
         "HolobikeWorlds": { "$ref": "#/$defs/resolution" }
       }
     },
+    "gates": {
+      "type": "object",
+      "description": "Verdicts from the Policy/ gates evaluated during this run, keyed by gate name. Empty when no policy is declared. A skip is a problem: a gate that silently cannot run reads as coverage that does not exist.",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9-]*$" },
+      "additionalProperties": { "$ref": "#/$defs/gate_verdict" }
+    },
     "problems": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
     }
   },
   "$defs": {
+    "gate_verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "status"],
+      "properties": {
+        "kind": { "enum": ["tree_parity"] },
+        "status": { "enum": ["pass", "fail", "skipped"] },
+        "counts": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "mismatches": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "truncated": { "type": "integer", "minimum": 0 },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    },
     "resolution": {
       "type": "object",
       "additionalProperties": false,

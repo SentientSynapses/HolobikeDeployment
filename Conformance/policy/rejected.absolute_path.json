@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "policy": "parity",
+  "gates": [
+    {
+      "name": "absolute",
+      "kind": "tree_parity",
+      "left": { "integration": "HexAtlas", "path": "/etc" },
+      "right": { "integration": "HexAtlas", "path": "ok" }
+    }
+  ]
+}

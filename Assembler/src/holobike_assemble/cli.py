@@ -11,6 +11,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from . import policy as policy_contract
 from . import preflight
 from . import record as record_contract
 from . import resolve
@@ -90,9 +91,20 @@ def _build_parser():
         help="untracked output root for records (default: Artifacts/)",
     )
     resolve_parser.add_argument(
+        "--policy",
+        default=str(REPO_ROOT / "Policy"),
+        help="directory of policy documents whose gates ride the record "
+        "(default: Policy/)",
+    )
+    resolve_parser.add_argument(
         "--validate-revisions",
         metavar="PATH",
         help="judge one revision manifest and say nothing else",
+    )
+    resolve_parser.add_argument(
+        "--validate-policy",
+        metavar="PATH",
+        help="judge one policy document and say nothing else",
     )
     resolve_parser.add_argument(
         "--validate-record",
@@ -132,6 +144,9 @@ def main(argv=None):
         if arguments.validate_record is not None:
             return _judge(
                 record_contract.load_record, arguments.validate_record)
+        if arguments.validate_policy is not None:
+            return _judge(
+                policy_contract.load_policy, arguments.validate_policy)
         revisions_path = arguments.revisions if arguments.revisions \
             else str(REPO_ROOT / "Revisions" / f"{arguments.line}.json")
         return resolve.run(
@@ -139,6 +154,7 @@ def main(argv=None):
             environment_path=arguments.environment,
             artifacts_root=arguments.artifacts,
             repo_root=REPO_ROOT,
+            policy_root=arguments.policy,
             stdout=sys.stdout,
             stderr=sys.stderr,
         )

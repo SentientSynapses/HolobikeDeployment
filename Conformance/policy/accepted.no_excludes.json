@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "policy": "strict",
+  "gates": [
+    {
+      "name": "full-tree",
+      "kind": "tree_parity",
+      "left": { "integration": "HexAtlas", "path": "AtlasSpec" },
+      "right": { "integration": "Assetscape", "path": "Spec" }
+    }
+  ]
+}

@@ -60,6 +60,16 @@ def validate_record(document_path):
     )
 
 
+def validate_policy(document_path):
+    return subprocess.run(
+        [sys.executable, str(SHIM), "resolve",
+         "--validate-policy", str(document_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
 def run_fixture_corpus(test, fixtures_dir, judge):
     fixtures = sorted(fixtures_dir.iterdir())
     test.assertTrue(fixtures, "the conformance corpus must not be empty")
@@ -168,6 +178,36 @@ class RevisionsConformance(unittest.TestCase):
         self.assertEqual(
             schema["properties"]["schema_version"]["const"],
             revisions.SCHEMA_VERSION)
+
+
+class PolicyConformance(unittest.TestCase):
+    def test_every_fixture_is_classified_and_holds(self):
+        run_fixture_corpus(
+            self, REPO_ROOT / "Conformance" / "policy", validate_policy)
+
+    def test_every_committed_policy_is_an_accepted_fixture(self):
+        policies = sorted((REPO_ROOT / "Policy").glob("*.json"))
+        self.assertTrue(policies, "Policy/ must declare at least one policy")
+        for path in policies:
+            with self.subTest(policy=path.name):
+                result = validate_policy(path)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                document = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(document["policy"], path.stem)
+
+    def test_the_binding_matches_the_schema(self):
+        sys.path.insert(0, str(REPO_ROOT / "Assembler" / "src"))
+        from holobike_assemble import environment, policy
+
+        schema = json.loads(
+            (REPO_ROOT / "Schemas" / "policy.schema.json")
+            .read_text(encoding="utf-8"))
+        self.assertEqual(
+            set(schema["$defs"]["site"]["properties"]["integration"]["enum"]),
+            set(environment.INTEGRATIONS))
+        self.assertEqual(
+            schema["properties"]["schema_version"]["const"],
+            policy.SCHEMA_VERSION)
 
 
 class RecordConformance(unittest.TestCase):

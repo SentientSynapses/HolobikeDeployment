@@ -65,11 +65,14 @@ class ResolveBehaviour(unittest.TestCase):
         return path
 
     def resolve(self, revisions_path, environment_path):
+        # An absent policy directory means no gates — these tests exercise
+        # resolution alone; gate behaviour has its own suite.
         result = run_cli(
             "resolve",
             "--revisions", str(revisions_path),
             "--environment", str(environment_path),
-            "--artifacts", str(self.artifacts))
+            "--artifacts", str(self.artifacts),
+            "--policy", str(self.root / "no-policy"))
         return result
 
     def written_record(self, result):

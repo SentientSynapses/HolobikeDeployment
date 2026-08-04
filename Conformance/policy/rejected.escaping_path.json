@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "policy": "parity",
+  "gates": [
+    {
+      "name": "escape",
+      "kind": "tree_parity",
+      "left": { "integration": "HexAtlas", "path": "../secrets" },
+      "right": { "integration": "HexAtlas", "path": "ok" }
+    }
+  ]
+}

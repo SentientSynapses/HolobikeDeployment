@@ -12,7 +12,13 @@
   },
   "line": "dev",
   "resolved": {
-    "HexAtlas": { "selected": { "branch": "main" }, "status": "fine" }
+    "HexAtlas": {
+      "selected": {
+        "branch": "main"
+      },
+      "status": "fine"
+    }
   },
-  "problems": []
+  "problems": [],
+  "gates": {}
 }

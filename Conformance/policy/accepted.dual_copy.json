@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "policy": "parity",
+  "gates": [
+    {
+      "name": "rider-dual-copy",
+      "kind": "tree_parity",
+      "left": { "integration": "HolobikeRider", "path": "HolobikeRider" },
+      "right": { "integration": "HolobikeExperience", "path": "Unreal/Plugins/HolobikeRider" },
+      "exclude": ["Binaries", "Intermediate"]
+    }
+  ]
+}

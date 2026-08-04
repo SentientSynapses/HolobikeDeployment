@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "policy": "parity",
+  "gates": [
+    {
+      "name": "endpoint",
+      "kind": "literal_parity",
+      "left": { "integration": "HolobikeCore", "path": "x" },
+      "right": { "integration": "HolobikeDevice", "path": "y" }
+    }
+  ]
+}

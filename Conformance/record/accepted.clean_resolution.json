@@ -13,12 +13,15 @@
   "line": "dev",
   "resolved": {
     "HexAtlas": {
-      "selected": { "branch": "main" },
+      "selected": {
+        "branch": "main"
+      },
       "status": "resolved",
       "revision": "0123456789abcdef0123456789abcdef01234567",
       "branch": "main",
       "dirty": false
     }
   },
-  "problems": []
+  "problems": [],
+  "gates": {}
 }

@@ -17,11 +17,15 @@ from .environment import INTEGRATIONS
 SCHEMA_VERSION = 1
 
 _ROOT_KEYS = ("schema_version", "kind", "run", "deployment", "line",
-              "resolved", "problems")
+              "resolved", "gates", "problems")
 _RUN_KEYS = ("verb", "started_at_utc", "finished_at_utc")
 _RESOLUTION_KEYS = ("selected", "status", "revision", "branch", "dirty",
                     "detail")
 _STATUSES = ("resolved", "selection_mismatch", "unresolvable")
+_GATE_KEYS = ("kind", "status", "counts", "mismatches", "truncated",
+              "detail")
+_GATE_STATUSES = ("pass", "fail", "skipped")
+_GATE_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -102,6 +106,35 @@ def _check_resolution(errors, where, value):
         _require_string(errors, f"{where}.detail", value["detail"])
 
 
+def _check_gate_verdict(errors, where, value):
+    if not isinstance(value, dict):
+        errors.append(f"{where}: must be an object")
+        return
+    _check_closed_keys(errors, where, value, _GATE_KEYS)
+    if value.get("kind") != "tree_parity":
+        errors.append(f"{where}.kind: must be tree_parity")
+    if value.get("status") not in _GATE_STATUSES:
+        errors.append(f"{where}.status: must be one of {_GATE_STATUSES}")
+    if "counts" in value:
+        counts = value["counts"]
+        if not isinstance(counts, dict) or any(
+                not isinstance(count, int) or isinstance(count, bool)
+                or count < 0 for count in counts.values()):
+            errors.append(f"{where}.counts: must map to whole numbers")
+    if "mismatches" in value and (
+            not isinstance(value["mismatches"], list) or any(
+                not isinstance(item, str) or not item
+                for item in value["mismatches"])):
+        errors.append(f"{where}.mismatches: must be non-empty strings")
+    if "truncated" in value and (
+            isinstance(value["truncated"], bool)
+            or not isinstance(value["truncated"], int)
+            or value["truncated"] < 0):
+        errors.append(f"{where}.truncated: must be a whole number")
+    if "detail" in value:
+        _require_string(errors, f"{where}.detail", value["detail"])
+
+
 def validate_record_text(text):
     """Validate one record; returns (parsed dict or None, errors)."""
     errors = []
@@ -140,6 +173,17 @@ def validate_record_text(text):
                     f"resolved.{name}: unknown name — the roster is closed")
                 continue
             _check_resolution(errors, f"resolved.{name}", resolved[name])
+
+    gate_verdicts = root["gates"]
+    if not isinstance(gate_verdicts, dict):
+        errors.append("gates: must be an object")
+    else:
+        for name in sorted(gate_verdicts):
+            if not _GATE_NAME_PATTERN.fullmatch(name):
+                errors.append(f"gates.{name}: malformed gate name")
+                continue
+            _check_gate_verdict(
+                errors, f"gates.{name}", gate_verdicts[name])
 
     problems = root["problems"]
     if not isinstance(problems, list) or any(

@@ -13,7 +13,9 @@
   "line": "dev",
   "resolved": {
     "HexAtlas": {
-      "selected": { "branch": "main" },
+      "selected": {
+        "branch": "main"
+      },
       "status": "selection_mismatch",
       "revision": "0123456789abcdef0123456789abcdef01234567",
       "branch": "feature",
@@ -21,13 +23,16 @@
       "detail": "selected branch main, checkout is on feature"
     },
     "AthleteIdentity": {
-      "selected": { "commit": "0123456789abcdef0123456789abcdef01234567" },
+      "selected": {
+        "commit": "0123456789abcdef0123456789abcdef01234567"
+      },
       "status": "unresolvable",
       "detail": "no checkout declared in the environment mapping"
     }
   },
   "problems": [
-    "HexAtlas: selection_mismatch — selected branch main, checkout is on feature",
-    "AthleteIdentity: unresolvable — no checkout declared in the environment mapping"
-  ]
+    "HexAtlas: selection_mismatch \u2014 selected branch main, checkout is on feature",
+    "AthleteIdentity: unresolvable \u2014 no checkout declared in the environment mapping"
+  ],
+  "gates": {}
 }

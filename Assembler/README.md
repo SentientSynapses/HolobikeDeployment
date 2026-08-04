@@ -141,4 +141,5 @@ python3 -m unittest discover -s Assembler/tests    # the gate
 ./Assembler/holobike-assemble resolve --line <line>
 ./Assembler/holobike-assemble resolve --validate-revisions <path>
 ./Assembler/holobike-assemble resolve --validate-record <path>
+./Assembler/holobike-assemble resolve --validate-policy <path>
 ```
