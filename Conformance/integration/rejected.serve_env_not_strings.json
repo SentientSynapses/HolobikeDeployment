@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "integration": "AthleteIdentity",
+  "kit": "id_kit",
+  "repository": "AthleteIdentity",
+  "entry_points": {
+    "serve": {
+      "argv": ["daemon"],
+      "env": { "PORT": 8080 }
+    }
+  }
+}

@@ -201,6 +201,7 @@ def run(profile_path, record_path, environment_path, stack_root,
         },
         "builds": builds,
         "artifacts": staged,
+        "bundle": str(bundle_root.relative_to(Path(artifacts_root))),
         "problems": problems,
     }
     text = json.dumps(body, indent=2, sort_keys=True) + "\n"

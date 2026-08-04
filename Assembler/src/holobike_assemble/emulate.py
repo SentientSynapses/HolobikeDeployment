@@ -1,0 +1,318 @@
+"""The emulate verb: run an assembly and watch it answer.
+
+Emulate consumes the bundle, never the workstation: serve and probe argvs
+reference ${BUNDLE} (the member's staged artifacts) and ${STATE} (a
+per-member writable root), so a member that cannot run from its bundle is
+an incomplete bundle — and this is the verb that catches it. Members spawn
+as host processes, readiness is the member's own probe answering, one
+settle pass proves coexistence, and teardown is guaranteed: a failed
+emulation still reaps its children and still writes its record.
+"""
+
+from __future__ import annotations
+
+import datetime
+import json
+import os
+import subprocess
+import time
+from pathlib import Path
+
+from . import gitfacts
+from . import integration as integration_contract
+from . import profiles as profiles_contract
+from . import record as record_contract
+
+PROBE_INTERVAL_SECONDS = 0.25
+PROBE_ATTEMPT_TIMEOUT_SECONDS = 10.0
+
+_PROBLEM_STATUSES = ("skipped", "spawn_failed", "exited_early",
+                     "never_ready", "failed_settle", "unclean_shutdown")
+
+
+def _utc_now():
+    return datetime.datetime.now(datetime.timezone.utc).strftime(
+        "%Y-%m-%dT%H:%M:%SZ")
+
+
+def _load_leaves(stack_root, stderr):
+    leaves = {}
+    for leaf_path in sorted(Path(stack_root).glob("**/integration.json")):
+        document, errors = integration_contract.load_integration(leaf_path)
+        if document is None:
+            for error in errors:
+                print(f"{leaf_path}: {error}", file=stderr)
+            return None
+        leaves[document.integration] = document
+    return leaves
+
+
+def _substitute(value, bundle_dir, state_dir):
+    return value.replace("${BUNDLE}", str(bundle_dir)) \
+                .replace("${STATE}", str(state_dir))
+
+
+def _substitute_command(command, overlay, bundle_dir, state_dir):
+    argv = [_substitute(item, bundle_dir, state_dir)
+            for item in command.argv]
+    env = {key: _substitute(entry, bundle_dir, state_dir)
+           for key, entry in command.env}
+    for key, entry in overlay.items():
+        env[key] = _substitute(entry, bundle_dir, state_dir)
+    return argv, env
+
+
+def _probe_once(argv, env, state_dir):
+    merged = dict(os.environ)
+    merged.update(env)
+    try:
+        completed = subprocess.run(
+            argv, cwd=state_dir, env=merged, capture_output=True,
+            timeout=PROBE_ATTEMPT_TIMEOUT_SECONDS, check=False)
+        return completed.returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+class _Member:
+    """One spawned member's lifecycle state — not a public surface."""
+
+    def __init__(self, name):
+        self.name = name
+        self.facts = {}
+        self.process = None
+        self.probe_argv = None
+        self.probe_env = {}
+        self.state_dir = None
+        self.ready = False
+
+
+def _spawn_and_await(member, leaf, topology, bundle_root, run_root,
+                     ready_timeout):
+    facts = member.facts
+    facts["run"] = topology.run
+    if not leaf.serve.argv:
+        facts["status"] = "skipped"
+        facts["detail"] = "no serve entry point declared in the Stack leaf"
+        return
+    if not leaf.probe.argv:
+        facts["status"] = "skipped"
+        facts["detail"] = "no probe entry point declared in the Stack leaf"
+        return
+
+    bundle_dir = Path(bundle_root) / member.name
+    referenced = any(
+        "${BUNDLE}" in item
+        for item in list(leaf.serve.argv) + list(leaf.probe.argv))
+    if referenced and not bundle_dir.is_dir():
+        facts["status"] = "spawn_failed"
+        facts["detail"] = "member is absent from the bundle"
+        return
+
+    member.state_dir = run_root / "members" / member.name
+    member.state_dir.mkdir(parents=True, exist_ok=True)
+    serve_argv, serve_env = _substitute_command(
+        leaf.serve, topology.environment, bundle_dir, member.state_dir)
+    member.probe_argv, member.probe_env = _substitute_command(
+        leaf.probe, topology.environment, bundle_dir, member.state_dir)
+    facts["serve"] = {"argv": serve_argv, "env": serve_env}
+
+    log_path = run_root / "logs" / f"{member.name}.serve.log"
+    facts["log"] = str(log_path.relative_to(run_root))
+    merged = dict(os.environ)
+    merged.update(serve_env)
+    log = open(log_path, "wb")
+    try:
+        member.process = subprocess.Popen(
+            serve_argv, cwd=member.state_dir, env=merged,
+            stdout=log, stderr=subprocess.STDOUT)
+    except OSError as error:
+        log.close()
+        facts["status"] = "spawn_failed"
+        facts["detail"] = str(error)
+        return
+
+    attempts = 0
+    started = time.monotonic()
+    deadline = started + ready_timeout
+    while time.monotonic() < deadline:
+        exited = member.process.poll()
+        if exited is not None:
+            facts["status"] = "exited_early"
+            facts["detail"] = f"serve exited {exited} before ready"
+            facts["probe"] = {"attempts": attempts}
+            return
+        attempts += 1
+        if _probe_once(member.probe_argv, member.probe_env,
+                       member.state_dir):
+            member.ready = True
+            facts["probe"] = {
+                "attempts": attempts,
+                "ready_after_ms": int(
+                    (time.monotonic() - started) * 1000),
+            }
+            return
+        time.sleep(PROBE_INTERVAL_SECONDS)
+    facts["status"] = "never_ready"
+    facts["detail"] = f"probe never passed within {ready_timeout:g}s"
+    facts["probe"] = {"attempts": attempts}
+
+
+def _teardown(member, grace):
+    """Reap one member; records shutdown facts. Never raises."""
+    process = member.process
+    if process is None:
+        return
+    if process.poll() is not None:
+        return
+    clean = True
+    process.terminate()
+    try:
+        process.wait(timeout=grace)
+    except subprocess.TimeoutExpired:
+        clean = False
+        process.kill()
+        process.wait()
+    member.facts["shutdown"] = {"clean": clean}
+    if not clean:
+        member.facts["shutdown"]["detail"] = (
+            f"ignored SIGTERM for {grace:g}s; killed")
+
+
+def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
+        ready_timeout, terminate_grace, stdout, stderr):
+    """Execute emulate; returns the process exit code.
+
+    0: every member healthy — ready, settled, cleanly shut down.
+    1: record written, problems inside it.
+    2: an input was refused (or the record could not be written).
+    """
+    started = _utc_now()
+
+    assembly, errors = record_contract.load_record(record_path)
+    if errors:
+        for error in errors:
+            print(error, file=stderr)
+        return 2
+    if assembly["kind"] != "assembly":
+        print(
+            f"{record_path}: emulate consumes an assembly record, got "
+            f"kind {assembly['kind']}", file=stderr)
+        return 2
+    bundle_root = Path(artifacts_root) / assembly["bundle"]
+    if not bundle_root.is_dir():
+        print(f"bundle directory missing: {bundle_root} — assemble again",
+              file=stderr)
+        return 2
+    profile_path = Path(profiles_root) / f"{assembly['profile']}.json"
+    profile, errors = profiles_contract.load_profile(profile_path)
+    if errors:
+        for error in errors:
+            print(f"{profile_path}: {error}", file=stderr)
+        return 2
+    leaves = _load_leaves(stack_root, stderr)
+    if leaves is None:
+        return 2
+    deployment_revision, error = gitfacts.git_query(
+        repo_root, "rev-parse", "HEAD")
+    if deployment_revision is None:
+        print(f"deployment identity: {error}", file=stderr)
+        return 2
+    porcelain, _ = gitfacts.git_query(repo_root, "status", "--porcelain")
+
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
+        "%Y%m%dT%H%M%S%fZ")
+    run_root = Path(artifacts_root) / "emulations" \
+        / f"{profile.profile}-{stamp}"
+    (run_root / "logs").mkdir(parents=True, exist_ok=True)
+
+    members = []
+    try:
+        for name in profile.integrations:
+            member = _Member(name)
+            members.append(member)
+            topology = profile.topology.get(name)
+            if topology is None:
+                member.facts["run"] = "host"
+                member.facts["status"] = "skipped"
+                member.facts["detail"] = \
+                    "no topology declared for this member"
+                continue
+            leaf = leaves.get(name)
+            if leaf is None:
+                member.facts["run"] = topology.run
+                member.facts["status"] = "skipped"
+                member.facts["detail"] = "no Stack leaf found"
+                continue
+            _spawn_and_await(
+                member, leaf, topology, bundle_root, run_root,
+                ready_timeout)
+
+        # The settle pass: every ready member must still answer once all of
+        # them are up — coexistence, not just startup.
+        for member in members:
+            if member.ready:
+                if not _probe_once(member.probe_argv, member.probe_env,
+                                   member.state_dir):
+                    member.ready = False
+                    member.facts["status"] = "failed_settle"
+                    member.facts["detail"] = \
+                        "probe failed once every member was up"
+    finally:
+        for member in reversed(members):
+            _teardown(member, terminate_grace)
+
+    for member in members:
+        if "status" not in member.facts:
+            shutdown = member.facts.get("shutdown", {"clean": True})
+            member.facts["status"] = \
+                "healthy" if shutdown["clean"] else "unclean_shutdown"
+
+    problems = [
+        f"{member.name}: {member.facts['status']} — "
+        f"{member.facts.get('detail', '')}".rstrip(" —")
+        for member in members
+        if member.facts["status"] in _PROBLEM_STATUSES
+    ]
+
+    body = {
+        "schema_version": record_contract.SCHEMA_VERSION,
+        "kind": "emulation",
+        "run": {
+            "verb": "emulate",
+            "started_at_utc": started,
+            "finished_at_utc": _utc_now(),
+        },
+        "deployment": {
+            "revision": deployment_revision,
+            "dirty": bool(porcelain),
+        },
+        "line": assembly["line"],
+        "profile": profile.profile,
+        "assembly": {
+            "record": Path(record_path).name,
+            "bundle": assembly["bundle"],
+        },
+        "members": {member.name: member.facts for member in members},
+        "problems": problems,
+    }
+    text = json.dumps(body, indent=2, sort_keys=True) + "\n"
+    _, errors = record_contract.validate_record_text(text)
+    if errors:
+        for error in errors:
+            print(f"record self-validation: {error}", file=stderr)
+        return 2
+
+    records_root = Path(artifacts_root) / "records"
+    records_root.mkdir(parents=True, exist_ok=True)
+    record_file = records_root \
+        / f"emulate-{profile.profile}-{stamp}.json"
+    record_file.write_text(text, encoding="utf-8")
+
+    print(f"run: {run_root}", file=stdout)
+    print(f"record: {record_file}", file=stdout)
+    for member in members:
+        print(f"{member.name}: {member.facts['status']}", file=stdout)
+    for problem in problems:
+        print(f"problem: {problem}", file=stdout)
+    return 1 if problems else 0

@@ -1,5 +1,12 @@
 {
   "schema_version": 1,
   "profile": "services",
-  "integrations": ["AthleteIdentity"]
+  "integrations": [
+    "AthleteIdentity"
+  ],
+  "topology": {
+    "AthleteIdentity": {
+      "run": "host"
+    }
+  }
 }

@@ -21,7 +21,10 @@
       "status": "built",
       "steps": [
         {
-          "argv": ["./IdentityClient/identityclient.sh", "build"],
+          "argv": [
+            "./IdentityClient/identityclient.sh",
+            "build"
+          ],
           "exit": 0,
           "log": "logs/AthleteIdentity-step0.log"
         }
@@ -43,6 +46,7 @@
     ]
   },
   "problems": [
-    "HolobikeCore: skipped — no build entry point declared"
-  ]
+    "HolobikeCore: skipped \u2014 no build entry point declared"
+  ],
+  "bundle": "bundles/services-20260804T120000000000Z"
 }

@@ -20,7 +20,15 @@ KITS = ("ai_kit", "bike_kit", "geo_kit", "id_kit", "os_kit", "ue_kit")
 
 _ROOT_KEYS = ("schema_version", "integration", "kit", "repository",
               "origin", "entry_points", "artifacts")
-_ENTRY_POINTS = ("prove", "build")
+_ENTRY_POINTS = ("prove", "build", "serve", "probe")
+
+
+@dataclass(frozen=True)
+class Command:
+    """One declared command: argv, executed without a shell, plus a
+    non-secret environment overlay."""
+    argv: tuple = ()
+    env: tuple = ()  # sorted (key, value) pairs; hashable for frozen use
 
 
 @dataclass(frozen=True)
@@ -32,6 +40,8 @@ class IntegrationDocument:
     prove_argv: tuple = ()
     build_steps: tuple = ()
     artifacts: tuple = ()
+    serve: Command = Command()
+    probe: Command = Command()
 
 
 def _check_repository_name(errors, value):
@@ -54,12 +64,42 @@ def _check_argv(errors, where, value):
     return tuple(value)
 
 
+def _check_environment_map(errors, where, value):
+    if not isinstance(value, dict):
+        errors.append(f"{where}: must be an object")
+        return ()
+    for key, entry in sorted(value.items()):
+        if not key or not isinstance(entry, str):
+            errors.append(
+                f"{where}: keys must be non-empty and values must be "
+                "strings")
+            return ()
+    return tuple(sorted(value.items()))
+
+
+def _check_command(errors, where, value):
+    """A serve/probe entry: {argv, env?}; returns a Command."""
+    if not isinstance(value, dict):
+        errors.append(f"{where}: must be an object")
+        return Command()
+    for key in sorted(value):
+        if key not in ("argv", "env"):
+            errors.append(f"{where}.{key}: unknown name")
+    argv = _check_argv(errors, f"{where}.argv", value.get("argv"))
+    env = ()
+    if "env" in value:
+        env = _check_environment_map(errors, f"{where}.env", value["env"])
+    return Command(argv=argv, env=env)
+
+
 def _check_entry_points(errors, value):
     prove_argv = ()
     build_steps = ()
+    serve = Command()
+    probe = Command()
     if not isinstance(value, dict):
         errors.append("entry_points: must be an object")
-        return prove_argv, build_steps
+        return prove_argv, build_steps, serve, probe
     for key in sorted(value):
         if key not in _ENTRY_POINTS:
             errors.append(f"entry_points.{key}: unknown name")
@@ -98,7 +138,11 @@ def _check_entry_points(errors, value):
                     if argv:
                         collected.append(argv)
                 build_steps = tuple(collected)
-    return prove_argv, build_steps
+    if "serve" in value:
+        serve = _check_command(errors, "entry_points.serve", value["serve"])
+    if "probe" in value:
+        probe = _check_command(errors, "entry_points.probe", value["probe"])
+    return prove_argv, build_steps, serve, probe
 
 
 def _check_artifacts(errors, value):
@@ -170,8 +214,10 @@ def validate_integration_text(text):
 
     prove_argv = ()
     build_steps = ()
+    serve = Command()
+    probe = Command()
     if "entry_points" in root:
-        prove_argv, build_steps = _check_entry_points(
+        prove_argv, build_steps, serve, probe = _check_entry_points(
             errors, root["entry_points"])
 
     artifacts = ()
@@ -188,6 +234,8 @@ def validate_integration_text(text):
         prove_argv=prove_argv,
         build_steps=build_steps,
         artifacts=artifacts,
+        serve=serve,
+        probe=probe,
     ), []
 
 

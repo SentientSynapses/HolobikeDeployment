@@ -13,6 +13,7 @@ from pathlib import Path
 
 from . import assemble
 from . import bootstrap
+from . import emulate
 from . import policy as policy_contract
 from . import profiles as profiles_contract
 from . import preflight
@@ -194,12 +195,53 @@ def _build_parser():
         metavar="PATH",
         help="judge one profile document and say nothing else",
     )
+
+    emulate_parser = verbs.add_parser(
+        "emulate",
+        help="run an assembly's members from the bundle, wait for their "
+        "probes, prove coexistence, tear down, and record the verdicts",
+    )
+    emulate_parser.add_argument(
+        "--record",
+        metavar="PATH",
+        help="the assembly record to emulate "
+        "(default: the newest assemble record under Artifacts/records/)",
+    )
+    emulate_parser.add_argument(
+        "--stack",
+        default=str(DEFAULT_STACK),
+        help="path to the Stack tree of integration contracts "
+        "(default: Stack/)",
+    )
+    emulate_parser.add_argument(
+        "--profiles",
+        default=str(REPO_ROOT / "Profiles"),
+        help="directory of profile documents (default: Profiles/)",
+    )
+    emulate_parser.add_argument(
+        "--artifacts",
+        default=str(REPO_ROOT / "Artifacts"),
+        help="untracked root holding the bundle and receiving run "
+        "directories and records (default: Artifacts/)",
+    )
+    emulate_parser.add_argument(
+        "--ready-timeout",
+        type=float,
+        default=30.0,
+        help="seconds to wait for a member's probe to pass (default: 30)",
+    )
+    emulate_parser.add_argument(
+        "--terminate-grace",
+        type=float,
+        default=5.0,
+        help="seconds between SIGTERM and SIGKILL at teardown (default: 5)",
+    )
     return parser
 
 
-def _newest_resolution_record(artifacts_root):
+def _newest_record(artifacts_root, pattern):
     records = sorted(
-        Path(artifacts_root).glob("records/resolve-*.json"),
+        Path(artifacts_root).glob(f"records/{pattern}"),
         key=lambda path: path.name)
     return records[-1] if records else None
 
@@ -268,7 +310,7 @@ def main(argv=None):
             else str(REPO_ROOT / "Profiles" / f"{arguments.profile}.json")
         record_path = arguments.record
         if record_path is None:
-            newest = _newest_resolution_record(arguments.artifacts)
+            newest = _newest_record(arguments.artifacts, "resolve-*.json")
             if newest is None:
                 print(
                     "no resolution record under Artifacts/records/ — "
@@ -282,6 +324,27 @@ def main(argv=None):
             stack_root=arguments.stack,
             artifacts_root=arguments.artifacts,
             repo_root=REPO_ROOT,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+        )
+    if arguments.verb == "emulate":
+        record_path = arguments.record
+        if record_path is None:
+            newest = _newest_record(arguments.artifacts, "assemble-*.json")
+            if newest is None:
+                print(
+                    "no assembly record under Artifacts/records/ — "
+                    "run assemble first", file=sys.stderr)
+                return 2
+            record_path = str(newest)
+        return emulate.run(
+            record_path=record_path,
+            stack_root=arguments.stack,
+            profiles_root=arguments.profiles,
+            artifacts_root=arguments.artifacts,
+            repo_root=REPO_ROOT,
+            ready_timeout=arguments.ready_timeout,
+            terminate_grace=arguments.terminate_grace,
             stdout=sys.stdout,
             stderr=sys.stderr,
         )

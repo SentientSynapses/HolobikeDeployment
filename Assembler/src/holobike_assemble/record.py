@@ -23,13 +23,20 @@ _BASE_KEYS = ("schema_version", "kind", "run", "deployment", "line",
 _KIND_KEYS = {
     "resolution": ("resolved", "gates"),
     "bootstrap": ("actions",),
-    "assembly": ("profile", "resolution", "builds", "artifacts"),
+    "assembly": ("profile", "resolution", "builds", "artifacts", "bundle"),
+    "emulation": ("profile", "assembly", "members"),
 }
 _KIND_VERBS = {
     "resolution": "resolve",
     "bootstrap": "bootstrap",
     "assembly": "assemble",
+    "emulation": "emulate",
 }
+_MEMBER_KEYS = ("status", "run", "serve", "probe", "log", "shutdown",
+                "detail")
+_MEMBER_STATUSES = ("healthy", "skipped", "spawn_failed", "exited_early",
+                    "never_ready", "failed_settle", "unclean_shutdown")
+_RUN_MODES = ("host",)
 _BUILD_KEYS = ("status", "steps", "detail")
 _BUILD_STATUSES = ("built", "failed", "skipped")
 _STEP_KEYS = ("argv", "exit", "log")
@@ -221,6 +228,70 @@ def _check_staged_artifacts(errors, where, value):
             errors.append(f"{entry_where}.bytes: must be a whole number")
 
 
+def _check_member(errors, where, value):
+    if not isinstance(value, dict):
+        errors.append(f"{where}: must be an object")
+        return
+    _check_closed_keys(errors, where, value, _MEMBER_KEYS)
+    if value.get("status") not in _MEMBER_STATUSES:
+        errors.append(f"{where}.status: must be one of {_MEMBER_STATUSES}")
+    if value.get("run") not in _RUN_MODES:
+        errors.append(f"{where}.run: must be one of {_RUN_MODES}")
+    if "serve" in value:
+        serve = value["serve"]
+        if not isinstance(serve, dict):
+            errors.append(f"{where}.serve: must be an object")
+        else:
+            _check_closed_keys(
+                errors, f"{where}.serve", serve, ("argv", "env"))
+            argv = serve.get("argv")
+            if not isinstance(argv, list) or not argv or any(
+                    not isinstance(item, str) or not item for item in argv):
+                errors.append(
+                    f"{where}.serve.argv: must be non-empty strings")
+            env = serve.get("env", {})
+            if not isinstance(env, dict) or any(
+                    not key or not isinstance(entry, str)
+                    for key, entry in env.items()):
+                errors.append(f"{where}.serve.env: must map names to strings")
+    if "probe" in value:
+        probe = value["probe"]
+        if not isinstance(probe, dict):
+            errors.append(f"{where}.probe: must be an object")
+        else:
+            _check_closed_keys(
+                errors, f"{where}.probe", probe,
+                ("attempts", "ready_after_ms"))
+            attempts = probe.get("attempts")
+            if isinstance(attempts, bool) or not isinstance(attempts, int) \
+                    or attempts < 0:
+                errors.append(
+                    f"{where}.probe.attempts: must be a whole number")
+            if "ready_after_ms" in probe:
+                ready = probe["ready_after_ms"]
+                if isinstance(ready, bool) or not isinstance(ready, int) \
+                        or ready < 0:
+                    errors.append(
+                        f"{where}.probe.ready_after_ms: must be a whole "
+                        "number")
+    if "log" in value:
+        _require_string(errors, f"{where}.log", value["log"])
+    if "shutdown" in value:
+        shutdown = value["shutdown"]
+        if not isinstance(shutdown, dict):
+            errors.append(f"{where}.shutdown: must be an object")
+        else:
+            _check_closed_keys(
+                errors, f"{where}.shutdown", shutdown, ("clean", "detail"))
+            if not isinstance(shutdown.get("clean"), bool):
+                errors.append(f"{where}.shutdown.clean: must be a boolean")
+            if "detail" in shutdown:
+                _require_string(
+                    errors, f"{where}.shutdown.detail", shutdown["detail"])
+    if "detail" in value:
+        _require_string(errors, f"{where}.detail", value["detail"])
+
+
 def validate_record_text(text):
     """Validate one record; returns (parsed dict or None, errors)."""
     errors = []
@@ -327,6 +398,38 @@ def validate_record_text(text):
                     continue
                 _check_staged_artifacts(
                     errors, f"artifacts.{name}", staged[name])
+        bundle = root["bundle"]
+        if not isinstance(bundle, str) or not bundle \
+                or bundle.startswith("/"):
+            errors.append(
+                "bundle: must be a non-empty artifacts-relative path")
+
+    if kind == "emulation":
+        profile = root["profile"]
+        if not isinstance(profile, str) \
+                or not _SLUG_PATTERN.fullmatch(profile):
+            errors.append("profile: must match ^[a-z0-9][a-z0-9-]*$")
+        assembly = root["assembly"]
+        if not isinstance(assembly, dict):
+            errors.append("assembly: must be an object")
+        else:
+            _check_closed_keys(
+                errors, "assembly", assembly, ("record", "bundle"))
+            _require_string(errors, "assembly.record",
+                            assembly.get("record"))
+            _require_string(errors, "assembly.bundle",
+                            assembly.get("bundle"))
+        members = root["members"]
+        if not isinstance(members, dict) or not members:
+            errors.append("members: must be a non-empty object")
+        else:
+            for name in sorted(members):
+                if name not in INTEGRATIONS:
+                    errors.append(
+                        f"members.{name}: unknown name — the roster is "
+                        "closed")
+                    continue
+                _check_member(errors, f"members.{name}", members[name])
 
     problems = root["problems"]
     if not isinstance(problems, list) or any(

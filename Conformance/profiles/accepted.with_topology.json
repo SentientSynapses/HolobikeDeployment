@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "profile": "dev-sim",
+  "integrations": ["AthleteIdentity", "HolobikeCore"],
+  "topology": {
+    "AthleteIdentity": { "run": "host", "environment": { "LOG_LEVEL": "debug" } }
+  }
+}

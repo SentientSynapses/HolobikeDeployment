@@ -32,6 +32,36 @@
           "HolobikeWorlds"
         ]
       }
+    },
+    "topology": {
+      "type": "object",
+      "description": "How emulate runs each member: keys must be members of this profile's integrations (the binding enforces the subset), values declare the run mode and a non-secret environment overlay. host is the only mode today; vm arrives with the promoted uroborOS validation surface.",
+      "propertyNames": {
+        "enum": [
+          "uroborOS",
+          "HexAtlas",
+          "Assetscape",
+          "HolobikeCore",
+          "AthleteIdentity",
+          "drAIs",
+          "HolobikeExperience",
+          "HolobikeDevice",
+          "HolobikeRider",
+          "HolobikeWorlds"
+        ]
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "run": { "enum": ["host"] },
+          "environment": {
+            "type": "object",
+            "propertyNames": { "minLength": 1 },
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      }
     }
   }
 }

@@ -17,12 +17,20 @@
     "line": "dev"
   },
   "builds": {
-    "AthleteIdentity": { "status": "built", "steps": [] }
+    "AthleteIdentity": {
+      "status": "built",
+      "steps": []
+    }
   },
   "artifacts": {
     "AthleteIdentity": [
-      { "path": "AthleteIdentity/x", "sha256": "abc123", "bytes": 1 }
+      {
+        "path": "AthleteIdentity/x",
+        "sha256": "abc123",
+        "bytes": 1
+      }
     ]
   },
-  "problems": []
+  "problems": [],
+  "bundle": "bundles/services-20260804T120000000000Z"
 }

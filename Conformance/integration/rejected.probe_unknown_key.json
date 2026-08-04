@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "integration": "AthleteIdentity",
+  "kit": "id_kit",
+  "repository": "AthleteIdentity",
+  "entry_points": {
+    "probe": {
+      "argv": ["check"],
+      "retries": 3
+    }
+  }
+}

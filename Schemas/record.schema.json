@@ -13,7 +13,8 @@
         "required": ["resolved", "gates"],
         "properties": { "actions": false, "profile": false,
                         "builds": false, "artifacts": false,
-                        "resolution": false }
+                        "resolution": false, "bundle": false,
+                        "assembly": false, "members": false }
       }
     },
     {
@@ -22,27 +23,41 @@
         "required": ["actions"],
         "properties": { "resolved": false, "gates": false,
                         "profile": false, "builds": false,
-                        "artifacts": false, "resolution": false }
+                        "artifacts": false, "resolution": false,
+                        "bundle": false, "assembly": false,
+                        "members": false }
       }
     },
     {
       "if": { "properties": { "kind": { "const": "assembly" } } },
       "then": {
-        "required": ["profile", "resolution", "builds", "artifacts"],
+        "required": ["profile", "resolution", "builds", "artifacts",
+                     "bundle"],
         "properties": { "resolved": false, "gates": false,
-                        "actions": false }
+                        "actions": false, "assembly": false,
+                        "members": false }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "emulation" } } },
+      "then": {
+        "required": ["profile", "assembly", "members"],
+        "properties": { "resolved": false, "gates": false,
+                        "actions": false, "resolution": false,
+                        "builds": false, "artifacts": false,
+                        "bundle": false }
       }
     }
   ],
   "properties": {
     "schema_version": { "const": 1 },
-    "kind": { "enum": ["resolution", "bootstrap", "assembly"] },
+    "kind": { "enum": ["resolution", "bootstrap", "assembly", "emulation"] },
     "run": {
       "type": "object",
       "additionalProperties": false,
       "required": ["verb", "started_at_utc", "finished_at_utc"],
       "properties": {
-        "verb": { "enum": ["resolve", "bootstrap", "assemble"] },
+        "verb": { "enum": ["resolve", "bootstrap", "assemble", "emulate"] },
         "started_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" },
         "finished_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" }
       }
@@ -135,12 +150,86 @@
         "items": { "$ref": "#/$defs/staged_artifact" }
       }
     },
+    "bundle": {
+      "type": "string",
+      "minLength": 1,
+      "description": "assembly records only: the bundle directory this run staged, relative to the artifacts root."
+    },
+    "assembly": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record", "bundle"],
+      "description": "emulation records only: the assembly this run executed — the chain reads emulation → assembly → resolution → declaration, and no step can lie about its parent.",
+      "properties": {
+        "record": { "type": "string", "minLength": 1 },
+        "bundle": { "type": "string", "minLength": 1 }
+      }
+    },
+    "members": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
+                 "AthleteIdentity", "drAIs", "HolobikeExperience",
+                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds"]
+      },
+      "additionalProperties": { "$ref": "#/$defs/member" }
+    },
     "problems": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
     }
   },
   "$defs": {
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "run"],
+      "properties": {
+        "status": {
+          "enum": ["healthy", "skipped", "spawn_failed", "exited_early",
+                   "never_ready", "failed_settle", "unclean_shutdown"]
+        },
+        "run": { "enum": ["host"] },
+        "serve": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["argv"],
+          "properties": {
+            "argv": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "env": {
+              "type": "object",
+              "propertyNames": { "minLength": 1 },
+              "additionalProperties": { "type": "string" }
+            }
+          }
+        },
+        "probe": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["attempts"],
+          "properties": {
+            "attempts": { "type": "integer", "minimum": 0 },
+            "ready_after_ms": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "log": { "type": "string", "minLength": 1 },
+        "shutdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["clean"],
+          "properties": {
+            "clean": { "type": "boolean" },
+            "detail": { "type": "string", "minLength": 1 }
+          }
+        },
+        "detail": { "type": "string", "minLength": 1 }
+      }
+    },
     "build_result": {
       "type": "object",
       "additionalProperties": false,

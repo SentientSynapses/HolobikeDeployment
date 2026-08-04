@@ -17,9 +17,13 @@
     "line": "dev"
   },
   "builds": {
-    "AthleteIdentity": { "status": "built", "steps": [] }
+    "AthleteIdentity": {
+      "status": "built",
+      "steps": []
+    }
   },
   "artifacts": {},
   "resolved": {},
-  "problems": []
+  "problems": [],
+  "bundle": "bundles/services-20260804T120000000000Z"
 }

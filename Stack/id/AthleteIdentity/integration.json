@@ -14,6 +14,27 @@
           ]
         }
       ]
+    },
+    "serve": {
+      "argv": [
+        "${BUNDLE}/athleteidentity_service",
+        "--profiles-root",
+        "${STATE}/profiles",
+        "--provider-root",
+        "${STATE}/provider"
+      ],
+      "env": {
+        "ATHLETE_IDENTITY_KEY_PROVIDER": "filesystem"
+      }
+    },
+    "probe": {
+      "argv": [
+        "${BUNDLE}/athleteidentity_cli",
+        "--profiles-root",
+        "${STATE}/profiles",
+        "auth",
+        "health"
+      ]
     }
   },
   "artifacts": [
