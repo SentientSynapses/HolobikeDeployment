@@ -11,8 +11,10 @@ import argparse
 import sys
 from pathlib import Path
 
+from . import assemble
 from . import bootstrap
 from . import policy as policy_contract
+from . import profiles as profiles_contract
 from . import preflight
 from . import record as record_contract
 from . import resolve
@@ -146,7 +148,60 @@ def _build_parser():
         metavar="PATH",
         help="judge one run record and say nothing else",
     )
+
+    assemble_parser = verbs.add_parser(
+        "assemble",
+        help="stage a product bundle: run each profile member's declared "
+        "build steps and stage its artifacts, digested, into Artifacts/",
+    )
+    assemble_parser.add_argument(
+        "--profile",
+        default="services",
+        help="the profile to assemble: Profiles/<profile>.json "
+        "(default: services)",
+    )
+    assemble_parser.add_argument(
+        "--profile-path",
+        metavar="PATH",
+        help="explicit profile path (overrides --profile)",
+    )
+    assemble_parser.add_argument(
+        "--record",
+        metavar="PATH",
+        help="the resolution record to build from "
+        "(default: the newest resolve record under Artifacts/records/)",
+    )
+    assemble_parser.add_argument(
+        "--environment",
+        default=str(DEFAULT_ENVIRONMENT),
+        help="path to the environment mapping "
+        "(default: .local/environment.json)",
+    )
+    assemble_parser.add_argument(
+        "--stack",
+        default=str(DEFAULT_STACK),
+        help="path to the Stack tree of integration contracts "
+        "(default: Stack/)",
+    )
+    assemble_parser.add_argument(
+        "--artifacts",
+        default=str(REPO_ROOT / "Artifacts"),
+        help="untracked output root for bundles and records "
+        "(default: Artifacts/)",
+    )
+    assemble_parser.add_argument(
+        "--validate-profile",
+        metavar="PATH",
+        help="judge one profile document and say nothing else",
+    )
     return parser
+
+
+def _newest_resolution_record(artifacts_root):
+    records = sorted(
+        Path(artifacts_root).glob("records/resolve-*.json"),
+        key=lambda path: path.name)
+    return records[-1] if records else None
 
 
 def _judge(loader, path):
@@ -202,6 +257,31 @@ def main(argv=None):
             artifacts_root=arguments.artifacts,
             repo_root=REPO_ROOT,
             policy_root=arguments.policy,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+        )
+    if arguments.verb == "assemble":
+        if arguments.validate_profile is not None:
+            return _judge(
+                profiles_contract.load_profile, arguments.validate_profile)
+        profile_path = arguments.profile_path if arguments.profile_path \
+            else str(REPO_ROOT / "Profiles" / f"{arguments.profile}.json")
+        record_path = arguments.record
+        if record_path is None:
+            newest = _newest_resolution_record(arguments.artifacts)
+            if newest is None:
+                print(
+                    "no resolution record under Artifacts/records/ — "
+                    "run resolve first", file=sys.stderr)
+                return 2
+            record_path = str(newest)
+        return assemble.run(
+            profile_path=profile_path,
+            record_path=record_path,
+            environment_path=arguments.environment,
+            stack_root=arguments.stack,
+            artifacts_root=arguments.artifacts,
+            repo_root=REPO_ROOT,
             stdout=sys.stdout,
             stderr=sys.stderr,
         )

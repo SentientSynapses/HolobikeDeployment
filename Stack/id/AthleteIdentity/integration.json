@@ -3,5 +3,21 @@
   "integration": "AthleteIdentity",
   "kit": "id_kit",
   "repository": "AthleteIdentity",
-  "origin": "git@github.com:Saga-Holographic/AthleteIdentity.git"
+  "origin": "git@github.com:Saga-Holographic/AthleteIdentity.git",
+  "entry_points": {
+    "build": {
+      "steps": [
+        {
+          "argv": [
+            "./IdentityClient/identityclient.sh",
+            "build"
+          ]
+        }
+      ]
+    }
+  },
+  "artifacts": [
+    "Builds/AthleteIdentityClient_linux/bin/athleteidentity_service",
+    "Builds/AthleteIdentityClient_linux/bin/athleteidentity_cli"
+  ]
 }

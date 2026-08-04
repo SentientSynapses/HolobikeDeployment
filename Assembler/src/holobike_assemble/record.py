@@ -23,8 +23,19 @@ _BASE_KEYS = ("schema_version", "kind", "run", "deployment", "line",
 _KIND_KEYS = {
     "resolution": ("resolved", "gates"),
     "bootstrap": ("actions",),
+    "assembly": ("profile", "resolution", "builds", "artifacts"),
 }
-_KIND_VERBS = {"resolution": "resolve", "bootstrap": "bootstrap"}
+_KIND_VERBS = {
+    "resolution": "resolve",
+    "bootstrap": "bootstrap",
+    "assembly": "assemble",
+}
+_BUILD_KEYS = ("status", "steps", "detail")
+_BUILD_STATUSES = ("built", "failed", "skipped")
+_STEP_KEYS = ("argv", "exit", "log")
+_ARTIFACT_KEYS = ("path", "sha256", "bytes")
+_SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+_SLUG_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _RUN_KEYS = ("verb", "started_at_utc", "finished_at_utc")
 _ACTION_KEYS = ("status", "detail", "revision_before", "revision_after")
 _ACTION_STATUSES = (
@@ -162,6 +173,54 @@ def _check_gate_verdict(errors, where, value):
         _require_string(errors, f"{where}.detail", value["detail"])
 
 
+def _check_build(errors, where, value):
+    if not isinstance(value, dict):
+        errors.append(f"{where}: must be an object")
+        return
+    _check_closed_keys(errors, where, value, _BUILD_KEYS)
+    if value.get("status") not in _BUILD_STATUSES:
+        errors.append(f"{where}.status: must be one of {_BUILD_STATUSES}")
+    steps = value.get("steps")
+    if not isinstance(steps, list):
+        errors.append(f"{where}.steps: required array")
+    else:
+        for index, step in enumerate(steps):
+            step_where = f"{where}.steps[{index}]"
+            if not isinstance(step, dict):
+                errors.append(f"{step_where}: must be an object")
+                continue
+            _check_closed_keys(errors, step_where, step, _STEP_KEYS)
+            argv = step.get("argv")
+            if not isinstance(argv, list) or not argv or any(
+                    not isinstance(item, str) or not item for item in argv):
+                errors.append(f"{step_where}.argv: must be non-empty strings")
+            code = step.get("exit")
+            if isinstance(code, bool) or not isinstance(code, int):
+                errors.append(f"{step_where}.exit: must be an integer")
+            _require_string(errors, f"{step_where}.log", step.get("log"))
+    if "detail" in value:
+        _require_string(errors, f"{where}.detail", value["detail"])
+
+
+def _check_staged_artifacts(errors, where, value):
+    if not isinstance(value, list):
+        errors.append(f"{where}: must be an array")
+        return
+    for index, entry in enumerate(value):
+        entry_where = f"{where}[{index}]"
+        if not isinstance(entry, dict):
+            errors.append(f"{entry_where}: must be an object")
+            continue
+        _check_closed_keys(errors, entry_where, entry, _ARTIFACT_KEYS)
+        _require_string(errors, f"{entry_where}.path", entry.get("path"))
+        _require_string(
+            errors, f"{entry_where}.sha256", entry.get("sha256"),
+            _SHA256_PATTERN)
+        size = entry.get("bytes")
+        if isinstance(size, bool) or not isinstance(size, int) or size < 0:
+            errors.append(f"{entry_where}.bytes: must be a whole number")
+
+
 def validate_record_text(text):
     """Validate one record; returns (parsed dict or None, errors)."""
     errors = []
@@ -229,6 +288,45 @@ def validate_record_text(text):
                         "closed")
                     continue
                 _check_action(errors, f"actions.{name}", actions[name])
+
+    if kind == "assembly":
+        profile = root["profile"]
+        if not isinstance(profile, str) \
+                or not _SLUG_PATTERN.fullmatch(profile):
+            errors.append("profile: must match ^[a-z0-9][a-z0-9-]*$")
+        resolution = root["resolution"]
+        if not isinstance(resolution, dict):
+            errors.append("resolution: must be an object")
+        else:
+            _check_closed_keys(
+                errors, "resolution", resolution, ("record", "line"))
+            _require_string(
+                errors, "resolution.record", resolution.get("record"))
+            _require_string(errors, "resolution.line",
+                            resolution.get("line"))
+        builds = root["builds"]
+        if not isinstance(builds, dict) or not builds:
+            errors.append("builds: must be a non-empty object")
+        else:
+            for name in sorted(builds):
+                if name not in INTEGRATIONS:
+                    errors.append(
+                        f"builds.{name}: unknown name — the roster is "
+                        "closed")
+                    continue
+                _check_build(errors, f"builds.{name}", builds[name])
+        staged = root["artifacts"]
+        if not isinstance(staged, dict):
+            errors.append("artifacts: must be an object")
+        else:
+            for name in sorted(staged):
+                if name not in INTEGRATIONS:
+                    errors.append(
+                        f"artifacts.{name}: unknown name — the roster is "
+                        "closed")
+                    continue
+                _check_staged_artifacts(
+                    errors, f"artifacts.{name}", staged[name])
 
     problems = root["problems"]
     if not isinstance(problems, list) or any(

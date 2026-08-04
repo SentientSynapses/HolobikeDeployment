@@ -30,7 +30,8 @@ def _tree_files(root, exclude):
     return files
 
 
-def _sha256(path):
+def sha256_file(path):
+    """Digest one file; shared by gate comparison and artifact staging."""
     digest = hashlib.sha256()
     with open(path, "rb") as stream:
         for chunk in iter(lambda: stream.read(1 << 16), b""):
@@ -62,7 +63,8 @@ def evaluate_tree_parity(gate, checkouts):
     only_right = sorted(set(right_files) - set(left_files))
     differing = sorted(
         relative for relative in set(left_files) & set(right_files)
-        if _sha256(left_files[relative]) != _sha256(right_files[relative]))
+        if sha256_file(left_files[relative])
+        != sha256_file(right_files[relative]))
 
     mismatches = (
         [f"only left: {path}" for path in only_left]

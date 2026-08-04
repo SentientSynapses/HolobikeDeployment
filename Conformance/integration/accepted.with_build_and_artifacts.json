@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "integration": "AthleteIdentity",
+  "kit": "id_kit",
+  "repository": "AthleteIdentity",
+  "entry_points": {
+    "build": {
+      "steps": [
+        { "argv": ["./IdentityClient/identityclient.sh", "build"] }
+      ]
+    }
+  },
+  "artifacts": [
+    "Builds/AthleteIdentityClient_linux/bin/athleteidentity_service"
+  ]
+}

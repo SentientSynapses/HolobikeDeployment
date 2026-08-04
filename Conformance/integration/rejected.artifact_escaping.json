@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "integration": "AthleteIdentity",
+  "kit": "id_kit",
+  "repository": "AthleteIdentity",
+  "artifacts": ["../secrets/key.pem"]
+}

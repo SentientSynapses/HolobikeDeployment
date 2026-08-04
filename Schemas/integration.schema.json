@@ -46,14 +46,42 @@
           "additionalProperties": false,
           "required": ["argv"],
           "properties": {
-            "argv": {
+            "argv": { "$ref": "#/$defs/argv" }
+          }
+        },
+        "build": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["steps"],
+          "properties": {
+            "steps": {
               "type": "array",
               "minItems": 1,
-              "items": { "type": "string", "minLength": 1 }
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["argv"],
+                "properties": {
+                  "argv": { "$ref": "#/$defs/argv" }
+                }
+              }
             }
           }
         }
       }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Checkout-relative paths of the outputs assemble stages into a bundle after a successful build. Never absolute, never escaping.",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "$defs": {
+    "argv": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
     }
   }
 }

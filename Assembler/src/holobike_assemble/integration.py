@@ -19,8 +19,8 @@ SCHEMA_VERSION = 1
 KITS = ("ai_kit", "bike_kit", "geo_kit", "id_kit", "os_kit", "ue_kit")
 
 _ROOT_KEYS = ("schema_version", "integration", "kit", "repository",
-              "origin", "entry_points")
-_ENTRY_POINTS = ("prove",)
+              "origin", "entry_points", "artifacts")
+_ENTRY_POINTS = ("prove", "build")
 
 
 @dataclass(frozen=True)
@@ -30,6 +30,8 @@ class IntegrationDocument:
     repository: str
     origin: str = ""
     prove_argv: tuple = ()
+    build_steps: tuple = ()
+    artifacts: tuple = ()
 
 
 def _check_repository_name(errors, value):
@@ -42,11 +44,22 @@ def _check_repository_name(errors, value):
         errors.append("repository: must match ^[A-Za-z0-9._-]+$")
 
 
+def _check_argv(errors, where, value):
+    if not isinstance(value, list) or not value:
+        errors.append(f"{where}: must be a non-empty array")
+        return ()
+    if any(not isinstance(item, str) or not item for item in value):
+        errors.append(f"{where}: every element must be a non-empty string")
+        return ()
+    return tuple(value)
+
+
 def _check_entry_points(errors, value):
     prove_argv = ()
+    build_steps = ()
     if not isinstance(value, dict):
         errors.append("entry_points: must be an object")
-        return prove_argv
+        return prove_argv, build_steps
     for key in sorted(value):
         if key not in _ENTRY_POINTS:
             errors.append(f"entry_points.{key}: unknown name")
@@ -54,21 +67,55 @@ def _check_entry_points(errors, value):
         prove = value["prove"]
         if not isinstance(prove, dict):
             errors.append("entry_points.prove: must be an object")
-            return prove_argv
-        for key in sorted(prove):
-            if key != "argv":
-                errors.append(f"entry_points.prove.{key}: unknown name")
-        argv = prove.get("argv")
-        if not isinstance(argv, list) or not argv:
-            errors.append(
-                "entry_points.prove.argv: must be a non-empty array")
-        elif any(not isinstance(item, str) or not item for item in argv):
-            errors.append(
-                "entry_points.prove.argv: every element must be a "
-                "non-empty string")
         else:
-            prove_argv = tuple(argv)
-    return prove_argv
+            for key in sorted(prove):
+                if key != "argv":
+                    errors.append(f"entry_points.prove.{key}: unknown name")
+            prove_argv = _check_argv(
+                errors, "entry_points.prove.argv", prove.get("argv"))
+    if "build" in value:
+        build = value["build"]
+        if not isinstance(build, dict):
+            errors.append("entry_points.build: must be an object")
+        else:
+            for key in sorted(build):
+                if key != "steps":
+                    errors.append(f"entry_points.build.{key}: unknown name")
+            steps = build.get("steps")
+            if not isinstance(steps, list) or not steps:
+                errors.append(
+                    "entry_points.build.steps: must be a non-empty array")
+            else:
+                collected = []
+                for index, step in enumerate(steps):
+                    where = f"entry_points.build.steps[{index}]"
+                    if not isinstance(step, dict) \
+                            or sorted(step) != ["argv"]:
+                        errors.append(f"{where}: must be an object "
+                                      "with exactly argv")
+                        continue
+                    argv = _check_argv(errors, f"{where}.argv", step["argv"])
+                    if argv:
+                        collected.append(argv)
+                build_steps = tuple(collected)
+    return prove_argv, build_steps
+
+
+def _check_artifacts(errors, value):
+    if not isinstance(value, list) or not value:
+        errors.append("artifacts: must be a non-empty array")
+        return ()
+    collected = []
+    for index, path in enumerate(value):
+        where = f"artifacts[{index}]"
+        if not isinstance(path, str) or not path:
+            errors.append(f"{where}: must be a non-empty string")
+            continue
+        if path.startswith("/") or ".." in Path(path).parts:
+            errors.append(f"{where}: must be relative and must not escape")
+            continue
+        collected.append(path)
+    return tuple(collected)
 
 
 def validate_integration_text(text):
@@ -122,8 +169,14 @@ def validate_integration_text(text):
             origin = raw_origin
 
     prove_argv = ()
+    build_steps = ()
     if "entry_points" in root:
-        prove_argv = _check_entry_points(errors, root["entry_points"])
+        prove_argv, build_steps = _check_entry_points(
+            errors, root["entry_points"])
+
+    artifacts = ()
+    if "artifacts" in root:
+        artifacts = _check_artifacts(errors, root["artifacts"])
 
     if errors:
         return None, errors
@@ -133,6 +186,8 @@ def validate_integration_text(text):
         repository=root["repository"],
         origin=origin,
         prove_argv=prove_argv,
+        build_steps=build_steps,
+        artifacts=artifacts,
     ), []
 
 

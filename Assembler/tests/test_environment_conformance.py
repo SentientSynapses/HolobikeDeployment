@@ -210,6 +210,47 @@ class PolicyConformance(unittest.TestCase):
             policy.SCHEMA_VERSION)
 
 
+def validate_profile(document_path):
+    return subprocess.run(
+        [sys.executable, str(SHIM), "assemble",
+         "--validate-profile", str(document_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+class ProfilesConformance(unittest.TestCase):
+    def test_every_fixture_is_classified_and_holds(self):
+        run_fixture_corpus(
+            self, REPO_ROOT / "Conformance" / "profiles", validate_profile)
+
+    def test_every_committed_profile_is_an_accepted_fixture(self):
+        committed = sorted((REPO_ROOT / "Profiles").glob("*.json"))
+        self.assertTrue(committed,
+                        "Profiles/ must declare at least one profile")
+        for path in committed:
+            with self.subTest(profile=path.name):
+                result = validate_profile(path)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                document = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(document["profile"], path.stem)
+
+    def test_the_binding_matches_the_schema(self):
+        sys.path.insert(0, str(REPO_ROOT / "Assembler" / "src"))
+        from holobike_assemble import environment, profiles
+
+        schema = json.loads(
+            (REPO_ROOT / "Schemas" / "profiles.schema.json")
+            .read_text(encoding="utf-8"))
+        self.assertEqual(
+            set(schema["properties"]["integrations"]["items"]["enum"]),
+            set(environment.INTEGRATIONS))
+        self.assertEqual(
+            schema["properties"]["schema_version"]["const"],
+            profiles.SCHEMA_VERSION)
+
+
 class RecordConformance(unittest.TestCase):
     def test_every_fixture_is_classified_and_holds(self):
         run_fixture_corpus(

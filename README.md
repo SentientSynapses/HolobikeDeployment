@@ -149,8 +149,13 @@ deployment repository's own identity — into the untracked
 `Artifacts/records/`. `Policy/parity.json` guards the three
 Unreal plugin dual copies, and every resolution record carries the gate
 verdicts — a failed gate annotates the record; only admission refuses on
-it. The shape is settled by `Docs/Decisions/0001` and content continues to
-arrive in growth order — `bootstrap` and `assemble` are next. One decision remains deliberately open: exactly what a release record
+it. `bootstrap` materializes a line inside a bounded mutation surface
+(clone missing from declared origins, fast-forward clean-on-branch,
+report everything else untouched), and `assemble` stages profile bundles —
+repository-owned builds, digested artifacts, and an assembly record naming
+the resolution it was built from. The shape is settled by
+`Docs/Decisions/0001`; `emulate` and admission are what remain of the
+growth order. One decision remains deliberately open: exactly what a release record
 must contain — its schema lands with the first `resolve` that writes one,
 aligned with the uroborOS-Lab run-record idiom and SLSA provenance
 vocabulary.

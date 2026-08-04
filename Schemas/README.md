@@ -11,10 +11,11 @@ must agree with it.
 | `revisions.schema.json` | One line's declared composition: branch selections for development lines, full 40-hex commits for release lines, exactly one of the two per integration. Instances live at `Revisions/<line>.json`. |
 | `record.schema.json` | What one run resolved and attested: run timing, the deployment repository's self-identity, per-integration pins with dirty state and mismatches, gate verdicts, and a flat problems list. Written by runs into the untracked `Artifacts/records/`, never edited. |
 | `policy.schema.json` | Declared constraints: named gates evaluated by `resolve`, verdicts riding every record. Instances live at `Policy/<policy>.json`; today's kind is `tree_parity`. |
+| `profiles.schema.json` | A named composition of integrations — which components a bundle carries. Instances live at `Profiles/<profile>.json`; topology arrives as the kind grows. |
 
-Schemas for profiles, revision manifests, compatibility, and policy arrive
-with the workflows that read them — the first of those is the read-only
-preflight described in `Assembler/README.md`.
+A compatibility schema arrives with the workflow that reads it; everything
+else declared so far is above, each held by its corpus under
+`../Conformance/`.
 
 ## Rules
 
