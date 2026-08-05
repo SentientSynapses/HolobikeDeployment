@@ -14,7 +14,7 @@ organized by role (`Docs/Decisions/0001`).
 
 ## Responsibilities
 
-HoloBike Deployment will own:
+HoloBike Deployment owns, or is the designated owner as delivery expands:
 
 - selection of compatible source revisions;
 - cross-repository compatibility and the deployed-stack specification;
@@ -49,26 +49,26 @@ directories:
 ```text
 Stack/            declare the members: roster + per-repository integration contracts
 Revisions/        declare the composition: selected revisions per release line
+Profiles/         declare the product slice and its emulation topology
 Policy/           declare the constraints: parity and admission gates
 Schemas/          declare the shapes: canonical JSON Schema for every declared kind
 Conformance/      prove the bindings: accepted and rejected fixtures per schema
-Assembler/        realize: the one executable — preflight | resolve | assemble | emulate
+Assembler/        realize: preflight | bootstrap | resolve | assemble | emulate | admit
 Releases/         attest: admitted records, written by runs, never edited
 Provisioning/     deliver: device-facing workflows behind the admission boundary
 Docs/Decisions/   why the shape is what it is
 ```
 
-Directories are created by their first content: `Revisions/` and `Policy/`
-are described here and in `Docs/Decisions/0001` rather than scaffolded
-empty. `Profiles/` — named product and simulation topologies, the
-declared answer to running the stack without a bike — and cross-repository
-version constraints (`Compatibility/`) are future kinds on the same terms.
+Generated bundles, emulation state, logs, and pre-admission records live under
+the gitignored `Artifacts/` output root. Cross-repository version constraints
+will earn a separate `Compatibility/` declaration only when a concrete
+constraint cannot be expressed by revision selection or policy.
 
 **The filing rule:** if it selects, it is a revision manifest under
 `Revisions/`; if it constrains, it is policy; if it drives one repository, it
 belongs to that repository's leaf under `Stack/`; if it shapes other
-documents, it is a schema. Only the Assembler executes; only a run writes to
-`Releases/`. Nothing else exists.
+documents, it is a schema; if it selects a runnable product slice, it is a
+profile. Only the Assembler executes; only `admit` writes to `Releases/`.
 
 ## Declared and attested
 
@@ -109,59 +109,47 @@ Third-party toolchains are not stack members. The Unreal engine is located
 and validated by preflight and recorded as a release fact; it is not HoloBike
 software and has no integration directory under `Stack/`.
 
-## Growth Order
+## Lifecycle
 
-The order follows from `Assembler/README.md`, which requires the versioned
-manifest schema and the read-only preflight before anything stages an
-artifact:
+The lifecycle is ordered and evidence-carrying:
 
-1. **Schemas and the environment mapping** — the first declared kind, so
-   workstation paths become validated data instead of documentation.
-2. **`preflight`** — the Assembler's first verb: discover checkouts, report
-   revision and dirty state, validate tools. No side effects, so it is safe
-   to build first.
-3. **`bootstrap`** — materialize declared checkouts and repository-local
-   tooling on a validated host; system tools are reported, never installed.
-4. **Revision selection and compatibility** — a release line becomes a
-   reviewable diff.
-5. **`assemble` staging with an inventory and digests** — the first real
-   release record.
-6. **`emulate`** orchestrated against a recorded assembly identity.
-7. **Provisioning**, which its own README correctly blocks behind the
-   uroborOS image, encrypted-root path, key custody, rollback, recovery, and
-   hardware acceptance gates.
+1. **`preflight`** validates declarations, checkouts, tools, and dirty state
+   without mutation.
+2. **`bootstrap`** clones missing checkouts and fast-forwards only clean,
+   on-branch repositories; everything else is recorded and left untouched.
+3. **`resolve`** turns a revision manifest into exact source facts and policy
+   verdicts.
+4. **`assemble`** rechecks those facts around repository-owned builds and
+   stages a digested profile bundle.
+5. **`emulate`** verifies the staged bytes, runs the declared topology, and
+   records health and teardown.
+6. **`admit`** verifies the digest-bound chain and is the sole publisher of an
+   immutable, self-contained release record.
+7. **Provisioning** consumes admitted releases for physical-device delivery;
+   its current executable scope is the bounded public device-identity
+   primitive described in `Provisioning/README.md`.
 
-Every workflow emits a record from step 1 onward. The cheapest moment to make
-provenance mandatory is before any workflow exists.
+`bootstrap` through `emulate` write immutable run records under `Artifacts/`.
+Admission copies the complete record chain into `Releases/`; preflight is a
+read-only report rather than an attestation.
 
 ## Current State
 
-The Assembler exists and has its first verb: read-only `preflight`
-(`Assembler/README.md`), with conformance corpora live under
-`Conformance/`. The Stack leaves are data: every integration carries an
-`integration.json` drive contract that preflight validates and
-cross-checks against the roster and the workstation's checkouts, with
-repository-owned `prove` entry points declared where they exist — an
-absent entry point is a recorded backlog item for that repository, never
-an invitation to improvise one here. `Revisions/` declares the dev line, and `resolve` pins it: every run writes
-a self-validated record — exact commits, dirty state, mismatches, and the
-deployment repository's own identity — into the untracked
-`Artifacts/records/`. `Policy/parity.json` guards the three
-Unreal plugin dual copies, and every resolution record carries the gate
-verdicts — a failed gate annotates the record; only admission refuses on
-it. `bootstrap` materializes a line inside a bounded mutation surface
-(clone missing from declared origins, fast-forward clean-on-branch,
-report everything else untouched), and `assemble` stages profile bundles —
-repository-owned builds, digested artifacts, and an assembly record naming
-the resolution it was built from. `emulate` runs an
-assembly's members from the bundle — never the workstation, so an
-incomplete bundle is caught by the verb whose job that is — and `admit`
-closes the loop: it promotes a clean chain (every gate passed, every
-member built, any emulation healthy) into the tracked, self-contained
-`Releases/` tier, and refuses everything else. The full growth order is
-live; what remains is real content — the dual-copy backports a first
-release will want, and the per-repository prove surfaces the leaves
-record. One decision remains deliberately open: exactly what a release record
-must contain — its schema lands with the first `resolve` that writes one,
-aligned with the uroborOS-Lab run-record idiom and SLSA provenance
-vocabulary.
+The complete Assembler lifecycle is implemented and covered through its CLI
+seam. Schemas and conformance corpora cover environment, integration,
+revision, policy, profile, and five run-record kinds. Parent records and
+staged artifacts are digest-bound; admission rejects dirty source or
+deployment state, failed or absent gates, incomplete builds, unhealthy
+emulation, chain drift, and changed artifact bytes.
+
+The current `services` profile contains AthleteIdentity and exercises its
+repository-owned package, service, and health surfaces in bounded host mode.
+HolobikeCore now declares repository-owned prove/package outputs in its Stack
+leaf, but joins a profile only after its source checkout is clean enough to
+produce meaningful provenance. OS, graphical, privileged, and hardware claims
+remain VM or physical-device work, not host-service emulation claims.
+
+Provisioning has one deliberately narrow executable: install or verify the
+closed, public HoloBike device identity beneath an explicit offline root.
+Image deployment, encrypted-root release delivery, key custody, rollback,
+recovery, and physical acceptance remain later provisioning gates.

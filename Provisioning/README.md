@@ -26,7 +26,34 @@ Provisioning must be resumable or safely restartable at every destructive
 boundary. It must never log passwords, recovery material, provider tokens,
 private signing keys, or raw Secret Keeper values.
 
-This directory is documentation-only in the initial scaffold. Executable
-production provisioning remains blocked until the owned uroborOS image,
-authenticated encrypted-root release path, production key custody, rollback,
-recovery, and hardware acceptance gates are complete.
+The first executable primitive is deliberately narrower than production
+provisioning:
+
+```bash
+./Provisioning/provision-device-identity install \
+  --root /path/to/offline-target-root \
+  --input /path/to/device-identity.json
+./Provisioning/provision-device-identity verify \
+  --root /path/to/offline-target-root
+```
+
+It always targets `/etc/holobike/device-identity.json` beneath an explicit
+offline root. The live root, including a bind-mounted alias of it, is refused.
+Inputs use the closed, non-secret HolobikeCore device-identity v1 vocabulary;
+the canonical domain schema remains owned by HolobikeCore. Reads are bounded,
+single-link, descriptor-based, and checked for concurrent mutation. Writes use
+descriptor-relative no-follow operations, a per-target advisory lock, atomic
+replacement, fsync, mode and ownership verification, and a monotonically
+increasing provisioning revision. Untrusted writable target directories,
+intermediate links, final links, hard links, malformed existing state, and
+arbitrary output paths are refused. The implementation has no account-database
+or secret-store API.
+
+This primitive is a deployment binding, not a second owner of the identity
+contract. The full release provisioner must consume the schema packaged by the
+admitted HolobikeCore artifact rather than allowing this copy of the v1 field
+set to evolve independently.
+
+The broader production workflow remains blocked until the owned uroborOS
+image, authenticated encrypted-root release path, production key custody,
+rollback, recovery, and hardware acceptance gates are complete.

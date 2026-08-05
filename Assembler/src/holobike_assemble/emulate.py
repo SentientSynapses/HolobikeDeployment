@@ -14,14 +14,17 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import signal
 import subprocess
 import time
 from pathlib import Path
 
+from . import artifacts as artifact_contract
+from . import filesystem
 from . import gitfacts
-from . import integration as integration_contract
 from . import profiles as profiles_contract
 from . import record as record_contract
+from . import stack as stack_contract
 
 PROBE_INTERVAL_SECONDS = 0.25
 PROBE_ATTEMPT_TIMEOUT_SECONDS = 10.0
@@ -36,14 +39,11 @@ def _utc_now():
 
 
 def _load_leaves(stack_root, stderr):
-    leaves = {}
-    for leaf_path in sorted(Path(stack_root).glob("**/integration.json")):
-        document, errors = integration_contract.load_integration(leaf_path)
-        if document is None:
-            for error in errors:
-                print(f"{leaf_path}: {error}", file=stderr)
-            return None
-        leaves[document.integration] = document
+    leaves, errors = stack_contract.load_stack(stack_root)
+    if errors:
+        for error in errors:
+            print(error, file=stderr)
+        return None
     return leaves
 
 
@@ -63,15 +63,42 @@ def _substitute_command(command, overlay, bundle_dir, state_dir):
 
 
 def _probe_once(argv, env, state_dir):
-    merged = dict(os.environ)
+    merged = _runtime_environment(state_dir)
     merged.update(env)
     try:
-        completed = subprocess.run(
-            argv, cwd=state_dir, env=merged, capture_output=True,
-            timeout=PROBE_ATTEMPT_TIMEOUT_SECONDS, check=False)
-        return completed.returncode == 0
-    except (OSError, subprocess.TimeoutExpired):
+        process = subprocess.Popen(
+            argv,
+            cwd=state_dir,
+            env=merged,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        try:
+            return process.wait(timeout=PROBE_ATTEMPT_TIMEOUT_SECONDS) == 0
+        except subprocess.TimeoutExpired:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait()
+            return False
+    except OSError:
         return False
+
+
+def _runtime_environment(state_dir):
+    """Build a bounded child environment without inheriting host secrets."""
+    inherited = {
+        key: os.environ[key]
+        for key in ("PATH", "LANG", "LC_ALL", "TZ")
+        if key in os.environ
+    }
+    inherited.update({
+        "HOME": str(state_dir),
+        "XDG_CACHE_HOME": str(Path(state_dir) / ".cache"),
+        "XDG_CONFIG_HOME": str(Path(state_dir) / ".config"),
+        "XDG_DATA_HOME": str(Path(state_dir) / ".local/share"),
+        "XDG_STATE_HOME": str(Path(state_dir) / ".local/state"),
+    })
+    return inherited
 
 
 class _Member:
@@ -110,7 +137,7 @@ def _spawn_and_await(member, leaf, topology, bundle_root, run_root,
         return
 
     member.state_dir = run_root / "members" / member.name
-    member.state_dir.mkdir(parents=True, exist_ok=True)
+    member.state_dir.mkdir(mode=0o700)
     serve_argv, serve_env = _substitute_command(
         leaf.serve, topology.environment, bundle_dir, member.state_dir)
     member.probe_argv, member.probe_env = _substitute_command(
@@ -119,15 +146,19 @@ def _spawn_and_await(member, leaf, topology, bundle_root, run_root,
 
     log_path = run_root / "logs" / f"{member.name}.serve.log"
     facts["log"] = str(log_path.relative_to(run_root))
-    merged = dict(os.environ)
+    merged = _runtime_environment(member.state_dir)
     merged.update(serve_env)
-    log = open(log_path, "wb")
     try:
-        member.process = subprocess.Popen(
-            serve_argv, cwd=member.state_dir, env=merged,
-            stdout=log, stderr=subprocess.STDOUT)
+        with filesystem.open_private_output(log_path) as log:
+            member.process = subprocess.Popen(
+                serve_argv,
+                cwd=member.state_dir,
+                env=merged,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
     except OSError as error:
-        log.close()
         facts["status"] = "spawn_failed"
         facts["detail"] = str(error)
         return
@@ -159,19 +190,31 @@ def _spawn_and_await(member, leaf, topology, bundle_root, run_root,
 
 
 def _teardown(member, grace):
-    """Reap one member; records shutdown facts. Never raises."""
+    """Reap one member process group; records shutdown facts. Never raises."""
     process = member.process
     if process is None:
         return
-    if process.poll() is not None:
-        return
+    process.poll()
     clean = True
-    process.terminate()
     try:
-        process.wait(timeout=grace)
-    except subprocess.TimeoutExpired:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    deadline = time.monotonic() + grace
+    while time.monotonic() < deadline:
+        process.poll()
+        try:
+            os.killpg(process.pid, 0)
+        except ProcessLookupError:
+            break
+        time.sleep(0.05)
+    else:
         clean = False
-        process.kill()
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    if process.poll() is None:
         process.wait()
     member.facts["shutdown"] = {"clean": clean}
     if not clean:
@@ -189,7 +232,19 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
     """
     started = _utc_now()
 
-    assembly, errors = record_contract.load_record(record_path)
+    if os.geteuid() == 0:
+        print("host-process emulation refuses to run as root", file=stderr)
+        return 2
+
+    records_root = Path(artifacts_root) / "records"
+    try:
+        assembly_path = filesystem.resolve_direct_child(
+            records_root, record_path)
+    except (OSError, filesystem.FilesystemContractError) as error:
+        print(f"assembly record: {error}", file=stderr)
+        return 2
+    assembly, _, assembly_digest, errors = \
+        record_contract.load_record_snapshot(assembly_path)
     if errors:
         for error in errors:
             print(error, file=stderr)
@@ -199,16 +254,22 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
             f"{record_path}: emulate consumes an assembly record, got "
             f"kind {assembly['kind']}", file=stderr)
         return 2
-    bundle_root = Path(artifacts_root) / assembly["bundle"]
-    if not bundle_root.is_dir():
-        print(f"bundle directory missing: {bundle_root} — assemble again",
-              file=stderr)
+    bundle_root, artifact_problems = artifact_contract.verify_bundle(
+        artifacts_root, assembly)
+    if artifact_problems:
+        for problem in artifact_problems:
+            print(problem, file=stderr)
         return 2
     profile_path = Path(profiles_root) / f"{assembly['profile']}.json"
     profile, errors = profiles_contract.load_profile(profile_path)
     if errors:
         for error in errors:
             print(f"{profile_path}: {error}", file=stderr)
+        return 2
+    if tuple(profile.integrations) != tuple(assembly["integrations"]):
+        print(
+            f"{profile_path}: profile membership changed after assembly",
+            file=stderr)
         return 2
     leaves = _load_leaves(stack_root, stderr)
     if leaves is None:
@@ -224,7 +285,10 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
         "%Y%m%dT%H%M%S%fZ")
     run_root = Path(artifacts_root) / "emulations" \
         / f"{profile.profile}-{stamp}"
-    (run_root / "logs").mkdir(parents=True, exist_ok=True)
+    run_root.mkdir(parents=True, mode=0o700)
+    run_root.chmod(0o700)
+    (run_root / "logs").mkdir(mode=0o700)
+    (run_root / "members").mkdir(mode=0o700)
 
     members = []
     try:
@@ -289,8 +353,10 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
         },
         "line": assembly["line"],
         "profile": profile.profile,
+        "integrations": list(assembly["integrations"]),
         "assembly": {
-            "record": Path(record_path).name,
+            "record": assembly_path.name,
+            "sha256": assembly_digest,
             "bundle": assembly["bundle"],
         },
         "members": {member.name: member.facts for member in members},
@@ -303,11 +369,9 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
             print(f"record self-validation: {error}", file=stderr)
         return 2
 
-    records_root = Path(artifacts_root) / "records"
-    records_root.mkdir(parents=True, exist_ok=True)
     record_file = records_root \
         / f"emulate-{profile.profile}-{stamp}.json"
-    record_file.write_text(text, encoding="utf-8")
+    filesystem.publish_text(record_file, text)
 
     print(f"run: {run_root}", file=stdout)
     print(f"record: {record_file}", file=stdout)

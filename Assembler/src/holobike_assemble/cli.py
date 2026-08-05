@@ -1,13 +1,14 @@
 """The holobike-assemble command line.
 
 The CLI is the Assembler's testable surface: suites drive these verbs and
-nothing beneath them. Verbs land in the growth order the repository README
-records; today there is one.
+nothing beneath them. Each verb delegates its domain work to its own module;
+this file owns argument contracts and dispatch only.
 """
 
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from . import admit
 from . import assemble
 from . import bootstrap
 from . import emulate
+from . import filesystem
 from . import policy as policy_contract
 from . import profiles as profiles_contract
 from . import preflight
@@ -26,6 +28,17 @@ from . import revisions as revisions_contract
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ENVIRONMENT = REPO_ROOT / ".local" / "environment.json"
 DEFAULT_STACK = REPO_ROOT / "Stack"
+
+
+def _positive_seconds(value):
+    try:
+        parsed = float(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("must be a number") from error
+    if not math.isfinite(parsed) or parsed <= 0:
+        raise argparse.ArgumentTypeError(
+            "must be a finite number greater than zero")
+    return parsed
 
 
 def _build_parser():
@@ -227,13 +240,13 @@ def _build_parser():
     )
     emulate_parser.add_argument(
         "--ready-timeout",
-        type=float,
+        type=_positive_seconds,
         default=30.0,
         help="seconds to wait for a member's probe to pass (default: 30)",
     )
     emulate_parser.add_argument(
         "--terminate-grace",
-        type=float,
+        type=_positive_seconds,
         default=5.0,
         help="seconds between SIGTERM and SIGKILL at teardown (default: 5)",
     )
@@ -290,7 +303,7 @@ def _judge(loader, path):
     return 0
 
 
-def main(argv=None):
+def _main(argv=None):
     arguments = _build_parser().parse_args(argv)
     if arguments.verb == "preflight":
         return preflight.run(
@@ -403,6 +416,14 @@ def main(argv=None):
             stderr=sys.stderr,
         )
     raise AssertionError(f"unreachable verb: {arguments.verb}")
+
+
+def main(argv=None):
+    try:
+        return _main(argv)
+    except (OSError, filesystem.FilesystemContractError) as error:
+        print(f"filesystem operation refused: {error}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

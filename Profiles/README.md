@@ -1,19 +1,17 @@
 # Profiles
 
-Named compositions: which integrations a bundle carries. Membership landed
-first because `assemble` needs it first; topology — where components run,
-which simulated ports replace hardware — arrives as this kind grows toward
-the simulation profiles.
+Named compositions: which integrations a bundle carries and how its
+composition validation runs. `integrations` is the exact assembly roster;
+`topology` must address only members of that roster.
 
-A profile may also declare `topology`: how `emulate` runs each member —
-`run: host` today, `vm` when the promoted uroborOS validation surface
-exists — plus a non-secret environment overlay. The sidecar's probe today
-proves its surface (CLI `auth health` against the shared root) while
-process liveness comes from the lifecycle itself; the probe becomes
-daemon-coupled when the LocalService IPC lands.
+A profile may declare a non-secret environment overlay for each topology
+member. `run: host` is the only implemented mode and is deliberately limited
+to disposable, unprivileged user-space services running from staged bundle
+artifacts with isolated state. OS, graphical, privileged, and hardware-facing
+topologies require a future VM executor; they must not be represented as host
+mode in the interim.
 
-`services` is the first bundle: the AthleteIdentity sidecar today.
-HolobikeCore's services join by a data-only edit — its leaf declaring build
-steps and artifacts — once its working tree is quiescent; declaring build
-entry points into a tree another agent is actively changing would make the
-bundle's provenance a guess.
+`services` currently contains the AthleteIdentity sidecar. HolobikeCore's
+Stack leaf declares its repository-owned prove/package command and rootfs
+artifact, but it does not join this profile until its source is clean and it
+publishes the service/probe surface needed for composition emulation.

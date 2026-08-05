@@ -6,11 +6,11 @@ under Conformance/profiles.
 
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import document
 from .environment import INTEGRATIONS
 
 SCHEMA_VERSION = 1
@@ -19,6 +19,7 @@ _ROOT_KEYS = ("schema_version", "profile", "integrations", "topology")
 _MEMBER_KEYS = ("run", "environment")
 RUN_MODES = ("host",)
 _NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+_ENVIRONMENT_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 @dataclass(frozen=True)
@@ -39,10 +40,11 @@ def _check_environment_map(errors, where, value):
         errors.append(f"{where}: must be an object")
         return {}
     for key, entry in sorted(value.items()):
-        if not key or not isinstance(entry, str):
+        if not isinstance(key, str) or not _ENVIRONMENT_NAME.fullmatch(key) \
+                or not isinstance(entry, str) or "\0" in entry:
             errors.append(
-                f"{where}.{key or '<empty>'}: keys must be non-empty and "
-                "values must be strings")
+                f"{where}.{key or '<empty>'}: keys must be environment names "
+                "and values must be NUL-free strings")
             return {}
     return dict(value)
 
@@ -80,10 +82,9 @@ def _check_topology(errors, value, members):
 def validate_profile_text(text):
     errors = []
     try:
-        root = json.loads(text)
-    except json.JSONDecodeError as error:
-        return None, [
-            f"document: not valid JSON ({error.msg}, line {error.lineno})"]
+        root = document.loads(text)
+    except document.JsonDocumentError as error:
+        return None, [f"document: not valid JSON ({error})"]
     if not isinstance(root, dict):
         return None, ["document: the root must be an object"]
 

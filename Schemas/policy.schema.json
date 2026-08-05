@@ -39,7 +39,7 @@
           "items": {
             "type": "string",
             "minLength": 1,
-            "pattern": "^[^/]+$",
+            "pattern": "^(?!\\.{1,2}$)[^/\\u0000]+$",
             "description": "A path component name, excluded wherever it appears in either tree."
           }
         }
@@ -66,7 +66,7 @@
         },
         "path": {
           "type": "string",
-          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)(?!.*(?:^|/)\\.(?:/|$))(?!.*\\u0000)(?!.*/$).+$",
           "description": "Relative to the integration's checkout root; never absolute, never escaping."
         }
       }

@@ -2,6 +2,11 @@
 
 Status: accepted, 2026-08-03.
 
+Amended 2026-08-04: `Profiles/` earned its top-level role when assembly and
+emulation landed. The VM-only rule was narrowed to OS, graphical, privileged,
+firmware, and hardware claims; disposable user-space service composition may
+use the bounded, unprivileged host executor described in `Assembler/README.md`.
+
 ## Context
 
 The scaffold went through three forms in quick succession. The initial sketch
@@ -32,6 +37,7 @@ The top level partitions by function. Every directory is one role:
 |---|---|
 | `Stack/` | declare the members — roster + per-repository integration contracts |
 | `Revisions/` | declare the composition — selected revisions per release line |
+| `Profiles/` | declare a product slice and its emulation topology |
 | `Policy/` | declare the constraints — parity and admission gates |
 | `Schemas/` | declare the shapes — canonical schema for every declared kind |
 | `Conformance/` | prove the bindings — accepted/rejected fixtures per schema |
@@ -66,15 +72,16 @@ Two tests garrison the boundaries:
 
 ## Consequences
 
-- Directories are created by their first content. `Revisions/`, `Policy/`,
-  and `Conformance/` are described, not scaffolded; `Profiles/` and
-  `Compatibility/` are future kinds on the same terms.
+- Directories are created by their first content. `Compatibility/` remains a
+  future kind until a concrete cross-repository version constraint earns it.
 - The declared/attested vocabulary survives the flatten: *manifest* names
   exactly one declared kind (the revision manifest), and a release record
   resolves declarations rather than restating them.
 - The release-record schema is adopted, not invented: uroborOS-Lab's
   run-record idiom (`run.json`, `source.json`, `steps/*.json`) hardened with
   digests and SLSA provenance vocabulary.
-- Emulation targets virtual machines only, never the host.
+- OS, graphical, privileged, firmware, and hardware emulation targets virtual
+  machines or physical devices. Bounded user-space service composition may run
+  unprivileged on the host and cannot support hardware acceptance claims.
 - This was the last cheap restructure: the first Assembler verb hardcodes
   paths, and every path it reads is one this layout decided.

@@ -9,8 +9,9 @@ silently cannot run reads as coverage that does not exist.
 
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
+
+from . import filesystem
 
 # Mismatch listings are capped, loudly: the counts are always complete and
 # the truncated figure says exactly what was withheld. No silent caps.
@@ -28,15 +29,6 @@ def _tree_files(root, exclude):
             continue
         files[str(relative)] = path
     return files
-
-
-def sha256_file(path):
-    """Digest one file; shared by gate comparison and artifact staging."""
-    digest = hashlib.sha256()
-    with open(path, "rb") as stream:
-        for chunk in iter(lambda: stream.read(1 << 16), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _site_root(site, checkouts):
@@ -63,8 +55,8 @@ def evaluate_tree_parity(gate, checkouts):
     only_right = sorted(set(right_files) - set(left_files))
     differing = sorted(
         relative for relative in set(left_files) & set(right_files)
-        if sha256_file(left_files[relative])
-        != sha256_file(right_files[relative]))
+        if filesystem.sha256_file(left_files[relative])
+        != filesystem.sha256_file(right_files[relative]))
 
     mismatches = (
         [f"only left: {path}" for path in only_left]
@@ -81,11 +73,3 @@ def evaluate_tree_parity(gate, checkouts):
     facts["truncated"] = max(0, len(mismatches) - MISMATCH_LISTING_CAP)
     facts["status"] = "fail" if mismatches else "pass"
     return facts
-
-
-def evaluate(policy_document, checkouts):
-    """Evaluate every gate; returns {gate name: fact block}."""
-    return {
-        gate.name: evaluate_tree_parity(gate, checkouts)
-        for gate in policy_document.gates
-    }

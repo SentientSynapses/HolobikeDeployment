@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "policy": "parity",
+  "gates": [
+    {
+      "name": "trailing-path",
+      "kind": "tree_parity",
+      "left": {"integration": "HolobikeRider", "path": "Plugin/"},
+      "right": {"integration": "HolobikeExperience", "path": "Plugins/HolobikeRider"}
+    }
+  ]
+}

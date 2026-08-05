@@ -12,8 +12,10 @@
   },
   "line": "dev",
   "profile": "services",
+  "integrations": ["AthleteIdentity", "HolobikeCore"],
   "assembly": {
     "record": "assemble-services-20260804T120000000000Z.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "bundle": "bundles/services-20260804T120000000000Z"
   },
   "members": {

@@ -21,22 +21,12 @@
   "builds": {
     "AthleteIdentity": {
       "status": "built",
-      "steps": [{
-        "argv": ["fixture-build"],
-        "exit": 0,
-        "log": "logs/fixture.log"
-      }]
+      "steps": [
+        {"argv": ["fixture-build"], "exit": 0, "log": "logs/build.log"}
+      ]
     }
   },
-  "artifacts": {
-    "AthleteIdentity": [
-      {
-        "path": "AthleteIdentity/x",
-        "sha256": "abc123",
-        "bytes": 1
-      }
-    ]
-  },
-  "problems": [],
-  "bundle": "bundles/services-20260804T120000000000Z"
+  "artifacts": {},
+  "bundle": "../outside",
+  "problems": []
 }

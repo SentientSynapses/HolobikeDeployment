@@ -14,9 +14,10 @@ alone, silently edit a source checkout, or treat mutable branch names as
 release identities. It is deliberately thin: the moment it starts resembling
 a build system, the design has failed (`Docs/Decisions/0001`).
 
-The first implementation begins with the versioned manifest schema and the
-read-only `preflight`; artifact staging follows only after source identity
-and compatibility checks are deterministic.
+The complete lifecycle is implemented. Each stage writes a self-validating,
+immutable record except read-only `preflight`; records bind their parent by
+file name and SHA-256, and staged artifact bytes are verified again before
+emulation and admission.
 
 ## Verbs
 
@@ -44,19 +45,19 @@ ecosystem's incident history has earned.
 
 ### `resolve` — pin a declaration
 
-Reads a revision manifest under `Revisions/`, pins exact commits, dirty
-state, and digests, and writes a record into the untracked `Artifacts/`
-directory. The record also carries this repository's own revision: a
-resolution that cannot identify itself is not provenance.
+Reads a revision manifest under `Revisions/`, pins exact commits and dirty
+state, evaluates declared policy, and writes a record into the untracked
+`Artifacts/` directory. The record also carries this repository's own
+revision: a resolution that cannot identify itself is not provenance.
 
 ### `assemble` — stage a product bundle
 
-Consumes a resolved record and a profile; invokes repository-owned build
-entry points declared in `Stack/`; stages artifacts without modifying any
-source working tree; and produces a machine-readable inventory of source
-revisions and artifact digests, build and integration results, a
-compatibility report, and enough provenance to reproduce or reject the
-assembly.
+Consumes a resolved record and a profile, invokes repository-owned build
+entry points declared in `Stack/`, and stages the declared outputs. Build
+tools may create ignored output in their own checkouts; assemble requires the
+selected checkout to remain at the exact clean revision before and after the
+build. The resulting record inventories each artifact's path, byte count, and
+digest and binds the exact resolution record that authorized the build.
 
 ### `emulate` — validate an assembly without a bike
 
@@ -70,26 +71,30 @@ plugin and data set.
 
 Which components run, where they run, and which simulated ports replace
 hardware is declared by a profile under `Profiles/`, not improvised by the
-tool. Emulation orchestrates repository-owned simulators, fixtures, and
-public control surfaces, consumed through the entry points each `Stack/`
-leaf declares. A simulator of one repository's behavior ships inside that
-repository as a first-class development capability — AthleteIdentity's
-LocalMock provider is the model, and simulated drivetrain and handlebar
-ports in HolobikeCore are its kinetics equivalent. Only behavior that exists
-at the cross-repository product boundary is simulated here. The transitional
-`*-Lab` repositories are never composition dependencies: needing a
-capability only a Lab holds today is a signal to promote it
-(`Docs/Decisions/0002`). **Emulation targets virtual machines only, never
-the host** — a rule this ecosystem paid to learn. A run must record its assembly
-identity, configuration, results, logs, and artifact locations, must label
-simulated capabilities clearly, and is never evidence for hardware behavior
-such as production NVIDIA, display, drivetrain, or handlebar performance.
+tool. Emulation orchestrates repository-owned simulators and public control
+surfaces through the entry points each `Stack/` leaf declares. A simulator of
+one repository's behavior ships inside that repository as a first-class
+development capability — AthleteIdentity's LocalMock provider is the model.
+The transitional `*-Lab` repositories are never composition dependencies;
+needing a capability only a Lab holds is a promotion signal
+(`Docs/Decisions/0002`).
 
-### Admission
+The current executor supports bounded, unprivileged host processes for
+user-space service composition. It verifies bundle bytes before spawning,
+uses a minimal environment with per-member HOME/XDG state, refuses root,
+keeps state and logs user-private, bounds every probe, owns each process
+group, and guarantees teardown. OS boot, graphical applications, privileged services,
+firmware, and hardware behavior require VM or physical-device validation.
+Host-service emulation is never evidence for production NVIDIA, display,
+drivetrain, or handlebar behavior.
 
-Admission is the Assembler promoting a validated record from `Artifacts/`
-into `Releases/`, and it happens only when every gate under `Policy/`
-passes. There is no other writer of `Releases/`.
+### `admit` — publish an immutable release attestation
+
+Admission follows and verifies the digest-bound resolution, assembly, and
+optional emulation chain. It re-hashes every staged artifact and refuses
+dirty source or deployment state, absent or failed gates, incomplete builds,
+unhealthy emulation, or chain drift. A clean chain is atomically published as
+a self-contained directory under `Releases/`; there is no other writer.
 
 ## The environment mapping is data, not documentation
 
@@ -126,6 +131,12 @@ src/holobike_assemble/   the package — Python, standard library only
 tests/                   suites that drive the CLI seam, nothing beneath it
 holobike-assemble        launcher shim
 ```
+
+Shared infrastructure has narrow homes: `document.py` owns strict JSON
+decoding, `filesystem.py` owns path containment and immutable publication,
+`stack.py` owns Stack-leaf discovery, and `artifacts.py` owns bundle-byte
+verification. Verb modules own lifecycle policy and do not duplicate those
+mechanics.
 
 From the repository root:
 

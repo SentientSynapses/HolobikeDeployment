@@ -6,15 +6,17 @@
 - Integration domain: `os`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 
-This directory owns deployment metadata and adapter logic for uroborOS. It is
-not a checkout, submodule, or copy of the operating-system source.
+This directory owns uroborOS's declarative deployment contract. It is not an
+adapter implementation, checkout, submodule, or copy of the operating-system
+source.
 
 ## Assembly Contract
 
-The adapter will consume a resolved uroborOS mode and release descriptor, call
-uroborOS-owned build surfaces, and collect declared images, package closures,
-runtime payload inventories, and release metadata. It must preserve the
-distinction between development scaffolds and production-admissible modes.
+The current leaf exposes uroborOS's repository-owned static proof surface. A
+later assembly contract will consume a resolved mode and release descriptor
+and stage declared images, package closures, runtime payload inventories, and
+release metadata. It must preserve the distinction between development
+scaffolds and production-admissible modes.
 
 ## Validation
 

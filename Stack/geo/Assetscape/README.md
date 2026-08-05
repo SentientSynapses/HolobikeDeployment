@@ -6,8 +6,8 @@
 - Integration domain: `geo`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 
-This directory owns the adapter to Assetscape, not source code, asset kits, or
-the generated asset library.
+This directory owns Assetscape's declarative deployment contract, not adapter
+implementation, source code, asset kits, or the generated asset library.
 
 ## Assembly Contract
 

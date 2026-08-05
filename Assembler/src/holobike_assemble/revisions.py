@@ -8,11 +8,11 @@ because an abbreviation is ambiguity, not identity.
 
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import document
 from .environment import INTEGRATIONS
 
 SCHEMA_VERSION = 1
@@ -20,6 +20,23 @@ SCHEMA_VERSION = 1
 _ROOT_KEYS = ("schema_version", "line", "selections")
 _LINE_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+
+
+def _is_branch_name(value):
+    if not isinstance(value, str) or not value or value.startswith("-"):
+        return False
+    if value == "@" or value.endswith(("/", ".")):
+        return False
+    if ".." in value or "@{" in value or "//" in value:
+        return False
+    forbidden = set(" ~^:?*[\\")
+    if any(character in forbidden or ord(character) < 32 \
+           or ord(character) == 127 for character in value):
+        return False
+    return all(
+        component and not component.startswith(".")
+        and not component.endswith(".lock")
+        for component in value.split("/"))
 
 
 @dataclass(frozen=True)
@@ -49,8 +66,8 @@ def _check_selection(errors, where, value):
         return None
     if "branch" in value:
         branch = value["branch"]
-        if not isinstance(branch, str) or not branch:
-            errors.append(f"{where}.branch: must be a non-empty string")
+        if not _is_branch_name(branch):
+            errors.append(f"{where}.branch: must be a safe full branch name")
             return None
         return Selection(branch=branch)
     commit = value["commit"]
@@ -64,10 +81,9 @@ def validate_revisions_text(text):
     """Validate one manifest; returns (RevisionsDocument or None, errors)."""
     errors = []
     try:
-        root = json.loads(text)
-    except json.JSONDecodeError as error:
-        return None, [
-            f"document: not valid JSON ({error.msg}, line {error.lineno})"]
+        root = document.loads(text)
+    except document.JsonDocumentError as error:
+        return None, [f"document: not valid JSON ({error})"]
     if not isinstance(root, dict):
         return None, ["document: the root must be an object"]
 

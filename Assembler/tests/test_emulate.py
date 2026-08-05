@@ -5,8 +5,10 @@ probe looks for — so a passing run proves substitution, spawning, probing,
 settling, and teardown all at once.
 """
 
+import hashlib
 import json
 import pathlib
+import stat
 import subprocess
 import sys
 import tempfile
@@ -85,7 +87,10 @@ class EmulateBehaviour(unittest.TestCase):
             "topology": {"HexAtlas": {"run": "host"}},
         }), encoding="utf-8")
 
-        record = self.root / "assemble-bundle-fixture.json"
+        member = self.artifacts / "bundles/bundle-test/HexAtlas/member.py"
+        probe = self.artifacts / "bundles/bundle-test/HexAtlas/probe.py"
+        record = self.artifacts / "records" / "assemble-bundle-fixture.json"
+        record.parent.mkdir(parents=True, exist_ok=True)
         record.write_text(json.dumps({
             "schema_version": 1,
             "kind": "assembly",
@@ -95,10 +100,21 @@ class EmulateBehaviour(unittest.TestCase):
             "deployment": {"revision": "0" * 40, "dirty": False},
             "line": "dev",
             "profile": "bundle",
+            "integrations": ["HexAtlas"],
             "resolution": {"record": "resolve-dev-fixture.json",
+                           "sha256": "1" * 64,
                            "line": "dev"},
-            "builds": {"HexAtlas": {"status": "built", "steps": []}},
-            "artifacts": {"HexAtlas": []},
+            "builds": {"HexAtlas": {"status": "built", "steps": [{
+                "argv": ["fixture-build"], "exit": 0,
+                "log": "logs/fixture.log"}]}},
+            "artifacts": {"HexAtlas": [
+                {"path": "HexAtlas/member.py",
+                 "sha256": hashlib.sha256(member.read_bytes()).hexdigest(),
+                 "bytes": member.stat().st_size},
+                {"path": "HexAtlas/probe.py",
+                 "sha256": hashlib.sha256(probe.read_bytes()).hexdigest(),
+                 "bytes": probe.stat().st_size},
+            ]},
             "bundle": "bundles/bundle-test",
             "problems": [],
         }), encoding="utf-8")
@@ -135,8 +151,25 @@ class EmulateBehaviour(unittest.TestCase):
         # ${STATE} resolved to a real directory the member wrote into.
         self.assertEqual(record["assembly"]["record"],
                          "assemble-bundle-fixture.json")
+        self.assertEqual(len(record["assembly"]["sha256"]), 64)
         self.assertEqual(record["assembly"]["bundle"], "bundles/bundle-test")
         self.assertEqual(record["problems"], [])
+        run_line = next(
+            line for line in result.stdout.splitlines()
+            if line.startswith("run: "))
+        run_root = pathlib.Path(run_line[len("run: "):])
+        for directory in (
+            run_root,
+            run_root / "logs",
+            run_root / "members",
+            run_root / "members/HexAtlas",
+        ):
+            self.assertEqual(stat.S_IMODE(directory.stat().st_mode), 0o700)
+        self.assertEqual(
+            stat.S_IMODE(
+                (run_root / "logs/HexAtlas.serve.log").stat().st_mode),
+            0o600,
+        )
 
     def test_a_member_that_never_readies_is_reaped_and_recorded(self):
         result = self.emulate(self.write_inputs(mode="never-ready"))
@@ -184,6 +217,24 @@ class EmulateBehaviour(unittest.TestCase):
         result = self.emulate(record)
         self.assertEqual(result.returncode, 2)
         self.assertIn("assembly", result.stderr)
+
+    def test_tampered_bundle_bytes_are_refused_before_spawn(self):
+        record = self.write_inputs()
+        (self.artifacts / "bundles/bundle-test/HexAtlas/member.py").write_text(
+            "raise SystemExit(99)\n", encoding="utf-8")
+
+        result = self.emulate(record)
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("artifact", result.stderr)
+        self.assertFalse((self.artifacts / "emulations").exists())
+
+    def test_nonfinite_timeout_is_refused_by_the_cli(self):
+        result = self.emulate(self.write_inputs(), ready_timeout="nan")
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("finite number", result.stderr)
+        self.assertFalse((self.artifacts / "emulations").exists())
 
 
 if __name__ == "__main__":

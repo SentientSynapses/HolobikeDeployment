@@ -13,10 +13,20 @@
   "line": "dev",
   "version": "0.1.0",
   "profile": "services",
+  "integrations": ["AthleteIdentity", "HolobikeCore"],
   "chain": {
-    "resolution": "resolve-dev-20260804T120000000000Z.json",
-    "assembly": "assemble-services-20260804T120001000000Z.json",
-    "emulation": "emulate-services-20260804T120002000000Z.json"
+    "resolution": {
+      "record": "resolve-dev-20260804T120000000000Z.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "assembly": {
+      "record": "assemble-services-20260804T120001000000Z.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "emulation": {
+      "record": "emulate-services-20260804T120002000000Z.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
   },
   "attestation": {
     "gates": "pass",

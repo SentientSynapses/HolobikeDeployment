@@ -6,15 +6,17 @@
 - Integration domain: `ai`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 
-This directory owns the deployment adapter to drAIs, not agent runtime source,
-model weights, user context, or provider credentials.
+This directory owns drAIs's declarative deployment contract, not adapter
+implementation, agent runtime source, model weights, user context, or provider
+credentials.
 
 ## Assembly Contract
 
-The adapter will invoke drAIs-owned build, test, and evaluation surfaces and
-record the selected runtime, protocol, skillset, model profile, and sandbox
-policy. External tools and services are declared capabilities rather than
-copied into drAIs or this integration.
+The leaf currently exposes drAIs's repository-owned full evaluation surface as
+its proof command. Future build artifacts will record the selected runtime,
+protocol, skillset, model profile, and sandbox policy. External tools and
+services are declared capabilities rather than copied into drAIs or this
+integration.
 
 ## Validation
 

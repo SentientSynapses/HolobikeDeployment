@@ -12,9 +12,10 @@ integration.
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from . import document
 
 SCHEMA_VERSION = 1
 
@@ -81,9 +82,9 @@ def validate_environment_text(text):
     """
     errors = []
     try:
-        root = json.loads(text)
-    except json.JSONDecodeError as error:
-        return None, [f"document: not valid JSON ({error.msg}, line {error.lineno})"]
+        root = document.loads(text)
+    except document.JsonDocumentError as error:
+        return None, [f"document: not valid JSON ({error})"]
     if not isinstance(root, dict):
         return None, ["document: the root must be an object"]
 

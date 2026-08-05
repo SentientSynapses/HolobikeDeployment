@@ -16,6 +16,7 @@ import json
 from pathlib import Path
 
 from . import environment
+from . import filesystem
 from . import gates as gate_evaluation
 from . import gitfacts
 from . import policy as policy_contract
@@ -187,9 +188,8 @@ def run(revisions_path, environment_path, artifacts_root, repo_root,
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
         "%Y%m%dT%H%M%S%fZ")
     records_root = Path(artifacts_root) / "records"
-    records_root.mkdir(parents=True, exist_ok=True)
     record_path = records_root / f"resolve-{manifest.line}-{stamp}.json"
-    record_path.write_text(text, encoding="utf-8")
+    filesystem.publish_text(record_path, text)
 
     print(f"record: {record_path}", file=stdout)
     for name, verdict in sorted(gate_verdicts.items()):

@@ -12,14 +12,20 @@
   },
   "line": "dev",
   "profile": "services",
+  "integrations": ["AthleteIdentity"],
   "resolution": {
     "record": "resolve-dev-20260804T120000000000Z.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "line": "dev"
   },
   "builds": {
     "AthleteIdentity": {
       "status": "built",
-      "steps": []
+      "steps": [{
+        "argv": ["fixture-build"],
+        "exit": 0,
+        "log": "logs/fixture.log"
+      }]
     }
   },
   "artifacts": {},

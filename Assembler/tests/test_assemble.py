@@ -6,6 +6,7 @@ a record naming the resolution it was built from.
 
 import json
 import pathlib
+import stat
 import subprocess
 import sys
 import tempfile
@@ -37,6 +38,19 @@ class AssembleBehaviour(unittest.TestCase):
         self.artifacts = self.root / "Artifacts"
         self.checkout = self.root / "checkouts" / "HexAtlas"
         self.checkout.mkdir(parents=True)
+        (self.checkout / ".gitignore").write_text("*.bin\n", encoding="utf-8")
+        for command in (
+            ["git", "init", "--quiet", "--initial-branch=main"],
+            ["git", "config", "user.email", "assemble@test.invalid"],
+            ["git", "config", "user.name", "Assemble Test"],
+            ["git", "add", ".gitignore"],
+            ["git", "commit", "--quiet", "-m", "fixture"],
+        ):
+            subprocess.run(
+                command, cwd=self.checkout, check=True, capture_output=True)
+        self.revision = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=self.checkout, check=True,
+            capture_output=True, text=True).stdout.strip()
 
     def write_inputs(self, build_steps, artifacts):
         environment = self.root / "environment.json"
@@ -68,7 +82,8 @@ class AssembleBehaviour(unittest.TestCase):
             "integrations": ["HexAtlas"],
         }), encoding="utf-8")
 
-        record = self.root / "resolve-dev-fixture.json"
+        record = self.artifacts / "records" / "resolve-dev-fixture.json"
+        record.parent.mkdir(parents=True, exist_ok=True)
         record.write_text(json.dumps({
             "schema_version": 1,
             "kind": "resolution",
@@ -80,7 +95,7 @@ class AssembleBehaviour(unittest.TestCase):
             "line": "dev",
             "resolved": {"HexAtlas": {
                 "selected": {"branch": "main"}, "status": "resolved",
-                "revision": "1" * 40, "branch": "main", "dirty": False}},
+                "revision": self.revision, "branch": "main", "dirty": False}},
             "gates": {},
             "problems": [],
         }), encoding="utf-8")
@@ -124,6 +139,11 @@ class AssembleBehaviour(unittest.TestCase):
         self.assertEqual(record["builds"]["HexAtlas"]["status"], "built")
         self.assertEqual(record["resolution"]["record"],
                          "resolve-dev-fixture.json")
+        self.assertEqual(len(record["resolution"]["sha256"]), 64)
+        build_log = bundle / record["builds"]["HexAtlas"]["steps"][0]["log"]
+        self.assertEqual(stat.S_IMODE(build_log.stat().st_mode), 0o600)
+        self.assertEqual(
+            stat.S_IMODE((bundle / "logs").stat().st_mode), 0o700)
         # The bundle is self-describing.
         self.assertTrue((bundle / "assembly.json").is_file())
 
@@ -179,6 +199,45 @@ class AssembleBehaviour(unittest.TestCase):
         result = self.assemble(profile, record, environment, stack)
         self.assertEqual(result.returncode, 2)
         self.assertIn("resolution", result.stderr)
+
+    def test_source_must_still_match_the_clean_resolution(self):
+        profile, record, environment, stack = self.write_inputs(
+            [[sys.executable, "-c", "open('out.bin','w').write('x')"]],
+            ["out.bin"])
+        (self.checkout / "tracked.txt").write_text("moved", encoding="utf-8")
+        subprocess.run(["git", "add", "tracked.txt"], cwd=self.checkout,
+                       check=True, capture_output=True)
+        subprocess.run(["git", "commit", "--quiet", "-m", "moved"],
+                       cwd=self.checkout, check=True, capture_output=True)
+
+        result = self.assemble(profile, record, environment, stack)
+
+        self.assertEqual(result.returncode, 1, result.stderr)
+        output, _ = self.outputs_of(result)
+        self.assertEqual(output["builds"]["HexAtlas"]["status"], "skipped")
+        self.assertFalse((self.checkout / "out.bin").exists())
+
+    def test_a_build_that_mutates_tracked_source_is_invalidated(self):
+        tracked = self.checkout / "tracked.txt"
+        tracked.write_text("before", encoding="utf-8")
+        subprocess.run(["git", "add", "tracked.txt"], cwd=self.checkout,
+                       check=True, capture_output=True)
+        subprocess.run(["git", "commit", "--quiet", "-m", "tracked"],
+                       cwd=self.checkout, check=True, capture_output=True)
+        self.revision = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=self.checkout, check=True,
+            capture_output=True, text=True).stdout.strip()
+        step = [sys.executable, "-c",
+                "open('tracked.txt','w').write('after'); "
+                "open('out.bin','w').write('artifact')"]
+
+        result = self.assemble(*self.write_inputs([step], ["out.bin"]))
+
+        self.assertEqual(result.returncode, 1, result.stderr)
+        output, _ = self.outputs_of(result)
+        self.assertEqual(
+            output["builds"]["HexAtlas"]["status"], "invalidated")
+        self.assertNotIn("HexAtlas", output["artifacts"])
 
 
 if __name__ == "__main__":

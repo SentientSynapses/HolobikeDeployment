@@ -49,15 +49,21 @@ Releases/<version>/
   emulation.json    present only when the release was admitted emulated
 ```
 
+`release.json` binds each original run-record name to its SHA-256 digest;
+assembly records bind their resolution, emulation records bind their assembly,
+and admission re-hashes the complete chain and every staged artifact before
+publication. The copied records therefore remain independently verifiable
+after `Artifacts/` is swept.
+
 Admission promotes only a clean chain: every gate passed, every selection
 resolved, every profile member built and staged, and any incorporated
 emulation healthy. A chain that fails any of these is refused — `Releases/`
 is untouched and the reasons are reported. Records under `Artifacts/` state
 facts; admission is the one step that decides, and the one writer here.
 
-A version is immutable: `admit` refuses a version whose directory already
-exists. Correcting a release means admitting a new version, never editing
-one. The record schema is `Schemas/record.schema.json` (the `release`
-kind); the toolchain versions a release should eventually also carry —
-notably the Unreal engine version — join it as the assembly that stages UE
-artifacts lands.
+A version is immutable: `admit` prepares the complete release beside its
+destination, publishes it atomically, and refuses a version whose directory
+already exists. Correcting a release means admitting a new version, never
+editing one. The record schema is `Schemas/record.schema.json` (the `release`
+kind); toolchain versions such as Unreal Engine join the assembly record when
+that integration begins staging product artifacts.

@@ -16,10 +16,11 @@ import subprocess
 from pathlib import Path
 
 from . import environment
+from . import filesystem
 from . import gitfacts
-from . import integration as integration_contract
 from . import record as record_contract
 from . import revisions as revisions_contract
+from . import stack as stack_contract
 
 PROBLEM_STATUSES = (
     "clone_failed", "dirty_skipped", "selection_mismatch", "diverged",
@@ -47,18 +48,15 @@ def _git_mutate(*arguments, cwd=None):
 
 def _load_origins(stack_root, stderr):
     """Map integration name -> declared origin; None on refused leaves."""
-    origins = {}
-    for leaf_path in sorted(Path(stack_root).glob("**/integration.json")):
-        document, errors = integration_contract.load_integration(leaf_path)
-        if document is None:
-            for error in errors:
-                print(f"{leaf_path}: {error}", file=stderr)
-            return None
-        origins[document.integration] = document.origin
-    return origins
+    leaves, errors = stack_contract.load_stack(stack_root)
+    if errors:
+        for error in errors:
+            print(error, file=stderr)
+        return None
+    return {name: document.origin for name, document in leaves.items()}
 
 
-def _clone(name, selection, origin, path):
+def _clone(selection, origin, path):
     action = {}
     if not origin:
         action["status"] = "unclonable"
@@ -67,7 +65,7 @@ def _clone(name, selection, origin, path):
     arguments = ["clone", "--quiet"]
     if selection.branch:
         arguments += ["--branch", selection.branch]
-    arguments += [origin, str(path)]
+    arguments += ["--", origin, str(path)]
     ok, error = _git_mutate(*arguments)
     if not ok:
         action["status"] = "clone_failed"
@@ -85,7 +83,7 @@ def _clone(name, selection, origin, path):
     return action
 
 
-def _update(name, selection, path):
+def _update(selection, path):
     action = {}
     revision, error = gitfacts.git_query(path, "rev-parse", "HEAD")
     if revision is None:
@@ -142,8 +140,8 @@ def _bootstrap_one(name, selection, document, origins):
         }
     path = Path(document.checkouts[name])
     if not path.exists():
-        return _clone(name, selection, origins.get(name, ""), path)
-    return _update(name, selection, path)
+        return _clone(selection, origins.get(name, ""), path)
+    return _update(selection, path)
 
 
 def run(revisions_path, environment_path, stack_root, artifacts_root,
@@ -214,9 +212,8 @@ def run(revisions_path, environment_path, stack_root, artifacts_root,
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
         "%Y%m%dT%H%M%S%fZ")
     records_root = Path(artifacts_root) / "records"
-    records_root.mkdir(parents=True, exist_ok=True)
     record_path = records_root / f"bootstrap-{manifest.line}-{stamp}.json"
-    record_path.write_text(text, encoding="utf-8")
+    filesystem.publish_text(record_path, text)
 
     print(f"record: {record_path}", file=stdout)
     for name, action in sorted(actions.items()):

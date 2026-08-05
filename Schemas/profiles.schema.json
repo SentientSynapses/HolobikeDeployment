@@ -57,8 +57,11 @@
           "run": { "enum": ["host"] },
           "environment": {
             "type": "object",
-            "propertyNames": { "minLength": 1 },
-            "additionalProperties": { "type": "string" }
+            "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[^\\u0000]*$"
+            }
           }
         }
       }

@@ -13,7 +13,12 @@
   "line": "dev",
   "version": "0.1.0",
   "profile": "services",
-  "chain": { "resolution": "r.json", "assembly": "a.json", "emulation": null },
+  "integrations": ["AthleteIdentity"],
+  "chain": {
+    "resolution": { "record": "r.json", "sha256": "0000000000000000000000000000000000000000000000000000000000000000" },
+    "assembly": { "record": "a.json", "sha256": "0000000000000000000000000000000000000000000000000000000000000000" },
+    "emulation": null
+  },
   "attestation": { "gates": "pass", "builds": "pass", "selections": "pass", "emulation": "absent" },
   "builds": {},
   "problems": []

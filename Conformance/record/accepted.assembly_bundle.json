@@ -12,8 +12,10 @@
   },
   "line": "dev",
   "profile": "services",
+  "integrations": ["AthleteIdentity", "HolobikeCore"],
   "resolution": {
     "record": "resolve-dev-20260804T120000000000Z.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "line": "dev"
   },
   "builds": {
@@ -31,9 +33,14 @@
       ]
     },
     "HolobikeCore": {
-      "status": "skipped",
-      "steps": [],
-      "detail": "no build entry point declared in the Stack leaf"
+      "status": "built",
+      "steps": [
+        {
+          "argv": ["bash", "./holobikecore.sh", "package"],
+          "exit": 0,
+          "log": "logs/HolobikeCore-step0.log"
+        }
+      ]
     }
   },
   "artifacts": {
@@ -43,10 +50,15 @@
         "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         "bytes": 4816304
       }
+    ],
+    "HolobikeCore": [
+      {
+        "path": "HolobikeCore/holobike-core-rootfs.tar",
+        "sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+        "bytes": 7340032
+      }
     ]
   },
-  "problems": [
-    "HolobikeCore: skipped \u2014 no build entry point declared"
-  ],
+  "problems": [],
   "bundle": "bundles/services-20260804T120000000000Z"
 }

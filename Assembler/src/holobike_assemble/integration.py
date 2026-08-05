@@ -8,10 +8,11 @@ throughout: unknown keys and unknown names are rejections.
 
 from __future__ import annotations
 
-import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import document, filesystem
 from .environment import INTEGRATIONS
 
 SCHEMA_VERSION = 1
@@ -21,6 +22,7 @@ KITS = ("ai_kit", "bike_kit", "geo_kit", "id_kit", "os_kit", "ue_kit")
 _ROOT_KEYS = ("schema_version", "integration", "kit", "repository",
               "origin", "entry_points", "artifacts")
 _ENTRY_POINTS = ("prove", "build", "serve", "probe")
+_ENVIRONMENT_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 @dataclass(frozen=True)
@@ -58,7 +60,8 @@ def _check_argv(errors, where, value):
     if not isinstance(value, list) or not value:
         errors.append(f"{where}: must be a non-empty array")
         return ()
-    if any(not isinstance(item, str) or not item for item in value):
+    if any(not isinstance(item, str) or not item or "\0" in item
+           for item in value):
         errors.append(f"{where}: every element must be a non-empty string")
         return ()
     return tuple(value)
@@ -69,10 +72,11 @@ def _check_environment_map(errors, where, value):
         errors.append(f"{where}: must be an object")
         return ()
     for key, entry in sorted(value.items()):
-        if not key or not isinstance(entry, str):
+        if not isinstance(key, str) or not _ENVIRONMENT_NAME.fullmatch(key) \
+                or not isinstance(entry, str) or "\0" in entry:
             errors.append(
-                f"{where}: keys must be non-empty and values must be "
-                "strings")
+                f"{where}: keys must be environment names and values must "
+                "be NUL-free strings")
             return ()
     return tuple(sorted(value.items()))
 
@@ -155,10 +159,18 @@ def _check_artifacts(errors, value):
         if not isinstance(path, str) or not path:
             errors.append(f"{where}: must be a non-empty string")
             continue
-        if path.startswith("/") or ".." in Path(path).parts:
-            errors.append(f"{where}: must be relative and must not escape")
+        try:
+            filesystem.relative_parts(path)
+        except filesystem.FilesystemContractError as error:
+            errors.append(f"{where}: {error}")
             continue
         collected.append(path)
+    if len(set(collected)) != len(collected):
+        errors.append("artifacts: paths must be unique")
+    basenames = [Path(path).name for path in collected]
+    if len(set(basenames)) != len(basenames):
+        errors.append(
+            "artifacts: file names must be unique in the staged bundle")
     return tuple(collected)
 
 
@@ -166,10 +178,9 @@ def validate_integration_text(text):
     """Validate one leaf document; returns (IntegrationDocument or None, errors)."""
     errors = []
     try:
-        root = json.loads(text)
-    except json.JSONDecodeError as error:
-        return None, [
-            f"document: not valid JSON ({error.msg}, line {error.lineno})"]
+        root = document.loads(text)
+    except document.JsonDocumentError as error:
+        return None, [f"document: not valid JSON ({error})"]
     if not isinstance(root, dict):
         return None, ["document: the root must be an object"]
 
@@ -207,8 +218,10 @@ def validate_integration_text(text):
     if "origin" in root:
         raw_origin = root["origin"]
         if not isinstance(raw_origin, str) or not raw_origin \
+                or raw_origin.startswith("-") or "\0" in raw_origin \
                 or any(character.isspace() for character in raw_origin):
-            errors.append("origin: must be a non-empty string without spaces")
+            errors.append(
+                "origin: must be a NUL-free, non-option string without spaces")
         else:
             origin = raw_origin
 

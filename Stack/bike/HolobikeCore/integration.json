@@ -3,5 +3,28 @@
   "integration": "HolobikeCore",
   "kit": "bike_kit",
   "repository": "HolobikeCore",
-  "origin": "git@github.com:Saga-Holographic/HolobikeCore.git"
+  "origin": "git@github.com:Saga-Holographic/HolobikeCore.git",
+  "entry_points": {
+    "prove": {
+      "argv": [
+        "bash",
+        "./holobikecore.sh",
+        "prove"
+      ]
+    },
+    "build": {
+      "steps": [
+        {
+          "argv": [
+            "bash",
+            "./holobikecore.sh",
+            "package"
+          ]
+        }
+      ]
+    }
+  },
+  "artifacts": [
+    "Builds/HolobikeCore_linux/holobike-core-rootfs.tar"
+  ]
 }

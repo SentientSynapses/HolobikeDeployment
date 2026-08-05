@@ -8,11 +8,11 @@ than assumed by the tool.
 
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import document, filesystem
 from .environment import INTEGRATIONS
 
 SCHEMA_VERSION = 1
@@ -59,8 +59,10 @@ def _check_site(errors, where, value):
     if not isinstance(path, str) or not path:
         errors.append(f"{where}.path: must be a non-empty string")
         return None
-    if path.startswith("/") or ".." in Path(path).parts:
-        errors.append(f"{where}.path: must be relative and must not escape")
+    try:
+        filesystem.relative_parts(path)
+    except filesystem.FilesystemContractError as error:
+        errors.append(f"{where}.path: {error}")
         return None
     return Site(integration=integration, path=path)
 
@@ -87,6 +89,7 @@ def _check_gate(errors, where, value):
         raw = value["exclude"]
         if not isinstance(raw, list) or any(
                 not isinstance(item, str) or not item or "/" in item
+                or "\0" in item or item in (".", "..")
                 for item in raw):
             errors.append(
                 f"{where}.exclude: must be an array of path component names")
@@ -102,10 +105,9 @@ def validate_policy_text(text):
     """Validate one policy document; returns (PolicyDocument or None, errors)."""
     errors = []
     try:
-        root = json.loads(text)
-    except json.JSONDecodeError as error:
-        return None, [
-            f"document: not valid JSON ({error.msg}, line {error.lineno})"]
+        root = document.loads(text)
+    except document.JsonDocumentError as error:
+        return None, [f"document: not valid JSON ({error})"]
     if not isinstance(root, dict):
         return None, ["document: the root must be an object"]
 

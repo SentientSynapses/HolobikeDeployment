@@ -8,9 +8,9 @@
     "HolobikeCore": { "branch": "main" },
     "AthleteIdentity": { "branch": "main" },
     "drAIs": { "branch": "main" },
-    "HolobikeExperience": { "branch": "agent/athlete-identity-v2-integration" },
+    "HolobikeExperience": { "branch": "main" },
     "HolobikeDevice": { "branch": "main" },
-    "HolobikeRider": { "branch": "agent/athlete-identity-v2-integration" },
+    "HolobikeRider": { "branch": "main" },
     "HolobikeWorlds": { "branch": "main" }
   }
 }

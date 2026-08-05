@@ -34,7 +34,7 @@
     "origin": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^\\S+$",
+      "pattern": "^(?!-)(?!.*\\u0000)\\S+$",
       "description": "The canonical clone source. bootstrap clones a missing checkout from it; an integration without one cannot be materialized, only reported."
     },
     "entry_points": {
@@ -75,15 +75,23 @@
     "artifacts": {
       "type": "array",
       "minItems": 1,
+      "uniqueItems": true,
       "description": "Checkout-relative paths of the outputs assemble stages into a bundle after a successful build. Never absolute, never escaping.",
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)(?!.*(?:^|/)\\.(?:/|$))(?!.*\\u0000)(?!.*/$).+$"
+      }
     }
   },
   "$defs": {
     "argv": {
       "type": "array",
       "minItems": 1,
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^[^\\u0000]+$"
+      }
     },
     "command": {
       "type": "object",
@@ -94,8 +102,11 @@
         "argv": { "$ref": "#/$defs/argv" },
         "env": {
           "type": "object",
-          "propertyNames": { "minLength": 1 },
-          "additionalProperties": { "type": "string" }
+          "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[^\\u0000]*$"
+          }
         }
       }
     }

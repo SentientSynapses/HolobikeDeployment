@@ -6,8 +6,8 @@
 - Integration domain: `geo`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 
-This directory owns the adapter to HexAtlas, not HexAtlas source or generated
-atlas data.
+This directory owns HexAtlas's declarative deployment contract, not adapter
+implementation, HexAtlas source, or generated atlas data.
 
 ## Assembly Contract
 

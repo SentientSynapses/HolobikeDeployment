@@ -11,7 +11,9 @@
       "if": { "properties": { "kind": { "const": "resolution" } } },
       "then": {
         "required": ["resolved", "gates"],
-        "properties": { "actions": false, "profile": false,
+        "properties": { "run": { "properties": { "verb": { "const": "resolve" } } },
+                        "actions": false, "profile": false,
+                        "integrations": false,
                         "builds": false, "artifacts": false,
                         "resolution": false, "bundle": false,
                         "assembly": false, "members": false }
@@ -21,7 +23,9 @@
       "if": { "properties": { "kind": { "const": "bootstrap" } } },
       "then": {
         "required": ["actions"],
-        "properties": { "resolved": false, "gates": false,
+        "properties": { "run": { "properties": { "verb": { "const": "bootstrap" } } },
+                        "resolved": false, "gates": false,
+                        "integrations": false,
                         "profile": false, "builds": false,
                         "artifacts": false, "resolution": false,
                         "bundle": false, "assembly": false,
@@ -31,9 +35,10 @@
     {
       "if": { "properties": { "kind": { "const": "assembly" } } },
       "then": {
-        "required": ["profile", "resolution", "builds", "artifacts",
+        "required": ["profile", "integrations", "resolution", "builds", "artifacts",
                      "bundle"],
-        "properties": { "resolved": false, "gates": false,
+        "properties": { "run": { "properties": { "verb": { "const": "assemble" } } },
+                        "resolved": false, "gates": false,
                         "actions": false, "assembly": false,
                         "members": false }
       }
@@ -41,8 +46,9 @@
     {
       "if": { "properties": { "kind": { "const": "emulation" } } },
       "then": {
-        "required": ["profile", "assembly", "members"],
-        "properties": { "resolved": false, "gates": false,
+        "required": ["profile", "integrations", "assembly", "members"],
+        "properties": { "run": { "properties": { "verb": { "const": "emulate" } } },
+                        "resolved": false, "gates": false,
                         "actions": false, "resolution": false,
                         "builds": false, "artifacts": false,
                         "bundle": false, "version": false,
@@ -52,8 +58,9 @@
     {
       "if": { "properties": { "kind": { "const": "release" } } },
       "then": {
-        "required": ["version", "profile", "chain", "attestation"],
-        "properties": { "resolved": false, "gates": false,
+        "required": ["version", "profile", "integrations", "chain", "attestation"],
+        "properties": { "run": { "properties": { "verb": { "const": "admit" } } },
+                        "resolved": false, "gates": false,
                         "actions": false, "resolution": false,
                         "builds": false, "artifacts": false,
                         "bundle": false, "assembly": false,
@@ -134,13 +141,24 @@
       "minLength": 1,
       "pattern": "^[a-z0-9][a-z0-9-]*$"
     },
+    "integrations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
+                 "AthleteIdentity", "drAIs", "HolobikeExperience",
+                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds"]
+      }
+    },
     "resolution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["record", "line"],
+      "required": ["record", "sha256", "line"],
       "description": "assembly records only: the resolution this bundle was built from — a bundle that cannot say what it was built from is not provenance.",
       "properties": {
-        "record": { "type": "string", "minLength": 1 },
+        "record": { "$ref": "#/$defs/record_name" },
+        "sha256": { "$ref": "#/$defs/sha256" },
         "line": { "type": "string", "minLength": 1 }
       }
     },
@@ -167,18 +185,18 @@
       }
     },
     "bundle": {
-      "type": "string",
-      "minLength": 1,
+      "$ref": "#/$defs/relative_path",
       "description": "assembly records only: the bundle directory this run staged, relative to the artifacts root."
     },
     "assembly": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["record", "bundle"],
+      "required": ["record", "sha256", "bundle"],
       "description": "emulation records only: the assembly this run executed — the chain reads emulation → assembly → resolution → declaration, and no step can lie about its parent.",
       "properties": {
-        "record": { "type": "string", "minLength": 1 },
-        "bundle": { "type": "string", "minLength": 1 }
+        "record": { "$ref": "#/$defs/record_name" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bundle": { "$ref": "#/$defs/relative_path" }
       }
     },
     "members": {
@@ -203,10 +221,13 @@
       "required": ["resolution", "assembly", "emulation"],
       "description": "release records only: the records this release was admitted from, copied into the release directory so it references nothing ephemeral. emulation is null when the release was admitted un-emulated.",
       "properties": {
-        "resolution": { "type": "string", "minLength": 1 },
-        "assembly": { "type": "string", "minLength": 1 },
+        "resolution": { "$ref": "#/$defs/record_reference" },
+        "assembly": { "$ref": "#/$defs/record_reference" },
         "emulation": {
-          "type": ["string", "null"], "minLength": 1
+          "oneOf": [
+            { "$ref": "#/$defs/record_reference" },
+            { "type": "null" }
+          ]
         }
       }
     },
@@ -264,7 +285,7 @@
             "ready_after_ms": { "type": "integer", "minimum": 0 }
           }
         },
-        "log": { "type": "string", "minLength": 1 },
+        "log": { "$ref": "#/$defs/relative_path" },
         "shutdown": {
           "type": "object",
           "additionalProperties": false,
@@ -282,7 +303,7 @@
       "additionalProperties": false,
       "required": ["status", "steps"],
       "properties": {
-        "status": { "enum": ["built", "failed", "skipped"] },
+        "status": { "enum": ["built", "failed", "skipped", "invalidated"] },
         "steps": {
           "type": "array",
           "items": {
@@ -296,7 +317,7 @@
                 "items": { "type": "string", "minLength": 1 }
               },
               "exit": { "type": "integer" },
-              "log": { "type": "string", "minLength": 1 }
+              "log": { "$ref": "#/$defs/relative_path" }
             }
           }
         },
@@ -308,8 +329,8 @@
       "additionalProperties": false,
       "required": ["path", "sha256", "bytes"],
       "properties": {
-        "path": { "type": "string", "minLength": 1 },
-        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "path": { "$ref": "#/$defs/relative_path" },
+        "sha256": { "$ref": "#/$defs/sha256" },
         "bytes": { "type": "integer", "minimum": 0 }
       }
     },
@@ -346,6 +367,27 @@
         },
         "truncated": { "type": "integer", "minimum": 0 },
         "detail": { "type": "string", "minLength": 1 }
+      }
+    },
+    "record_name": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*\\.json$"
+    },
+    "relative_path": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)(?!.*(?:^|/)\\.(?:/|$))(?!.*\\u0000)(?!.*/$).+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "record_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record", "sha256"],
+      "properties": {
+        "record": { "$ref": "#/$defs/record_name" },
+        "sha256": { "$ref": "#/$defs/sha256" }
       }
     },
     "resolution": {
