@@ -29,7 +29,8 @@
           "HolobikeExperience",
           "HolobikeDevice",
           "HolobikeRider",
-          "HolobikeWorlds"
+          "HolobikeWorlds",
+          "OrielUI"
         ]
       }
     },
@@ -47,7 +48,8 @@
           "HolobikeExperience",
           "HolobikeDevice",
           "HolobikeRider",
-          "HolobikeWorlds"
+          "HolobikeWorlds",
+          "OrielUI"
         ]
       },
       "additionalProperties": {

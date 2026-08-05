@@ -109,7 +109,8 @@
         "HolobikeExperience": { "$ref": "#/$defs/resolution" },
         "HolobikeDevice": { "$ref": "#/$defs/resolution" },
         "HolobikeRider": { "$ref": "#/$defs/resolution" },
-        "HolobikeWorlds": { "$ref": "#/$defs/resolution" }
+        "HolobikeWorlds": { "$ref": "#/$defs/resolution" },
+        "OrielUI": { "$ref": "#/$defs/resolution" }
       }
     },
     "gates": {
@@ -133,7 +134,8 @@
         "HolobikeExperience": { "$ref": "#/$defs/action" },
         "HolobikeDevice": { "$ref": "#/$defs/action" },
         "HolobikeRider": { "$ref": "#/$defs/action" },
-        "HolobikeWorlds": { "$ref": "#/$defs/action" }
+        "HolobikeWorlds": { "$ref": "#/$defs/action" },
+        "OrielUI": { "$ref": "#/$defs/action" }
       }
     },
     "profile": {
@@ -148,7 +150,8 @@
       "items": {
         "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
                  "AthleteIdentity", "drAIs", "HolobikeExperience",
-                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds"]
+                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds",
+                 "OrielUI"]
       }
     },
     "resolution": {
@@ -168,7 +171,8 @@
       "propertyNames": {
         "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
                  "AthleteIdentity", "drAIs", "HolobikeExperience",
-                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds"]
+                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds",
+                 "OrielUI"]
       },
       "additionalProperties": { "$ref": "#/$defs/build_result" }
     },
@@ -177,7 +181,8 @@
       "propertyNames": {
         "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
                  "AthleteIdentity", "drAIs", "HolobikeExperience",
-                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds"]
+                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds",
+                 "OrielUI"]
       },
       "additionalProperties": {
         "type": "array",
@@ -205,7 +210,8 @@
       "propertyNames": {
         "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
                  "AthleteIdentity", "drAIs", "HolobikeExperience",
-                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds"]
+                 "HolobikeDevice", "HolobikeRider", "HolobikeWorlds",
+                 "OrielUI"]
       },
       "additionalProperties": { "$ref": "#/$defs/member" }
     },

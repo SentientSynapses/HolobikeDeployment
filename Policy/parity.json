@@ -22,6 +22,13 @@
       "left": { "integration": "HolobikeWorlds", "path": "HolobikeWorlds" },
       "right": { "integration": "HolobikeExperience", "path": "Unreal/Plugins/HolobikeWorlds" },
       "exclude": [".git", "Binaries", "Intermediate", "Saved", "DerivedDataCache", "Content"]
+    },
+    {
+      "name": "orielui-dual-copy",
+      "kind": "tree_parity",
+      "left": { "integration": "OrielUI", "path": "OrielUI" },
+      "right": { "integration": "HolobikeExperience", "path": "Unreal/Plugins/OrielUI" },
+      "exclude": [".git", "Binaries", "Intermediate", "Saved", "DerivedDataCache", "Content"]
     }
   ]
 }

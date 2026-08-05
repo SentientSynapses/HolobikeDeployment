@@ -32,6 +32,7 @@ INTEGRATIONS = (
     "HolobikeDevice",
     "HolobikeRider",
     "HolobikeWorlds",
+    "OrielUI",
 )
 
 TOOLCHAINS = (

@@ -61,7 +61,8 @@
             "HolobikeExperience",
             "HolobikeDevice",
             "HolobikeRider",
-            "HolobikeWorlds"
+            "HolobikeWorlds",
+            "OrielUI"
           ]
         },
         "path": {

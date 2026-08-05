@@ -137,11 +137,18 @@ class IntegrationConformance(unittest.TestCase):
             integration.SCHEMA_VERSION)
 
     def test_every_stack_leaf_is_an_accepted_fixture(self):
-        # The ten committed leaves are held to the same judge as the corpus:
-        # a leaf that drifts from the contract fails the suite, not just the
-        # next live preflight.
+        # The committed leaves are held to the same judge as the corpus: a
+        # leaf that drifts from the contract fails the suite, not just the
+        # next live preflight. The expected set is read off the schema's
+        # roster rather than counted, so enrolling an integration cannot
+        # leave this assertion behind, and a duplicate or misnamed leaf is
+        # caught as precisely as a missing one.
+        schema = json.loads(INTEGRATION_SCHEMA.read_text(encoding="utf-8"))
+        roster = schema["properties"]["integration"]["enum"]
         leaves = sorted((REPO_ROOT / "Stack").glob("**/integration.json"))
-        self.assertEqual(len(leaves), 10, leaves)
+        declared = [json.loads(leaf.read_text(encoding="utf-8"))["integration"]
+                    for leaf in leaves]
+        self.assertEqual(sorted(declared), sorted(roster), leaves)
         for leaf in leaves:
             with self.subTest(leaf=str(leaf.relative_to(REPO_ROOT))):
                 result = validate_integration(leaf)

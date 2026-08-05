@@ -44,6 +44,7 @@ ROSTER = (
     "uroborOS", "HexAtlas", "Assetscape", "HolobikeCore", "AthleteIdentity",
     "drAIs", "HolobikeExperience", "HolobikeDevice", "HolobikeRider",
     "HolobikeWorlds",
+    "OrielUI",
 )
 
 

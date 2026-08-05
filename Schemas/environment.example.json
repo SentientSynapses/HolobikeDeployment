@@ -10,7 +10,8 @@
     "HolobikeExperience": "/home/example/git_projects/ue_kit/HolobikeExperience",
     "HolobikeDevice": "/home/example/git_projects/ue_kit/HolobikeDevice_uplugin",
     "HolobikeRider": "/home/example/git_projects/ue_kit/HolobikeRider_uplugin",
-    "HolobikeWorlds": "/home/example/git_projects/ue_kit/HolobikeWorlds_uplugin"
+    "HolobikeWorlds": "/home/example/git_projects/ue_kit/HolobikeWorlds_uplugin",
+    "OrielUI": "/home/example/git_projects/ue_kit/OrielUI_uplugin"
   },
   "toolchains": {
     "unreal_engine": "/home/example/git_projects/third_party/UnrealEngine-5.7.4-release",

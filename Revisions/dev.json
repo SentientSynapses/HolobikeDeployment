@@ -11,6 +11,7 @@
     "HolobikeExperience": { "branch": "main" },
     "HolobikeDevice": { "branch": "main" },
     "HolobikeRider": { "branch": "main" },
-    "HolobikeWorlds": { "branch": "main" }
+    "HolobikeWorlds": { "branch": "main" },
+    "OrielUI": { "branch": "main" }
   }
 }

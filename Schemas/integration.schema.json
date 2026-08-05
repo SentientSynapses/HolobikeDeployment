@@ -19,7 +19,8 @@
         "HolobikeExperience",
         "HolobikeDevice",
         "HolobikeRider",
-        "HolobikeWorlds"
+        "HolobikeWorlds",
+        "OrielUI"
       ]
     },
     "kit": {
