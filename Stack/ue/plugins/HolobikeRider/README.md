@@ -2,7 +2,7 @@
 
 ## Source
 
-- Repository: `ue_kit/HolobikeRider_uplugin`
+- Repository: `ue/HolobikeRider_uplugin`
 - Plugin: `HolobikeRider/HolobikeRider.uplugin`
 - Integration domain: `ue`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`

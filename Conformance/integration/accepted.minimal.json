@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
   "integration": "HexAtlas",
-  "kit": "geo_kit",
+  "domain": "geo",
   "repository": "HexAtlas"
 }

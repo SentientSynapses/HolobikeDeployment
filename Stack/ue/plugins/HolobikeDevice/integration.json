@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "integration": "HolobikeDevice",
-  "kit": "ue_kit",
+  "domain": "ue",
   "repository": "HolobikeDevice_uplugin",
   "origin": "git@github.com:Saga-Holographic/HolobikeDevice_uplugin.git"
 }

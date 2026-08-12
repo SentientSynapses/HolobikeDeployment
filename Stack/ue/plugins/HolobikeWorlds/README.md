@@ -2,7 +2,7 @@
 
 ## Source
 
-- Repository: `ue_kit/HolobikeWorlds_uplugin`
+- Repository: `ue/HolobikeWorlds_uplugin`
 - Plugin: `HolobikeWorlds/HolobikeWorlds.uplugin`
 - Integration domain: `ue`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`

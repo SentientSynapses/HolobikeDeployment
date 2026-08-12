@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
   "integration": "HexAtlas",
-  "kit": "map_kit",
+  "domain": "cartography",
   "repository": "HexAtlas"
 }

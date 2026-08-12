@@ -1,6 +1,6 @@
 # Bike-Runtime Integration
 
-This integration connects `bike_kit/HolobikeCore`.
+This integration connects `bike/HolobikeCore`.
 
 Repository adapter:
 

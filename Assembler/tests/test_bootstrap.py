@@ -68,7 +68,7 @@ class BootstrapBehaviour(unittest.TestCase):
         document = {
             "schema_version": 1,
             "integration": "HexAtlas",
-            "kit": "geo_kit",
+            "domain": "geo",
             "repository": "HexAtlas",
         }
         if origin is not None:

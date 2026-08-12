@@ -2,7 +2,7 @@
 
 ## Source
 
-- Repository: `ue_kit/HolobikeDevice_uplugin`
+- Repository: `ue/HolobikeDevice_uplugin`
 - Plugin: `HolobikeDevice/HolobikeDevice.uplugin`
 - Integration domain: `ue`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`

@@ -2,7 +2,7 @@
 
 ## Source
 
-- Repository: `id_kit/AthleteIdentity`
+- Repository: `id/AthleteIdentity`
 - Integration domain: `id`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 

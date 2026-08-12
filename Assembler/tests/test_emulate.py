@@ -64,7 +64,7 @@ class EmulateBehaviour(unittest.TestCase):
         document = {
             "schema_version": 1,
             "integration": "HexAtlas",
-            "kit": "geo_kit",
+            "domain": "geo",
             "repository": "HexAtlas",
         }
         if declare_serve:

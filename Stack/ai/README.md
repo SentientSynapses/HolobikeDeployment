@@ -1,6 +1,6 @@
 # Intelligence Integration
 
-This integration connects `ai_kit/drAIs`.
+This integration connects `ai/drAIs`.
 
 Repository adapter:
 

@@ -2,7 +2,7 @@
 
 ## Source
 
-- Repository: `ue_kit/HoloviewDisplay_uplugin`
+- Repository: `ue/HoloviewDisplay_uplugin`
 - Plugin: `HoloviewDisplay/HoloviewDisplay.uplugin`
 - Integration domain: `ue`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`

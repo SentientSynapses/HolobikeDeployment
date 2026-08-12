@@ -53,7 +53,7 @@ def minimal_leaf(name, repository=None):
     return {
         "schema_version": 1,
         "integration": name,
-        "kit": "geo_kit",
+        "domain": "geo",
         "repository": repository or name,
     }
 

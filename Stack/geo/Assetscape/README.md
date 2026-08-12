@@ -2,7 +2,7 @@
 
 ## Source
 
-- Repository: `geo_kit/Assetscape`
+- Repository: `geo/Assetscape`
 - Integration domain: `geo`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 

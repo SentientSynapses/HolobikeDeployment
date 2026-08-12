@@ -2,7 +2,7 @@
 
 ## Source
 
-- Repository: `os_kit/uroborOS`
+- Repository: `os/uroborOS`
 - Integration domain: `os`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 

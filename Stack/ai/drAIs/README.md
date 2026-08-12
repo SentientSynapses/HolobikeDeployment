@@ -2,7 +2,7 @@
 
 ## Source
 
-- Repository: `ai_kit/drAIs`
+- Repository: `ai/drAIs`
 - Integration domain: `ai`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 

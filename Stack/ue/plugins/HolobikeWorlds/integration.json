@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "integration": "HolobikeWorlds",
-  "kit": "ue_kit",
+  "domain": "ue",
   "repository": "HolobikeWorlds_uplugin",
   "origin": "git@github.com:Saga-Holographic/HolobikeWorlds_uplugin.git"
 }

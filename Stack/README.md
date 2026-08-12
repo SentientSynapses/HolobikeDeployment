@@ -2,8 +2,8 @@
 
 `Stack/` is the per-repository chapter of the specification: the software
 this repository composes. The first level is a short HoloBike software domain,
-mirroring the kit repositories that hold those sources (`ai_kit`, `bike_kit`,
-`geo_kit`, `id_kit`, `os_kit`, `ue_kit`); its README owns compatibility among
+mirroring the domain repositories that hold those sources (`ai`, `bike`,
+`geo`, `id`, `os`, `ue`); its README owns compatibility among
 the repositories in that domain. The leaf uses exact repository names and
 owns one deployment-facing source adapter contract.
 

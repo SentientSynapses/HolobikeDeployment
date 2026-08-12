@@ -17,9 +17,9 @@ from .environment import INTEGRATIONS
 
 SCHEMA_VERSION = 1
 
-KITS = ("ai_kit", "bike_kit", "geo_kit", "id_kit", "os_kit", "ue_kit")
+DOMAINS = ("ai", "bike", "geo", "id", "os", "ue")
 
-_ROOT_KEYS = ("schema_version", "integration", "kit", "repository",
+_ROOT_KEYS = ("schema_version", "integration", "domain", "repository",
               "origin", "entry_points", "artifacts")
 _ENTRY_POINTS = ("prove", "build", "serve", "probe")
 _ENVIRONMENT_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -36,7 +36,7 @@ class Command:
 @dataclass(frozen=True)
 class IntegrationDocument:
     integration: str
-    kit: str
+    domain: str
     repository: str
     origin: str = ""
     prove_argv: tuple = ()
@@ -203,11 +203,11 @@ def validate_integration_text(text):
             f"integration: unknown name {integration!r} — the roster is "
             "closed")
 
-    kit = root.get("kit")
-    if "kit" not in root:
-        errors.append("kit: required")
-    elif kit not in KITS:
-        errors.append(f"kit: unknown kit {kit!r}")
+    domain = root.get("domain")
+    if "domain" not in root:
+        errors.append("domain: required")
+    elif domain not in DOMAINS:
+        errors.append(f"domain: unknown domain {domain!r}")
 
     if "repository" not in root:
         errors.append("repository: required")
@@ -241,7 +241,7 @@ def validate_integration_text(text):
         return None, errors
     return IntegrationDocument(
         integration=integration,
-        kit=kit,
+        domain=domain,
         repository=root["repository"],
         origin=origin,
         prove_argv=prove_argv,

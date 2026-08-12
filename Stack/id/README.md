@@ -1,6 +1,6 @@
 # Athlete-Identity Integration
 
-This integration connects `id_kit/AthleteIdentity`.
+This integration connects `id/AthleteIdentity`.
 
 Repository adapter:
 

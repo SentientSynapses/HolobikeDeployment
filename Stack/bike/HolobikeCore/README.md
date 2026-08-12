@@ -2,7 +2,7 @@
 
 ## Source
 
-- Repository: `bike_kit/HolobikeCore`
+- Repository: `bike/HolobikeCore`
 - Integration domain: `bike`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 

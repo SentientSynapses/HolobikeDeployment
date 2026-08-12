@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "integration": "HolobikeExperience",
-  "kit": "ue_kit",
+  "domain": "ue",
   "repository": "HolobikeExperience",
   "origin": "git@github.com:Saga-Holographic/HolobikeExperience.git"
 }

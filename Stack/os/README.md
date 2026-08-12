@@ -1,6 +1,6 @@
 # Operating-System Integration
 
-This integration connects `os_kit/uroborOS`.
+This integration connects `os/uroborOS`.
 
 Repository adapter:
 

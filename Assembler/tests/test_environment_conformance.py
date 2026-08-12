@@ -130,8 +130,8 @@ class IntegrationConformance(unittest.TestCase):
             set(schema["properties"]["integration"]["enum"]),
             set(environment.INTEGRATIONS))
         self.assertEqual(
-            set(schema["properties"]["kit"]["enum"]),
-            set(integration.KITS))
+            set(schema["properties"]["domain"]["enum"]),
+            set(integration.DOMAINS))
         self.assertEqual(
             schema["properties"]["schema_version"]["const"],
             integration.SCHEMA_VERSION)

@@ -64,7 +64,7 @@ class AssembleBehaviour(unittest.TestCase):
         document = {
             "schema_version": 1,
             "integration": "HexAtlas",
-            "kit": "geo_kit",
+            "domain": "geo",
             "repository": "HexAtlas",
         }
         if build_steps is not None:
