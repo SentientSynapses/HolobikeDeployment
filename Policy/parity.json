@@ -29,6 +29,13 @@
       "left": { "integration": "OrielUI", "path": "OrielUI" },
       "right": { "integration": "HolobikeExperience", "path": "Unreal/Plugins/OrielUI" },
       "exclude": [".git", "Binaries", "Intermediate", "Saved", "DerivedDataCache", "Content"]
+    },
+    {
+      "name": "holoviewdisplay-dual-copy",
+      "kind": "tree_parity",
+      "left": { "integration": "HoloviewDisplay", "path": "HoloviewDisplay" },
+      "right": { "integration": "HolobikeExperience", "path": "Unreal/Plugins/HoloviewDisplay" },
+      "exclude": [".git", "Binaries", "Intermediate", "Saved", "DerivedDataCache", "Content"]
     }
   ]
 }

@@ -30,6 +30,7 @@
           "HolobikeDevice",
           "HolobikeRider",
           "HolobikeWorlds",
+          "HoloviewDisplay",
           "OrielUI"
         ]
       }
@@ -49,6 +50,7 @@
           "HolobikeDevice",
           "HolobikeRider",
           "HolobikeWorlds",
+          "HoloviewDisplay",
           "OrielUI"
         ]
       },

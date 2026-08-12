@@ -11,6 +11,7 @@
     "HolobikeDevice": "/home/example/git_projects/ue_kit/HolobikeDevice_uplugin",
     "HolobikeRider": "/home/example/git_projects/ue_kit/HolobikeRider_uplugin",
     "HolobikeWorlds": "/home/example/git_projects/ue_kit/HolobikeWorlds_uplugin",
+    "HoloviewDisplay": "/home/example/git_projects/ue_kit/HoloviewDisplay_uplugin",
     "OrielUI": "/home/example/git_projects/ue_kit/OrielUI_uplugin"
   },
   "toolchains": {

@@ -20,6 +20,7 @@ Current source checkouts:
 | Device transport | [`HolobikeDevice/`](plugins/HolobikeDevice/README.md) |
 | Rider systems | [`HolobikeRider/`](plugins/HolobikeRider/README.md) |
 | World composition | [`HolobikeWorlds/`](plugins/HolobikeWorlds/README.md) |
+| Stereoscopic display | [`HoloviewDisplay/`](plugins/HoloviewDisplay/README.md) |
 
 The corresponding project locations are:
 
@@ -28,6 +29,7 @@ HolobikeExperience/Unreal/HolobikeExperience.uproject
 HolobikeExperience/Unreal/Plugins/HolobikeDevice
 HolobikeExperience/Unreal/Plugins/HolobikeRider
 HolobikeExperience/Unreal/Plugins/HolobikeWorlds
+HolobikeExperience/Unreal/Plugins/HoloviewDisplay
 ```
 
 This integration owns revision compatibility, plugin synchronization checks,

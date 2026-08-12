@@ -32,6 +32,7 @@ INTEGRATIONS = (
     "HolobikeDevice",
     "HolobikeRider",
     "HolobikeWorlds",
+    "HoloviewDisplay",
     "OrielUI",
 )
 

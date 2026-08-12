@@ -29,6 +29,7 @@
         "HolobikeDevice": { "$ref": "#/$defs/selection" },
         "HolobikeRider": { "$ref": "#/$defs/selection" },
         "HolobikeWorlds": { "$ref": "#/$defs/selection" },
+        "HoloviewDisplay": { "$ref": "#/$defs/selection" },
         "OrielUI": { "$ref": "#/$defs/selection" }
       }
     }
