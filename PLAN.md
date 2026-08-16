@@ -166,8 +166,10 @@ This verb is described here but built only when its first posture lands
   enough to admit against, per the chain's existing optional-emulation
   shape.
 - **D-06 The machine runs on a timer.** A scheduled `resolve` per
-  committed line, owned by `helgafell_operator` (workstation operations),
-  not by this repository — the Assembler gains no scheduler.
+  committed line. The Assembler gains no scheduler — systemd is the
+  scheduler, and this repository declares the unit templates
+  (`Assembler/timers/`) on the `environment.example.json` precedent:
+  tracked template, per-host install into `~/.config/systemd/user/`.
 - **D-07 The doctrine gets ADRs.** 0004 gates annotate / admission
   refuses (skips are problems; `linked` is parity by construction). 0005
   roster membership and why nonmembers carry reasons. 0006 the record

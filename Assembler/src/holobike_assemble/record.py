@@ -63,8 +63,8 @@ _RESOLUTION_KEYS = ("selected", "status", "revision", "branch", "dirty",
                     "detail")
 _STATUSES = ("resolved", "selection_mismatch", "unresolvable")
 _GATE_KEYS = ("kind", "status", "counts", "mismatches", "truncated",
-              "detail")
-_GATE_STATUSES = ("pass", "fail", "skipped")
+              "detail", "target")
+_GATE_STATUSES = ("pass", "fail", "skipped", "linked")
 _GATE_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 _COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 _RECORD_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*\.json$")
@@ -225,6 +225,12 @@ def _check_gate_verdict(errors, where, value):
         errors.append(f"{where}.truncated: must be a whole number")
     if "detail" in value:
         _require_string(errors, f"{where}.detail", value["detail"])
+    if value.get("status") == "linked" and "target" not in value:
+        # Parity by construction must say what the one canonical tree is;
+        # a bare "linked" attests sameness without naming the same what.
+        errors.append(f"{where}.target: required for a linked verdict")
+    if "target" in value:
+        _require_string(errors, f"{where}.target", value["target"])
 
 
 def _check_build(errors, where, value):

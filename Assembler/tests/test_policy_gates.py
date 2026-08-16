@@ -7,6 +7,7 @@ excluded, watch it stay silent.
 
 import json
 import pathlib
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -153,6 +154,41 @@ class GateBehaviour(unittest.TestCase):
 
         result = self.resolve(*inputs)
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_a_linked_mount_is_parity_by_construction(self):
+        inputs = self.write_inputs()
+        mounted = self.right / "Mounted/Plugin"
+        shutil.rmtree(mounted)
+        mounted.symlink_to(self.left / "Plugin", target_is_directory=True)
+
+        result = self.resolve(*inputs)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        record = self.record_of(result)
+        verdict = record["gates"]["rider-dual-copy"]
+        self.assertEqual(verdict["status"], "linked")
+        self.assertEqual(
+            verdict["target"], str((self.left / "Plugin").resolve()))
+        self.assertEqual(record["problems"], [])
+
+    def test_a_link_to_somewhere_else_is_still_compared(self):
+        # "It's a link" is not the fact; "both sites are the same tree"
+        # is. A mount linked to the wrong place must be compared like any
+        # copy, not waved through.
+        inputs = self.write_inputs()
+        elsewhere = self.root / "Elsewhere/Plugin"
+        (elsewhere / "Source").mkdir(parents=True)
+        (elsewhere / "Source/Module.cpp").write_text(
+            "int main() { return 2; }\n", encoding="utf-8")
+        mounted = self.right / "Mounted/Plugin"
+        shutil.rmtree(mounted)
+        mounted.symlink_to(elsewhere, target_is_directory=True)
+
+        result = self.resolve(*inputs)
+        self.assertEqual(result.returncode, 1)
+        verdict = self.record_of(result)["gates"]["rider-dual-copy"]
+        self.assertEqual(verdict["status"], "fail")
+        self.assertIn("differs: Source/Module.cpp", verdict["mismatches"])
+        self.assertEqual(verdict["counts"]["only_left"], 1)
 
     def test_an_unevaluable_gate_is_skipped_and_that_is_a_problem(self):
         environment, revisions, policy_dir = self.write_inputs()

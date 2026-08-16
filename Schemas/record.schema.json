@@ -362,7 +362,7 @@
       "required": ["kind", "status"],
       "properties": {
         "kind": { "enum": ["tree_parity"] },
-        "status": { "enum": ["pass", "fail", "skipped"] },
+        "status": { "enum": ["pass", "fail", "skipped", "linked"] },
         "counts": {
           "type": "object",
           "additionalProperties": { "type": "integer", "minimum": 0 }
@@ -372,7 +372,8 @@
           "items": { "type": "string", "minLength": 1 }
         },
         "truncated": { "type": "integer", "minimum": 0 },
-        "detail": { "type": "string", "minLength": 1 }
+        "detail": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 }
       }
     },
     "record_name": {

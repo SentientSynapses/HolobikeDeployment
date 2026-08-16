@@ -49,6 +49,19 @@ def evaluate_tree_parity(gate, checkouts):
         facts["detail"] = left_error or right_error
         return facts
 
+    left_real = left_root.resolve()
+    right_real = right_root.resolve()
+    if left_real == right_real:
+        # One canonical tree behind both sites: parity by construction.
+        # A file-by-file pass here would read as two copies being kept
+        # equal when there is only one copy — coverage that does not
+        # exist, reported as if it did. The verdict says which it is.
+        # A link that resolves somewhere *else* takes the normal path
+        # below and is compared like any copy.
+        facts["status"] = "linked"
+        facts["target"] = str(left_real)
+        return facts
+
     left_files = _tree_files(left_root, gate.exclude)
     right_files = _tree_files(right_root, gate.exclude)
     only_left = sorted(set(left_files) - set(right_files))

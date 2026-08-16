@@ -49,7 +49,9 @@ def _judge_resolution(resolution, expected_integrations):
         elif facts.get("dirty"):
             problems.append(f"selection {name}: source checkout was dirty")
     for name, verdict in sorted(resolution["gates"].items()):
-        if verdict["status"] != "pass":
+        # "linked" is parity by construction — one canonical tree behind
+        # both sites — so it admits exactly as a pass does.
+        if verdict["status"] not in ("pass", "linked"):
             problems.append(f"gate {name}: {verdict['status']}")
     problems.extend(f"resolution: {item}" for item in resolution["problems"])
     return problems

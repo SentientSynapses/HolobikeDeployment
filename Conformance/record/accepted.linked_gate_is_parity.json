@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "kind": "resolution",
+  "run": {
+    "verb": "resolve",
+    "started_at_utc": "2026-08-16T12:00:00Z",
+    "finished_at_utc": "2026-08-16T12:00:01Z"
+  },
+  "deployment": {
+    "revision": "bae19ddbae19ddbae19ddbae19ddbae19ddbae19",
+    "dirty": false
+  },
+  "line": "dev",
+  "resolved": {
+    "OrielUI": {
+      "selected": { "branch": "main" },
+      "status": "resolved",
+      "revision": "0123456789abcdef0123456789abcdef01234567",
+      "branch": "main",
+      "dirty": false
+    }
+  },
+  "gates": {
+    "orielui-dual-copy": {
+      "kind": "tree_parity",
+      "status": "linked",
+      "target": "/home/rider/git_projects/ue_kit/OrielUI_uplugin/OrielUI"
+    }
+  },
+  "problems": []
+}
