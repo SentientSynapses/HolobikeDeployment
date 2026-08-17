@@ -254,10 +254,23 @@ wrapped enum lines.
   status); `admit` refuses anything unsatisfied.
 - Fixtures: accepted two-engines; rejected unversioned-engine; rejected
   `kit` spelling; wrong-version rejections refreshed throughout.
+- Collapse `Schemas/environment.example.json` into
+  `Conformance/environment/accepted.full.json`. The two documents differ
+  today by two toolchain path prefixes and nothing else — one shape held
+  in two places, which is the drift this repository gates against
+  elsewhere. The fixture proves the validator accepts a full document
+  and the example teaches a human what to write; one file does both.
+  Point the suite's `EXAMPLE` binding at the fixture, cite that path
+  from `Schemas/README.md` and `Assembler/README.md`, and delete the
+  example. Two further citations name the file as the tracked-template
+  precedent — D-06 above and `Assembler/timers/README.md` — and must
+  name its successor instead; the pattern outlives the filename. Folded
+  in here because the v2 sweep rewrites both documents anyway —
+  collapsing separately would touch them twice.
 
 **Exit gate:** preflight cannot call the wrong engine "present"; no
-schema accepts both spellings of anything; the suite is green at the
-new constants.
+schema accepts both spellings of anything; one tracked document carries
+the environment shape; the suite is green at the new constants.
 
 ### M12 — lines and roster
 
