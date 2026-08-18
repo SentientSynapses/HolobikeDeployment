@@ -30,17 +30,16 @@ same schemas, the same environment documents, the same gates. The
 development composition is the release composition run in a persistent,
 developer-facing mode — not a parallel system.
 
-## Standing (2026-08-16)
+## Standing (2026-08-18)
 
-The core build-out (M1–M8) is complete: all six verbs live, 76 Assembler +
+The core build-out (M1–M8) is complete: all six verbs live, 78 Assembler +
 13 Provisioning tests green, five run-record kinds digest-bound, admission
-the only writer of tracked `Releases/`. Live gate truth: rider, device, and
-orielui dual-copy gates pass; worlds fails on 25 mismatches proven to be a
-stale mount (every difference is the standalone repository having moved
-ahead), closable by one-way sync with nothing to lose. Enrollment of
-HoloviewDisplay as the twelfth integration exists on branch
+the only writer of tracked `Releases/`. M9 is complete: **all four parity
+gates pass on the dev line and `resolve` exits 0** — the composition is
+green for the first time, and the cadence that keeps it honest runs daily.
+Enrollment of HoloviewDisplay as the twelfth integration exists on branch
 `integrate/holoviewdisplay`, paired with a HolobikeExperience branch of the
-same name; both are unlanded.
+same name; both are unlanded, and landing them is M10.
 
 ## Constraints this plan preserves
 
@@ -183,32 +182,16 @@ Phases continue the milestone numbering from the completed build-out
 (M1–M8). Each phase is a commit family carrying its own verification;
 dependencies between phases are named, and nothing else blocks.
 
-### M9 — gate truth
+### M9 — gate truth — COMPLETE 2026-08-18
 
-This workstation; no schema breaks; no cross-repo dependency.
-
-- `Assembler/src/holobike_assemble/gates.py`: after both site roots
-  resolve, compare their `Path.resolve()` results; equal means
-  `status: "linked"` with the shared target recorded as a fact. Distinct
-  real paths compare exactly as today — a link to *somewhere else* is
-  not parity.
-- `Schemas/record.schema.json`: the gate `status` enum gains `linked`.
-- `resolve`'s problem collector and `admit`: `linked` is a passing
-  verdict, never a problem.
-- `Assembler/tests/test_policy_gates.py`: symlink-to-left yields
-  `linked`; symlink-elsewhere is compared; one accepted record fixture
-  carries a `linked` gate.
-- Close the worlds mount: one-way sync, repository onto mount, over
-  exactly the gate's compared surface (the same exclude list), then a
-  `resolve` to confirm. Every mismatch is proven stale-mount, so
-  nothing is lost.
-- ADR 0004 lands here (gates annotate, admission refuses; skips are
-  problems; `linked` is parity by construction).
-- Start the D-06 timer on the dev line — the cadence is already
-  meaningful.
-
-**Exit gate:** every gate verdict on the dev line is honest and green,
-and the suite proves a link cannot report a vacuous `pass`.
+The `linked` verdict, ADR 0004, and the declared resolve cadence landed
+as `0c1d4a8`. The worlds mount closed by one-way sync: 34 mismatches,
+every one proven a stale mount (all 22 differing files byte-matched
+older repository commits; all 8 mount-only files were deliberate
+repository removals — the RidePathGraph rename, the junction-surface
+deletion, the dead-actor purge), so the sync was lossless by
+construction. **All four gates now pass on the dev line, 11/11
+selections resolved, exit 0 — the first fully green resolution.**
 
 ### M10 — land the HoloView integration
 
