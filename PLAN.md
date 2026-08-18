@@ -109,7 +109,8 @@ than adding machinery:
 
 1. `preflight` — including the engine-demand check — so a broken
    environment is named before anything launches;
-2. ensure canonical plugin mounts (links, never copies);
+2. verify each plugin resolves through its declared
+   `AdditionalPluginDirectories` entry — one tree, never a copy (D-08);
 3. bring up the declared development profile's services from their
    repository-owned `serve` entries and hold them, reusing the `emulate`
    machinery in a persistent mode;
@@ -125,17 +126,18 @@ config layer) is an open decision owned jointly with the plugin
 repositories.
 
 This verb is described here but built only when its first posture lands
-(M14) — earned by content, like every tier before it.
+(M15) — earned by content, like every tier before it.
 
-## Decisions established 2026-08-15/16
+## Decisions established 2026-08-15/18
 
 - **D-01 `linked` verdict.** `tree_parity` gains a third honest outcome:
   when both sites resolve to the same real path, the gate reports
   `linked` (parity by construction) instead of a vacuous `pass`. The
-  mount path is gitignored in HolobikeExperience so a link can never
-  silently become a tracked copy. Links become the migration target for
-  the existing dual copies: convert a mount, and its drift class stops
-  existing instead of being reconciled forever.
+  verdict names the shared target, and admits exactly as a pass does.
+  (Superseded in part by D-08: links were to have been the migration
+  target for the dual copies, and are not — the copies go away entirely
+  instead. The verdict stays correct for any site that is linked, and
+  costs nothing to keep.)
 - **D-02 Engine as versioned fact.** The `unreal_engine` toolchain slot
   becomes a map keyed by version (`"5.3"`, `"5.7"`). Preflight reads
   `Engine/Build/Build.version` and reports a declared-vs-installed
@@ -175,6 +177,34 @@ This verb is described here but built only when its first posture lands
   chain: digest binding, immutability, `Releases/` as the only tracked
   writer. 0007 hosts: per-host environments, producer-named records, the
   tracked repository as transport.
+- **D-08 One tree per repository; no mounts.** A project consumes a
+  plugin where it lives, through the project descriptor's
+  `AdditionalPluginDirectories` — the engine's supported mechanism for a
+  plugin outside the project tree, honoured by the plugin manager, by
+  UBT, and by the packaging step's plugin relocation. Copies and links
+  are both retired: with one tree, dual-copy drift cannot occur rather
+  than being detected afterwards. Two properties measured on 2026-08-18
+  decided it over a link: binaries land in the *consuming project's*
+  `Binaries/`, so the plugin repository stays clean and two projects
+  cannot contend for one output directory; and module loading works,
+  where a link broke it — UBT computes a dependency's RPATH from the
+  output file's own directory, so binaries reached through a link
+  resolved `${ORIGIN}` to the real path, got the hop count wrong, and
+  failed to find an engine-plugin dependency at load. The parity gates
+  retire per plugin as each converts. The `linked` verdict from M9 stays
+  correct but becomes vestigial, which is the honest cost of D-08.
+- **D-09 The workstation tree is canonical, and mirrors the Stack.**
+  Checkouts live at `<root>/<domain>/…`, the same shape `Stack/` already
+  has — `ue/plugins/` and `ue/projects/` included. Paths become derivable
+  from tracked leaf data (`domain` + `repository`) instead of declared per
+  machine, so a host document shrinks to a root, an identity, and any
+  toolchain paths that cannot be derived. Because plugin discovery
+  recurses and stops at the first descriptor in a hierarchy, one
+  `AdditionalPluginDirectories` entry pointing at `ue/plugins` finds every
+  plugin repository — so enrolling a new plugin needs no project edit.
+  That is only safe because the split gives `ue/plugins` a directory
+  containing nothing else; a flat `ue/` would also scan the legacy demo's
+  vendored plugin copies.
 
 ## Implementation phases
 
@@ -195,26 +225,41 @@ selections resolved, exit 0 — the first fully green resolution.**
 
 ### M10 — land the HoloView integration
 
-Cross-repo sequencing. Depends on M9: the `linked` verdict must exist
-before the fifth gate can meet a linked mount.
+Cross-repo sequencing. The rebase is done locally and verified; what
+remains is landing it and the deployment side.
 
-- HolobikeExperience: rebase `integrate/holoviewdisplay` onto `main`
-  (the identity trunk), under constraint 1's binary rule; inspect
-  `BP_MainRiderHUD` by hand — the one asset plausibly touched by both
-  workstreams. Verify with the nullrhi load check; land.
-- Convert the HoloviewDisplay mount to the canonical link and gitignore
-  the mount path in the same change.
+- **Done 2026-08-18 (local, unpushed).** `integrate/holoviewdisplay`
+  rebased onto `main` — the identity trunk — in five commits. No binary
+  asset overlapped, so constraint 1's pick-the-trunk rule never fired.
+  Verified by build and launch, not by reading: editor builds, plugin
+  loads, zero dlopen failures, zero CoreRedirects errors, zero
+  `SimulatedRealityMock` mentions, provider selection falls back to
+  `NullDisplayPlatform` by name.
+- The mount is gone: HoloviewDisplay is consumed through
+  `AdditionalPluginDirectories` (D-08), so there is one tree and the
+  gitignore rule the link needed is deleted rather than fixed.
+- **Found by doing it, and owed upstream:** the two commits carrying the
+  packaging and 5.7 fixes were almost entirely edits to *mounted* plugin
+  copies, never backported. Landing them as-is would have buried four
+  real fixes where the next sync deletes them. Only the Experience-owned
+  `Build.cs` change stayed; the rest are owed to `HolobikeWorlds`
+  (`RidePathGraph::FindByWaylinkId`, an unguarded `UFUNCTION` over a
+  `WITH_EDITOR` body — one of the pair is already fixed as `0770c09`),
+  `HolobikeDevice` (a codec leak and two `AllowedClasses` headers), and
+  `HolobikeRider` (the automation-context macro, in the file `main`
+  renamed to `IdentityIOTests.cpp`).
 - Re-stack `upgrade/ue57` on the landed result.
 - HolobikeDeployment: land the enrollment commit (`92d32b1`) — twelfth
-  integration, fifth gate — at the schema v1 spelling; the
-  `kit` → `domain` rename is held for M11's single bump.
+  integration — at the schema v1 spelling; the `kit` → `domain` rename is
+  held for M11's single bump. Its parity gate is now pointless under
+  D-08 and should not land with it.
 - Fast-forward this workstation's `HoloviewDisplay_uplugin` checkout
-  (still at the scaffold commit) and add its path to
-  `.local/environment.json` on every host that carries it.
+  (done) and add its path to `.local/environment.json` on every host that
+  carries it.
 
-**Exit gate:** `resolve --line dev` reports the holoviewdisplay gate
-`linked` with twelve of twelve selections resolved, and Experience
-`main` carries both workstreams under the nullrhi check.
+**Exit gate:** `resolve --line dev` resolves twelve of twelve with no
+gate for HoloviewDisplay to fail, because it has no second copy; and
+Experience `main` carries both workstreams under the load check.
 
 ### M11 — the v2 sweep
 
@@ -255,7 +300,38 @@ wrapped enum lines.
 schema accepts both spellings of anything; one tracked document carries
 the environment shape; the suite is green at the new constants.
 
-### M12 — lines and roster
+### M12 — the canonical tree
+
+Depends on M11 (host identity), and wants a quiet moment: it moves every
+checkout on a workstation while other agents hold working trees.
+
+- Adopt the layout: `<root>/{ai,bike,geo,id,os,ue}`, with
+  `ue/plugins/` and `ue/projects/` mirroring `Stack/ue/`. Rename the
+  Stack's `ue/project/` to `ue/projects/` so the map and the territory
+  agree; `plugins/` already sets the plural-container convention and the
+  singular only reads correctly while there is exactly one project.
+  HolobikeDeployment sits at the root, beside the domains it specifies.
+- `Schemas/environment.schema.json`: `checkouts` gives way to a single
+  `root`, with per-integration paths derived as
+  `<root>/<domain>/<repository>` (UE gaining the `plugins`/`projects`
+  level). Keep an optional per-integration override for a checkout that
+  genuinely cannot sit in the tree, and record its use as a fact.
+- `bootstrap` materializes the tree rather than cloning into declared
+  paths — it already holds `domain`, `repository`, and `origin` for every
+  leaf, so a fresh workstation becomes: clone this repository, write a
+  host document, run bootstrap.
+- Convert each remaining dual copy to `AdditionalPluginDirectories` and
+  delete its parity gate as it converts; point the descriptor at
+  `ue/plugins` once, not at each repository.
+- Migration is an announced operation: absolute paths live in scripts,
+  IDE configuration, and every host document, and other agents hold
+  working trees in the repositories being moved.
+
+**Exit gate:** a host document is a root plus an identity; no plugin
+exists in two places; `bootstrap` can build the tree from nothing but the
+Stack and a root.
+
+### M13 — lines and roster
 
 Depends on M10 (the re-stacked upgrade branch) and M11 (v2 documents).
 
@@ -276,7 +352,7 @@ Depends on M10 (the re-stacked upgrade branch) and M11 (v2 documents).
 and an unenrolled repository adjacent to the stack is a named preflight
 problem, not a discovery.
 
-### M13 — the panel host
+### M14 — the panel host
 
 First phase with work executed on Windows. Depends on M11 (host
 identity, Windows paths).
@@ -297,7 +373,7 @@ identity, Windows paths).
 **Exit gate:** a release record admitted from evidence produced on the
 machine where the product actually runs.
 
-### M14 — the development composition
+### M15 — the development composition
 
 The Linux posture depends only on M9; the Windows posture on M13.
 
