@@ -12,7 +12,7 @@ package, and export commands each source repository documents and owns. It
 must not copy their internal build logic, infer success from file existence
 alone, silently edit a source checkout, or treat mutable branch names as
 release identities. It is deliberately thin: the moment it starts resembling
-a build system, the design has failed (`Docs/Decisions/0001`).
+a build system, the design has failed.
 
 The complete lifecycle is implemented. Each stage writes a self-validating,
 immutable record except read-only `preflight`; records bind their parent by
@@ -76,8 +76,7 @@ surfaces through the entry points each `Stack/` leaf declares. A simulator of
 one repository's behavior ships inside that repository as a first-class
 development capability — AthleteIdentity's LocalMock provider is the model.
 The transitional `*-Lab` repositories are never composition dependencies;
-needing a capability only a Lab holds is a promotion signal
-(`Docs/Decisions/0002`).
+needing a capability only a Lab holds is a promotion signal.
 
 The current executor supports bounded, unprivileged host processes for
 user-space service composition. It verifies bundle bytes before spawning,

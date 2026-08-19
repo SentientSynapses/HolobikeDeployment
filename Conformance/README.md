@@ -17,3 +17,25 @@ Rules:
 - Document decoding is strict across every binding: duplicate object members
   and non-finite numeric extensions are rejected before schema validation.
 - Fixtures are data. Nothing here executes, and nothing here is a secret.
+
+## Where validation lives
+
+Fixtures are the bottom of a pyramid whose every layer is a seam, and the rule
+that places them is the same one that earns a module: **the seam that earns a
+boundary is the seam that tests it.**
+
+- Tests touch declared seams only — schema fixtures here, library APIs, and
+  control surfaces (CLI verbs, daemon surfaces, wire protocols). Never
+  internals.
+- Test-location count is bounded by seam count, not module count. A submodule
+  without its own seam is validated through its owner's and gets no test
+  directory.
+- Prefer the control surface: it serves developer validation, the repository's
+  own gates, and deployment composition at once, which is why a `Stack/` leaf
+  declares one surface for both "prove me" and "drive me".
+- Doubles ship as in-product seam implementations. Fault injection is a
+  capability of the implementation, not a header in a test directory.
+- Reaching past a seam to test is a design finding — a missing verb or an
+  unearned boundary. Fix the surface; do not write the mock.
+- Never a `Lab/` module. A category directory for validation is a junk drawer
+  with a fence around it, and the fence legitimizes the junk.

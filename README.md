@@ -10,7 +10,16 @@ authoritative for its own implementation, tests, and domain decisions. **This
 repository is the specification of the deployed HoloBike software stack, the
 machine that realizes it, and the record of what it realized.** There is no
 wrapper directory holding "the spec" — the declarations are the repository,
-organized by role (`Docs/Decisions/0001`).
+organized by role.
+
+**Where a new thing goes:** selects → `Revisions/`; constrains → `Policy/`;
+drives one repository → its `Stack/` leaf; shapes documents → `Schemas/`;
+executes → `Assembler/`; written by a run → `Releases/`. Two tests keep the
+boundary honest. The **nature test**: declared content is reviewable without
+executing anything, realized content has side effects, attested content is
+written by a run. The **scope test**: this repository specifies the *product*,
+so a tool's own contract lives beside the tool (`Assembler/README.md`), exactly
+as each domain repository keeps its own documentation.
 
 ## Responsibilities
 
@@ -56,7 +65,6 @@ Conformance/      prove the bindings: accepted and rejected fixtures per schema
 Assembler/        realize: preflight | bootstrap | resolve | assemble | emulate | admit
 Releases/         attest: admitted records, written by runs, never edited
 Provisioning/     deliver: device-facing workflows behind the admission boundary
-Docs/Decisions/   why the shape is what it is
 ```
 
 Generated bundles, emulation state, logs, and pre-admission records live under
@@ -91,8 +99,7 @@ evidence of agreement.
   consumer of the declarations and of repository-owned entry points.
 - Validation ownership is tiered: each repository proves its own behavior
   in-repo; this repository proves only the composition; the transitional
-  `*-Lab` repositories are scaffolding, never load-bearing
-  (`Docs/Decisions/0002`).
+  `*-Lab` repositories are scaffolding, never load-bearing.
 - Schemas are canonical; a validator in any language is a binding that must
   agree with them, proven by fixtures under `Conformance/`.
 - "Manifest" names exactly one declared kind — the revision manifest. A

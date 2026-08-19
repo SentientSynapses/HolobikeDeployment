@@ -9,7 +9,7 @@ Repository adapter:
 uroborOS remains authoritative for operating modes, system images, boot and
 encrypted-root policy, the shell, graphics integration, system services, and
 OS-level installation — and for proving all of it: its validation surfaces
-are repository-owned entry points, not Lab property (`Docs/Decisions/0002`).
+are repository-owned entry points, not Lab property.
 HoloBike Deployment selects a compatible uroborOS revision and mode, invokes
 its published build and validation surfaces, and consumes their versioned
 artifacts and evidence.

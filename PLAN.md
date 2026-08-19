@@ -1,11 +1,11 @@
 # HolobikeDeployment Plan
 
 Direction and pending decisions for the deployment tool. The README owns
-identity and current state; `Docs/Decisions/` owns settled rationale; this
-file owns where the tool is going and why. When a milestone lands, its entry
-here shrinks to a line and its rationale moves to an ADR — a plan that
-restates what the repository already proves is a second copy waiting to
-drift.
+identity and current state; the code and the nearest README own settled
+rationale; this file owns where the tool is going and why. When a milestone
+lands, its entry here shrinks to a line and its reasoning moves into the code
+it governs — a plan that restates what the repository already proves is a
+second copy waiting to drift, and so is a decision record kept beside it.
 
 ## Objective
 
@@ -171,12 +171,18 @@ This verb is described here but built only when its first posture lands
   scheduler, and this repository declares the unit templates
   (`Assembler/timers/`) on the `environment.example.json` precedent:
   tracked template, per-host install into `~/.config/systemd/user/`.
-- **D-07 The doctrine gets ADRs.** 0004 gates annotate / admission
-  refuses (skips are problems; `linked` is parity by construction). 0005
-  roster membership and why nonmembers carry reasons. 0006 the record
-  chain: digest binding, immutability, `Releases/` as the only tracked
-  writer. 0007 hosts: per-host environments, producer-named records, the
-  tracked repository as transport.
+- **D-07 Doctrine is written where it applies, not in a decision tier.**
+  *(Revised 2026-08-19; `Docs/Decisions/` retired.)* A decision that has
+  landed is stated in the code it governs or in the nearest README — the
+  gates' contract lives in `gates.py`'s docstring, the filing rule in
+  `README.md`, the seam rules in `Conformance/README.md`. A decision that
+  has not landed lives here until it does. The four records this plan
+  once scheduled had already drifted from the code they described while
+  the code stayed correct, which is the failure mode the split prevents.
+  Still owed a written home, as each lands: roster membership and why
+  nonmembers carry reasons (M13); the record chain's digest binding,
+  immutability, and `Releases/` as sole tracked writer; and per-host
+  environments with producer-named records (M14).
 - **D-08 One tree per repository; no mounts.** A project consumes a
   plugin where it lives, through the project descriptor's
   `AdditionalPluginDirectories` — the engine's supported mechanism for a
@@ -214,8 +220,8 @@ dependencies between phases are named, and nothing else blocks.
 
 ### M9 — gate truth — COMPLETE 2026-08-18
 
-The `linked` verdict, ADR 0004, and the declared resolve cadence landed
-as `0c1d4a8`. The worlds mount closed by one-way sync: 34 mismatches,
+The `linked` verdict, its contract stated in `gates.py`, and the declared
+resolve cadence landed as `0c1d4a8`. The worlds mount closed by one-way sync: 34 mismatches,
 every one proven a stale mount (all 22 differing files byte-matched
 older repository commits; all 8 mount-only files were deliberate
 repository removals — the RidePathGraph rename, the junction-surface
@@ -345,8 +351,9 @@ Depends on M10 (the re-stacked upgrade branch) and M11 (v2 documents).
   the sixth gate) and AthleteInsights (deployed device software,
   consumed as AthleteInsightsIO); record HolobikeIntelligence and the
   Lab repositories as nonmembers with reasons.
-- ADR 0005 lands here (roster membership; why nonmembers carry
-  reasons).
+- The roster-membership rule — what makes a repository a stack member,
+  and why nonmembers carry reasons — is written into `Stack/README.md`
+  beside the roster it governs.
 
 **Exit gate:** fourteen integrations resolve on two lines on cadence,
 and an unenrolled repository adjacent to the stack is a named preflight
@@ -368,7 +375,9 @@ identity, Windows paths).
 - Shape partial-resolution semantics from the first real subset-host
   `resolve`: "unresolvable here" as recorded fact, never refusal — the
   M3 tradition.
-- ADRs 0006 (the record chain) and 0007 (hosts) land here.
+- The record chain's rules go into `Schemas/record.schema.json`'s own
+  description fields and `Releases/README.md`; the host rules into
+  `Schemas/environment.schema.json` and `Assembler/README.md`.
 
 **Exit gate:** a release record admitted from evidence produced on the
 machine where the product actually runs.
