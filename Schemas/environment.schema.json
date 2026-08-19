@@ -26,6 +26,7 @@
         "HolobikeDevice": { "$ref": "#/$defs/absolutePath" },
         "HolobikeRider": { "$ref": "#/$defs/absolutePath" },
         "HolobikeWorlds": { "$ref": "#/$defs/absolutePath" },
+        "HoloviewDisplay": { "$ref": "#/$defs/absolutePath" },
         "OrielUI": { "$ref": "#/$defs/absolutePath" }
       }
     },

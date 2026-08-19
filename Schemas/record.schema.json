@@ -110,6 +110,7 @@
         "HolobikeDevice": { "$ref": "#/$defs/resolution" },
         "HolobikeRider": { "$ref": "#/$defs/resolution" },
         "HolobikeWorlds": { "$ref": "#/$defs/resolution" },
+        "HoloviewDisplay": { "$ref": "#/$defs/resolution" },
         "OrielUI": { "$ref": "#/$defs/resolution" }
       }
     },
@@ -135,6 +136,7 @@
         "HolobikeDevice": { "$ref": "#/$defs/action" },
         "HolobikeRider": { "$ref": "#/$defs/action" },
         "HolobikeWorlds": { "$ref": "#/$defs/action" },
+        "HoloviewDisplay": { "$ref": "#/$defs/action" },
         "OrielUI": { "$ref": "#/$defs/action" }
       }
     },
@@ -151,6 +153,7 @@
         "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
                  "AthleteIdentity", "drAIs", "HolobikeExperience",
                  "HolobikeDevice", "HolobikeRider", "HolobikeWorlds",
+                 "HoloviewDisplay",
                  "OrielUI"]
       }
     },
@@ -172,6 +175,7 @@
         "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
                  "AthleteIdentity", "drAIs", "HolobikeExperience",
                  "HolobikeDevice", "HolobikeRider", "HolobikeWorlds",
+                 "HoloviewDisplay",
                  "OrielUI"]
       },
       "additionalProperties": { "$ref": "#/$defs/build_result" }
@@ -182,6 +186,7 @@
         "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
                  "AthleteIdentity", "drAIs", "HolobikeExperience",
                  "HolobikeDevice", "HolobikeRider", "HolobikeWorlds",
+                 "HoloviewDisplay",
                  "OrielUI"]
       },
       "additionalProperties": {
@@ -211,6 +216,7 @@
         "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
                  "AthleteIdentity", "drAIs", "HolobikeExperience",
                  "HolobikeDevice", "HolobikeRider", "HolobikeWorlds",
+                 "HoloviewDisplay",
                  "OrielUI"]
       },
       "additionalProperties": { "$ref": "#/$defs/member" }
