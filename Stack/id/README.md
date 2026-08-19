@@ -1,10 +1,12 @@
 # Athlete-Identity Integration
 
-This integration connects `id_kit/AthleteIdentity`.
+This domain connects `id_kit/AthleteIdentity` and `id_kit/AthleteInsights` —
+a pair, because a ride is attributed by one and kept by the other.
 
-Repository adapter:
+Repository adapters:
 
 - [`AthleteIdentity/`](AthleteIdentity/README.md)
+- [`AthleteInsights/`](AthleteInsights/README.md)
 
 AthleteIdentity remains authoritative for identity schemas, provider-neutral
 client behavior, authentication flows, local identity storage, cryptography,

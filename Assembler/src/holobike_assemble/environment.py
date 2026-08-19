@@ -27,6 +27,7 @@ INTEGRATIONS = (
     "Assetscape",
     "HolobikeCore",
     "AthleteIdentity",
+    "AthleteInsights",
     "drAIs",
     "HolobikeExperience",
     "HolobikeDevice",

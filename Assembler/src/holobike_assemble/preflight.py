@@ -57,6 +57,22 @@ def _inspect_integration(name, document):
     return facts
 
 
+def _engine_version(root):
+    """The engine's own Major.Minor, read from Engine/Build/Build.version.
+
+    Read rather than parsed out of the directory name: a checkout can be
+    renamed, moved, or symlinked, and a check that trusted the folder would
+    then confirm exactly the thing it was built to catch.
+    """
+    try:
+        text = (Path(root) / "Engine" / "Build" / "Build.version").read_text(
+            encoding="utf-8")
+        build = json.loads(text)
+        return f"{build['MajorVersion']}.{build['MinorVersion']}"
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
 def _inspect_toolchain(name, document):
     facts = {"declared": name in document.toolchains}
     if not facts["declared"]:
@@ -65,7 +81,50 @@ def _inspect_toolchain(name, document):
     path = Path(document.toolchains[name])
     facts["path"] = str(path)
     facts["status"] = "present" if path.is_dir() else "missing"
+    if name == "unreal_engine" and facts["status"] == "present":
+        facts["version"] = _engine_version(path)
     return facts
+
+
+def _inspect_engine_association(document, leaves, toolchains):
+    """Hold every declared .uproject against the declared engine.
+
+    Both halves of this were previously unstated. The environment names an
+    engine directory and preflight only asked whether that directory exists —
+    and a workstation carrying two engines answers "present" to either, so a
+    mapping that named the wrong one read as healthy. Meanwhile the project's
+    own EngineAssociation is the thing that actually decides what gets built.
+    Agreement between the two is the fact worth reporting; either alone is not.
+    """
+    engine = toolchains.get("unreal_engine", {})
+    associations = {}
+    for name, leaf in sorted(leaves.items()):
+        project = leaf.get("unreal_project")
+        if not project:
+            continue
+        facts = {"project": project}
+        associations[name] = facts
+        if name not in document.checkouts:
+            facts["status"] = "checkout_undeclared"
+            continue
+        path = Path(document.checkouts[name]) / project
+        try:
+            declared = json.loads(path.read_text(encoding="utf-8"))
+            facts["engine_association"] = str(declared["EngineAssociation"])
+        except (OSError, ValueError, KeyError, TypeError):
+            facts["status"] = "project_unreadable"
+            continue
+        if engine.get("status") != "present":
+            facts["status"] = "engine_unavailable"
+            continue
+        facts["engine_version"] = engine.get("version")
+        if facts["engine_version"] is None:
+            facts["status"] = "engine_unversioned"
+        elif facts["engine_version"] == facts["engine_association"]:
+            facts["status"] = "agrees"
+        else:
+            facts["status"] = "engine_mismatch"
+    return associations
 
 
 def _inspect_stack(stack_root, document):
@@ -101,6 +160,8 @@ def _inspect_stack(stack_root, document):
             "repository": document_leaf.repository,
             "prove_declared": bool(document_leaf.prove_argv),
         }
+        if document_leaf.unreal_project:
+            entry["unreal_project"] = document_leaf.unreal_project
         if document_leaf.integration != leaf_directory:
             entry["status"] = "name_mismatch"
             entry["detail"] = (
@@ -133,6 +194,10 @@ def _inspect_stack(stack_root, document):
 
 def build_report(document, stack_root):
     leaves, strays = _inspect_stack(stack_root, document)
+    toolchains = {
+        name: _inspect_toolchain(name, document)
+        for name in environment.TOOLCHAINS
+    }
     return {
         "generated_by": "holobike-assemble preflight",
         "integrations": {
@@ -141,10 +206,9 @@ def build_report(document, stack_root):
         },
         "stack": leaves,
         "stack_strays": strays,
-        "toolchains": {
-            name: _inspect_toolchain(name, document)
-            for name in environment.TOOLCHAINS
-        },
+        "toolchains": toolchains,
+        "engine_associations": _inspect_engine_association(
+            document, leaves, toolchains),
         "path_tools": {
             tool: shutil.which(tool) is not None for tool in PATH_TOOLS
         },
@@ -165,6 +229,14 @@ def _problems(report):
     for name, facts in report["toolchains"].items():
         if facts["status"] == "missing":
             problems.append(f"toolchain {name}: missing")
+    for name, facts in report["engine_associations"].items():
+        if facts["status"] == "engine_mismatch":
+            problems.append(
+                f"{name}: the project asks for engine "
+                f"{facts['engine_association']}, the declared toolchain is "
+                f"{facts['engine_version']}")
+        elif facts["status"] != "agrees":
+            problems.append(f"{name}: engine association {facts['status']}")
     return problems
 
 
@@ -189,7 +261,15 @@ def _print_table(report, stdout):
     for stray in report["stack_strays"]:
         print(f"stack stray: {stray['path']}", file=stdout)
     for name, facts in report["toolchains"].items():
-        print(f"toolchain {name}: {facts['status']}", file=stdout)
+        version = facts.get("version")
+        suffix = f" ({version})" if version else ""
+        print(f"toolchain {name}: {facts['status']}{suffix}", file=stdout)
+    for name, facts in report["engine_associations"].items():
+        detail = facts["status"]
+        if facts["status"] in ("agrees", "engine_mismatch"):
+            detail = (f"{facts['status']} — project {facts['engine_association']}, "
+                      f"toolchain {facts['engine_version']}")
+        print(f"engine {name}: {detail}", file=stdout)
     missing_tools = sorted(
         tool for tool, found in report["path_tools"].items() if not found)
     if missing_tools:

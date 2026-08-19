@@ -15,6 +15,7 @@
         "Assetscape",
         "HolobikeCore",
         "AthleteIdentity",
+        "AthleteInsights",
         "drAIs",
         "HolobikeExperience",
         "HolobikeDevice",
@@ -32,6 +33,12 @@
       "minLength": 1,
       "pattern": "^[A-Za-z0-9._-]+$",
       "description": "The checkout directory name under the kit; preflight cross-checks it against the environment mapping's declared path."
+    },
+    "unreal_project": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)(?!.*(?:^|/)\\.(?:/|$))(?!.*\\u0000).+\\.uproject$",
+      "description": "Checkout-relative path to this integration's .uproject, declared only by integrations that own one. preflight reads its EngineAssociation and holds it against the engine the environment actually declares, so a project and its toolchain cannot drift apart unnoticed. Discovery would be worse than declaration here: a glob that finds no project passes silently, which is the exact failure this check exists to catch."
     },
     "origin": {
       "type": "string",

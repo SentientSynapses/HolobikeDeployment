@@ -20,7 +20,7 @@ SCHEMA_VERSION = 1
 KITS = ("ai_kit", "bike_kit", "geo_kit", "id_kit", "os_kit", "ue_kit")
 
 _ROOT_KEYS = ("schema_version", "integration", "kit", "repository",
-              "origin", "entry_points", "artifacts")
+              "origin", "unreal_project", "entry_points", "artifacts")
 _ENTRY_POINTS = ("prove", "build", "serve", "probe")
 _ENVIRONMENT_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
@@ -39,6 +39,7 @@ class IntegrationDocument:
     kit: str
     repository: str
     origin: str = ""
+    unreal_project: str = ""
     prove_argv: tuple = ()
     build_steps: tuple = ()
     artifacts: tuple = ()
@@ -225,6 +226,21 @@ def validate_integration_text(text):
         else:
             origin = raw_origin
 
+    unreal_project = ""
+    if "unreal_project" in root:
+        raw_project = root["unreal_project"]
+        if not isinstance(raw_project, str) or not raw_project:
+            errors.append("unreal_project: must be a non-empty string")
+        elif not raw_project.endswith(".uproject"):
+            errors.append("unreal_project: must name a .uproject file")
+        else:
+            try:
+                filesystem.relative_parts(raw_project)
+            except filesystem.FilesystemContractError as error:
+                errors.append(f"unreal_project: {error}")
+            else:
+                unreal_project = raw_project
+
     prove_argv = ()
     build_steps = ()
     serve = Command()
@@ -244,6 +260,7 @@ def validate_integration_text(text):
         kit=kit,
         repository=root["repository"],
         origin=origin,
+        unreal_project=unreal_project,
         prove_argv=prove_argv,
         build_steps=build_steps,
         artifacts=artifacts,

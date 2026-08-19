@@ -21,6 +21,7 @@
         "Assetscape": { "$ref": "#/$defs/absolutePath" },
         "HolobikeCore": { "$ref": "#/$defs/absolutePath" },
         "AthleteIdentity": { "$ref": "#/$defs/absolutePath" },
+        "AthleteInsights": { "$ref": "#/$defs/absolutePath" },
         "drAIs": { "$ref": "#/$defs/absolutePath" },
         "HolobikeExperience": { "$ref": "#/$defs/absolutePath" },
         "HolobikeDevice": { "$ref": "#/$defs/absolutePath" },

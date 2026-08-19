@@ -44,7 +44,7 @@ keys, athlete credentials, provider secrets, or device-specific secret values.
 | Operating system | [`uroborOS`](Stack/os/uroborOS/README.md) | Images, modes, services, boot policy, hardware integration |
 | Geography | [`HexAtlas`](Stack/geo/HexAtlas/README.md), [`Assetscape`](Stack/geo/Assetscape/README.md) | World facts, asset palette, serving, and engine compatibility |
 | Bike runtime | [`HolobikeCore`](Stack/bike/HolobikeCore/README.md) | Device services, firmware, health, and hardware-facing configuration |
-| Athlete identity | [`AthleteIdentity`](Stack/id/AthleteIdentity/README.md) | On-device identity client, provider selection, and identity contracts |
+| Athlete identity | [`AthleteIdentity`](Stack/id/AthleteIdentity/README.md), [`AthleteInsights`](Stack/id/AthleteInsights/README.md) | On-device identity client, provider selection, identity contracts, and durable custody of completed sessions |
 | Intelligence | [`drAIs`](Stack/ai/drAIs/README.md) | Local assistant runtime, skills, models, and sandbox policy |
 | Experience | [`HolobikeExperience`](Stack/ue/project/HolobikeExperience/README.md) | Packaged Unreal Engine product and project configuration |
 | Unreal integrations | [`HolobikeDevice`](Stack/ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](Stack/ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](Stack/ue/plugins/HolobikeWorlds/README.md), [`HoloviewDisplay`](Stack/ue/plugins/HoloviewDisplay/README.md) | Reusable engine plugins and compatibility with the experience |
@@ -115,6 +115,14 @@ evidence of agreement.
 Third-party toolchains are not stack members. The Unreal engine is located
 and validated by preflight and recorded as a release fact; it is not HoloBike
 software and has no integration directory under `Stack/`.
+
+Located is not the same as correct. An integration that owns an Unreal project
+declares it as `unreal_project`, and preflight holds that project's
+`EngineAssociation` against the declared engine's own
+`Engine/Build/Build.version`. A workstation carrying two engines answers
+"present" to either of them, so presence alone once let the mapping name one
+engine while the project asked for another — the agreement is the fact worth
+reporting.
 
 ## Lifecycle
 

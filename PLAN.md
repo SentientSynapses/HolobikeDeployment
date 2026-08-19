@@ -32,7 +32,7 @@ developer-facing mode — not a parallel system.
 
 ## Standing (2026-08-18)
 
-The core build-out (M1–M8) is complete: all six verbs live, 78 Assembler +
+The core build-out (M1–M8) is complete: all six verbs live, 83 Assembler +
 13 Provisioning tests green, five run-record kinds digest-bound, admission
 the only writer of tracked `Releases/`. M9 is complete: **all four parity
 gates pass on the dev line and `resolve` exits 0** — the composition is
@@ -145,6 +145,16 @@ This verb is described here but built only when its first posture lands
   `EngineAssociation` (the source repository stays authoritative for its
   own requirement). Resolve records demanded/satisfied; admission refuses
   anything else.
+  (**Partly landed 2026-08-19, at v1.** The comparison half is live now
+  because it was needed now: an integration may declare
+  `unreal_project`, preflight reads that project's `EngineAssociation`
+  and holds it against the declared engine's own
+  `Engine/Build/Build.version`, and a mismatch is a problem rather than a
+  presence. This was not academic — the mapping pointed at 5.7.4 while
+  `main` asked for 5.3, and because both engines exist on this
+  workstation the old presence check called it healthy. What the v2 sweep
+  still owes D-02: the keyed map, resolve recording demanded/satisfied,
+  and admission refusing anything else.)
 - **D-03 One v2 schema sweep.** All pending breaking changes land as a
   single coordinated `schema_version` bump with its conformance corpus:
   `kit` → `domain`, the engine map, host identity (`host`, `os`) in
@@ -212,6 +222,32 @@ This verb is described here but built only when its first posture lands
   containing nothing else; a flat `ue/` would also scan the legacy demo's
   vendored plugin copies.
 
+## Engine posture (ruled 2026-08-19)
+
+**5.3 is the intended engine.** `HolobikeExperience` `main` is
+`EngineAssociation: 5.3` and that is correct, not drift; the workstation
+mapping now declares `UnrealEngine-5.3.2-release` to match, and preflight
+holds the two together (D-02).
+
+`origin/upgrade/ue57` — twenty commits, last touched 2026-08-13, carrying
+the engine association, the NVIDIA/DLSS 4.5 swap, the Streamline removal
+behind the cold-cache boot hang, and the stereo-view workarounds — is
+**parked, not abandoned.** The order is deliberate: 5.3 is made stable
+first, and the upgrade lands clean afterwards rather than mixing two
+sources of instability. Nobody should prune that branch as stale.
+
+Everything on it that was valid on 5.3 has already been harvested onto
+`main`: the packaging / editor-only-leak fixes, and the short-name →
+`/Script/...` `AllowedClasses` paths. Three 5.3-safe commits remain
+unharvested and are cheap to take when wanted — the `GIsEditor` guard in
+`HardwareK2Node_AssetReloadListener` (73cf217), disabling SERIALCOM
+(8c78c03), and unpinning BlueprintWebSocket's EngineVersion (6334672);
+the last belongs with the upgrade, since the 5.3.0 pin is right for a 5.3
+main.
+
+Because the branch sits while `main` moves, it rots. Rebase it before the
+upgrade begins, not after.
+
 ## Implementation phases
 
 Phases continue the milestone numbering from the completed build-out
@@ -263,7 +299,7 @@ remains is landing it and the deployment side.
   (done) and add its path to `.local/environment.json` on every host that
   carries it.
 
-**Exit gate:** `resolve --line dev` resolves twelve of twelve with no
+**Exit gate:** `resolve --line dev` resolves every member with no
 gate for HoloviewDisplay to fail, because it has no second copy; and
 Experience `main` carries both workstreams under the load check.
 
@@ -423,7 +459,7 @@ described here, they are born when their content arrives.
   topology — decide when the first `develop` posture is built, from what
   the topology actually needs to express.
 - Partial resolution semantics for subset hosts: a host that carries
-  three checkouts resolving a twelve-member line should record
+  three checkouts resolving a full line should record
   "unresolvable here" as fact, in the M3 tradition of recorded mismatch
   over refusal — shape it when the Windows host first runs `resolve`.
 

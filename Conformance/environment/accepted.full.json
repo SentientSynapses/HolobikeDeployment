@@ -6,6 +6,7 @@
     "Assetscape": "/home/example/git_projects/geo_kit/Assetscape",
     "HolobikeCore": "/home/example/git_projects/bike_kit/HolobikeCore",
     "AthleteIdentity": "/home/example/git_projects/id_kit/AthleteIdentity",
+    "AthleteInsights": "/home/example/git_projects/id_kit/AthleteInsights",
     "drAIs": "/home/example/git_projects/ai_kit/drAIs",
     "HolobikeExperience": "/home/example/git_projects/ue_kit/HolobikeExperience",
     "HolobikeDevice": "/home/example/git_projects/ue_kit/HolobikeDevice_uplugin",
@@ -15,7 +16,7 @@
     "OrielUI": "/home/example/git_projects/ue_kit/OrielUI_uplugin"
   },
   "toolchains": {
-    "unreal_engine": "/home/example/third_party/UnrealEngine-5.7.4-release",
+    "unreal_engine": "/home/example/third_party/UnrealEngine-5.3.2-release",
     "vcpkg": "/home/example/third_party/vcpkg"
   }
 }

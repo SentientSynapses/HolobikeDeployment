@@ -24,6 +24,7 @@
         "Assetscape": { "$ref": "#/$defs/selection" },
         "HolobikeCore": { "$ref": "#/$defs/selection" },
         "AthleteIdentity": { "$ref": "#/$defs/selection" },
+        "AthleteInsights": { "$ref": "#/$defs/selection" },
         "drAIs": { "$ref": "#/$defs/selection" },
         "HolobikeExperience": { "$ref": "#/$defs/selection" },
         "HolobikeDevice": { "$ref": "#/$defs/selection" },

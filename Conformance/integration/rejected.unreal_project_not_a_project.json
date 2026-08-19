@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "integration": "HolobikeExperience",
+  "kit": "ue_kit",
+  "repository": "HolobikeExperience",
+  "unreal_project": "Unreal/HolobikeExperience.uplugin"
+}

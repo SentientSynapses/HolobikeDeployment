@@ -3,6 +3,5 @@
   "integration": "HolobikeExperience",
   "kit": "ue_kit",
   "repository": "HolobikeExperience",
-  "origin": "git@github.com:Saga-Holographic/HolobikeExperience.git",
   "unreal_project": "Unreal/HolobikeExperience.uproject"
 }

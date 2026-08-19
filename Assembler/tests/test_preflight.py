@@ -42,6 +42,7 @@ def make_git_checkout(path):
 
 ROSTER = (
     "uroborOS", "HexAtlas", "Assetscape", "HolobikeCore", "AthleteIdentity",
+    "AthleteInsights",
     "drAIs", "HolobikeExperience", "HolobikeDevice", "HolobikeRider",
     "HolobikeWorlds",
     "HoloviewDisplay",
@@ -58,17 +59,42 @@ def minimal_leaf(name, repository=None):
     }
 
 
-class PreflightBehaviour(unittest.TestCase):
+class PreflightFixtures(unittest.TestCase):
+    """Scaffolding only. Carries no tests of its own, so the suites that
+    build on it do not re-run each other's."""
+
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory()
         self.root = pathlib.Path(self.scratch.name)
         self.addCleanup(self.scratch.cleanup)
 
-    def write_environment(self, checkouts):
+    def write_environment(self, checkouts, toolchains=None):
         document = {"schema_version": 1, "checkouts": checkouts}
+        if toolchains is not None:
+            document["toolchains"] = toolchains
         path = self.root / "environment.json"
         path.write_text(json.dumps(document), encoding="utf-8")
         return path
+
+    def make_engine(self, name, major, minor, patch=0):
+        """A directory an engine's version can actually be read out of."""
+        engine = self.root / name
+        build = engine / "Engine" / "Build"
+        build.mkdir(parents=True)
+        (build / "Build.version").write_text(
+            json.dumps({"MajorVersion": major, "MinorVersion": minor,
+                        "PatchVersion": patch}),
+            encoding="utf-8")
+        return engine
+
+    def make_unreal_project(self, checkout, relative, association):
+        project = checkout / relative
+        project.parent.mkdir(parents=True, exist_ok=True)
+        project.write_text(
+            json.dumps({"FileVersion": 3,
+                        "EngineAssociation": association}),
+            encoding="utf-8")
+        return relative
 
     def write_stack(self, leaves):
         """Fabricate a Stack tree: {directory name: document or raw text}."""
@@ -94,6 +120,7 @@ class PreflightBehaviour(unittest.TestCase):
         report = json.loads(result.stdout)
         return result, report
 
+class PreflightBehaviour(PreflightFixtures):
     def test_a_clean_checkout_reports_its_revision(self):
         checkout = self.root / "HexAtlas"
         revision = make_git_checkout(checkout)
@@ -229,6 +256,94 @@ class PreflightBehaviour(unittest.TestCase):
         result, report = self.report_for(environment, stack)
         self.assertEqual(result.returncode, 1)
         self.assertTrue(report["stack_strays"])
+
+
+class EngineAssociation(PreflightFixtures):
+    """The project and the declared engine must be talking about one engine.
+
+    This existed as two unrelated facts for a while: the environment named an
+    engine directory and preflight asked only whether it was there, while the
+    project's own EngineAssociation went unread. A workstation carrying two
+    engines answers "present" to either of them, so a mapping that named the
+    wrong one looked healthy — which is precisely how it drifted.
+    """
+
+    PROJECT = "Unreal/HolobikeExperience.uproject"
+
+    def experience(self, association, engine_minor):
+        checkout = self.root / "HolobikeExperience"
+        make_git_checkout(checkout)
+        self.make_unreal_project(checkout, self.PROJECT, association)
+        engine = self.make_engine(f"UE-5.{engine_minor}", 5, engine_minor)
+        environment = self.write_environment(
+            {"HolobikeExperience": str(checkout)},
+            {"unreal_engine": str(engine)})
+        leaf = minimal_leaf("HolobikeExperience")
+        leaf["unreal_project"] = self.PROJECT
+        return self.report_for(
+            environment, self.full_stack({"HolobikeExperience": leaf}))
+
+    def test_a_project_and_its_engine_may_agree(self):
+        result, report = self.experience("5.3", 3)
+        facts = report["engine_associations"]["HolobikeExperience"]
+        self.assertEqual(facts["status"], "agrees")
+        self.assertEqual(facts["engine_association"], "5.3")
+        self.assertEqual(facts["engine_version"], "5.3")
+        self.assertEqual(result.returncode, 0)
+
+    def test_the_wrong_engine_is_a_problem_not_a_presence(self):
+        result, report = self.experience("5.3", 7)
+        facts = report["engine_associations"]["HolobikeExperience"]
+        self.assertEqual(facts["status"], "engine_mismatch")
+        # Present, and still wrong: the old check stopped at the first half.
+        self.assertEqual(report["toolchains"]["unreal_engine"]["status"],
+                         "present")
+        self.assertEqual(result.returncode, 1)
+
+    def test_an_undeclared_project_is_not_judged(self):
+        checkout = self.root / "HexAtlas"
+        make_git_checkout(checkout)
+        engine = self.make_engine("UE-5.3", 5, 3)
+        environment = self.write_environment(
+            {"HexAtlas": str(checkout)}, {"unreal_engine": str(engine)})
+        result, report = self.report_for(environment)
+        # No leaf declares a project, so there is nothing to hold to anything.
+        self.assertEqual(report["engine_associations"], {})
+        self.assertEqual(result.returncode, 0)
+
+    def test_a_declared_project_that_is_not_there_is_a_problem(self):
+        checkout = self.root / "HolobikeExperience"
+        make_git_checkout(checkout)
+        engine = self.make_engine("UE-5.3", 5, 3)
+        environment = self.write_environment(
+            {"HolobikeExperience": str(checkout)},
+            {"unreal_engine": str(engine)})
+        leaf = minimal_leaf("HolobikeExperience")
+        leaf["unreal_project"] = self.PROJECT
+        result, report = self.report_for(
+            environment, self.full_stack({"HolobikeExperience": leaf}))
+        self.assertEqual(
+            report["engine_associations"]["HolobikeExperience"]["status"],
+            "project_unreadable")
+        self.assertEqual(result.returncode, 1)
+
+    def test_an_engine_without_a_version_is_said_so_not_assumed(self):
+        checkout = self.root / "HolobikeExperience"
+        make_git_checkout(checkout)
+        self.make_unreal_project(checkout, self.PROJECT, "5.3")
+        engine = self.root / "UE-unlabelled"
+        engine.mkdir()
+        environment = self.write_environment(
+            {"HolobikeExperience": str(checkout)},
+            {"unreal_engine": str(engine)})
+        leaf = minimal_leaf("HolobikeExperience")
+        leaf["unreal_project"] = self.PROJECT
+        result, report = self.report_for(
+            environment, self.full_stack({"HolobikeExperience": leaf}))
+        self.assertEqual(
+            report["engine_associations"]["HolobikeExperience"]["status"],
+            "engine_unversioned")
+        self.assertEqual(result.returncode, 1)
 
 
 if __name__ == "__main__":
