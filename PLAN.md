@@ -30,16 +30,34 @@ same schemas, the same environment documents, the same gates. The
 development composition is the release composition run in a persistent,
 developer-facing mode — not a parallel system.
 
-## Standing (2026-08-18)
+Both postures span both *tiers*. The stack's server-side — the identity
+and insights authorities, atlas serving and cartography, and the drAIs
+router as its refactor lands — is the other end of contracts this
+repository already gates, so it is specified here alongside the device
+software. What this repository *executes* stops where the bytes do
+(D-10).
+
+## Standing (2026-08-21)
 
 The core build-out (M1–M8) is complete: all six verbs live, 83 Assembler +
 13 Provisioning tests green, five run-record kinds digest-bound, admission
-the only writer of tracked `Releases/`. M9 is complete: **all four parity
-gates pass on the dev line and `resolve` exits 0** — the composition is
-green for the first time, and the cadence that keeps it honest runs daily.
-Enrollment of HoloviewDisplay as the twelfth integration exists on branch
-`integrate/holoviewdisplay`, paired with a HolobikeExperience branch of the
-same name; both are unlanded, and landing them is M10.
+the only writer of tracked `Releases/`. **M9 and M10 are complete.** The
+dev line resolves 13/13 with its four parity gates passing and exit 0;
+preflight agrees with the roster and holds the engine at 5.3; and the
+cadence that keeps it honest runs daily.
+
+HoloviewDisplay landed as the twelfth integration (`389d791`), its
+HolobikeExperience side rebased onto the identity trunk and merged
+(`fd97d1e`), and the fixes that had existed only in mounted plugin copies
+went upstream to the repositories that own them. AthleteInsights joined as
+the thirteenth (`a2721f9`), which is also where D-02's comparison half
+landed early. HoloviewDisplay is consumed in place and has no gate to
+fail; the four dual-copy gates that remain retire under D-08 as M12
+converts each plugin.
+
+Next is M11, the v2 schema sweep — which now also carries the deployable
+axis (D-11), and after it M16, the first phase whose subject is software
+that does not run on a bike.
 
 ## Constraints this plan preserves
 
@@ -222,6 +240,90 @@ This verb is described here but built only when its first posture lands
   containing nothing else; a flat `ue/` would also scan the legacy demo's
   vendored plugin copies.
 
+## Decisions established 2026-08-21
+
+Scope decisions, taken after an inventory of what the stack actually runs
+server-side. They generalize the principle `a2721f9` already acted on —
+a composition that pins one end of a wire and not the other cannot say
+what it deployed — from one socket to the whole tier.
+
+- **D-10 The specification spans both tiers; execution stops at the
+  bytes.** The stack's server-side is not adjacent software; it is the
+  far end of contracts this repository already gates. `Server/v1` and
+  `Client/v1` are one contract with two ends, as are AtlasServer's
+  parcel protocol and AtlasClient's ingest. So the roster, the revision
+  lines, policy and the gates cover server-side deployables: a record
+  that pins the device half and is silent on the other describes half of
+  a conversation. Execution does not follow specification across that
+  line. `admit` re-hashes bytes, and a container image has bytes while a
+  Terraform apply has none — it mutates a live system whose state
+  outlives every release, at a blast radius no device update has. The
+  Assembler therefore builds and admits what has artifacts, and anything
+  with an *estate* is delivered by a tier downstream of admission. This
+  is the standing rule — declarations bind, the Assembler executes —
+  applied one level up, not new machinery.
+- **D-11 A Stack leaf may name more than one deployable.** A leaf's
+  `entry_points` describe one thing to build and one to serve, so
+  several leaves today describe half their repository:
+  `id/AthleteIdentity` builds `IdentityClient` and never mentions
+  `IdentityServer`; `id/AthleteInsights` the same; `geo/HexAtlas` holds
+  AtlasServer (network-facing serving), AtlasCartographer (the build
+  machine that produces the corpus) and AtlasClient in one checkout; and
+  the drAIs refactor toward a server-side router with a device-resident
+  client service makes `ai/drAIs` the fourth. The leaf stays
+  one-per-repository — checkout identity is repository identity, and
+  D-09 derives paths from it — so the axis belongs *inside* the leaf:
+  named deployables, each with its own build/serve/probe, artifacts, and
+  destination. `Profiles/` then selects deployables rather than whole
+  integrations, which is what lets a development profile take the device
+  half and skip the estate half. The schema change lands in M11 or v2 is
+  spent twice.
+- **D-12 Updating a HoloBike is not the OS updating itself.** uroborOS
+  owns the mechanism for its own layer — counted A/B UKI update,
+  fallback, TPM unlock, already built and VM-validated — and must not
+  learn HoloBike composition; it is a domain repository, and composition
+  across domains is this repository's job. The answer to "what should
+  this bike be running?" is a release: OS, device services, product
+  bundle, atlas content, identity and intelligence clients. Three owners
+  by layer, then: uroborOS applies the OS layer; a HoloBike device
+  service reads the release and orchestrates per-layer application,
+  delegating the OS layer to that mechanism (HolobikeCore is the natural
+  owner — device services, systemd units, an endpoint surface already,
+  but it is that repository's call); and this repository produces the
+  release and publishes it.
+- **D-13 Build the update hub, do not become it.** An OTA authority is a
+  service — uptime, rollout state, device sessions — and this repository
+  is a tool that is *run*. Folding one into the other would put a
+  runtime service inside a repository whose every doctrine is build-time
+  doctrine. It is also not needed first: `admit` already produces an
+  immutable, digest-bound, signable record, so the first honest feed is
+  static content — a signed manifest per line, published where devices
+  can reach it, artifacts fetched by digest and verified. Nothing runs,
+  and publication is a delivery workflow. A service is earned only when
+  server-side cohort targeting, rollout telemetry, or remote
+  kill/rollback actually exist; at that point it is HoloBike-owned
+  software in its own repository and a stack member like any other, and
+  this repository builds it rather than being it. Device authentication
+  is not a reason to build it sooner: `IdentityServer`'s device registry
+  already owns device identity, activation binding, custody and
+  revocation, and a second registry here would be the duplication.
+- **D-14 `Provisioning/` keeps its meaning and grows a kind level.**
+  Provisioning is the standard word for standing up infrastructure as
+  well as devices — Terraform provisions — so `Provisioning/server/` is
+  accurate rather than a stretch. What does not fit under it is shipping
+  an admitted release onto things that already exist: a different act at
+  a different cadence, which earns its own tier when it has content. The
+  partition is lowercase, per the convention the tree keeps without
+  exception: PascalCase names a top-level tier, every level below it
+  that *classifies* is lowercase (`Stack/{ai,bike,geo,id,os,ue}`,
+  `Stack/ue/plugins`, `Conformance/{environment,integration,…}`, and
+  `^[a-z0-9][a-z0-9-]*$` enforced on profile names), and only a level
+  that *names a real thing* carries that thing's exact name — which is
+  why `drAIs` and `uroborOS` appear as themselves. Compound leaf names
+  are rejected on the same grounds: a leaf does not restate its parent
+  (`Stack/ue/plugins`, never `UePlugins`). Landing is deferred to the
+  first server workflow; today it would create an empty directory.
+
 ## Engine posture (ruled 2026-08-19)
 
 **5.3 is the intended engine.** `HolobikeExperience` `main` is
@@ -265,43 +367,24 @@ deletion, the dead-actor purge), so the sync was lossless by
 construction. **All four gates now pass on the dev line, 11/11
 selections resolved, exit 0 — the first fully green resolution.**
 
-### M10 — land the HoloView integration
+### M10 — land the HoloView integration — COMPLETE 2026-08-19
 
-Cross-repo sequencing. The rebase is done locally and verified; what
-remains is landing it and the deployment side.
+`integrate/holoviewdisplay` rebased onto `main` — the identity trunk — in
+five commits, with no binary asset overlapping, so constraint 1's
+pick-the-trunk rule never fired. Verified by build and launch rather than
+by reading: editor builds, plugin loads, zero dlopen failures, zero
+CoreRedirects errors, provider selection falling back to
+`NullDisplayPlatform` by name. Merged as `fd97d1e`; enrolled here as
+`389d791`, with no parity gate, because under D-08 HoloviewDisplay is
+consumed through `AdditionalPluginDirectories` and has no second copy.
 
-- **Done 2026-08-18 (local, unpushed).** `integrate/holoviewdisplay`
-  rebased onto `main` — the identity trunk — in five commits. No binary
-  asset overlapped, so constraint 1's pick-the-trunk rule never fired.
-  Verified by build and launch, not by reading: editor builds, plugin
-  loads, zero dlopen failures, zero CoreRedirects errors, zero
-  `SimulatedRealityMock` mentions, provider selection falls back to
-  `NullDisplayPlatform` by name.
-- The mount is gone: HoloviewDisplay is consumed through
-  `AdditionalPluginDirectories` (D-08), so there is one tree and the
-  gitignore rule the link needed is deleted rather than fixed.
-- **Found by doing it, and owed upstream:** the two commits carrying the
-  packaging and 5.7 fixes were almost entirely edits to *mounted* plugin
-  copies, never backported. Landing them as-is would have buried four
-  real fixes where the next sync deletes them. Only the Experience-owned
-  `Build.cs` change stayed; the rest are owed to `HolobikeWorlds`
-  (`RidePathGraph::FindByWaylinkId`, an unguarded `UFUNCTION` over a
-  `WITH_EDITOR` body — one of the pair is already fixed as `0770c09`),
-  `HolobikeDevice` (a codec leak and two `AllowedClasses` headers), and
-  `HolobikeRider` (the automation-context macro, in the file `main`
-  renamed to `IdentityIOTests.cpp`).
-- Re-stack `upgrade/ue57` on the landed result.
-- HolobikeDeployment: land the enrollment commit (`92d32b1`) — twelfth
-  integration — at the schema v1 spelling; the `kit` → `domain` rename is
-  held for M11's single bump. Its parity gate is now pointless under
-  D-08 and should not land with it.
-- Fast-forward this workstation's `HoloviewDisplay_uplugin` checkout
-  (done) and add its path to `.local/environment.json` on every host that
-  carries it.
-
-**Exit gate:** `resolve --line dev` resolves every member with no
-gate for HoloviewDisplay to fail, because it has no second copy; and
-Experience `main` carries both workstreams under the load check.
+Found by doing it: the two commits carrying the packaging and 5.7 fixes
+were almost entirely edits to *mounted* plugin copies, never backported,
+so landing them as-is would have buried real fixes where the next sync
+deletes them. They went upstream instead, to `HolobikeWorlds`,
+`HolobikeDevice` and `HolobikeRider`. That is the rule the mounts'
+retirement exists to make unnecessary: a fix made in a mount is
+scheduled for deletion.
 
 ### M11 — the v2 sweep
 
@@ -311,6 +394,12 @@ wrapped enum lines.
 
 - `kit` → `domain` across the integration schema, every Stack leaf, and
   the bindings (adapting the held rename commit).
+- `entry_points` grows the deployable axis (D-11): a leaf may declare
+  several named deployables, each carrying its own build/serve/probe,
+  artifacts, and destination; profiles select deployables rather than
+  whole integrations. Folded in here because a leaf that names half its
+  repository is a v2 problem, and finding it after the bump would spend
+  the version constant twice.
 - `unreal_engine` becomes a version-keyed map in
   `Schemas/environment.schema.json` and `.local/environment.json`.
 - `preflight.py`: `_inspect_toolchain` parses
@@ -375,18 +464,22 @@ Stack and a root.
 
 ### M13 — lines and roster
 
-Depends on M10 (the re-stacked upgrade branch) and M11 (v2 documents).
+Depends on M11 (v2 documents), and on `upgrade/ue57` being re-stacked
+onto the landed HoloView result first — it rots while `main` moves, so
+rebase it before the upgrade begins, not after.
 
-- `Revisions/ue57.json` pins HolobikeExperience to the re-stacked
-  upgrade branch; the committed-lines test covers it the moment the
-  file exists. Add the line to the timer's cadence.
+- Re-stack `upgrade/ue57`, then `Revisions/ue57.json` pins
+  HolobikeExperience to it; the committed-lines test covers it the
+  moment the file exists. Add the line to the timer's cadence.
 - `Stack/nonmembers.json` with `Schemas/nonmembers.schema.json` and its
   corpus; the preflight stray scan walks the declared checkouts' parent
   directories and names any repository in neither set.
 - Enroll HolobikeMigration (mounted, dual-copy, already drifted — gains
-  the sixth gate) and AthleteInsights (deployed device software,
-  consumed as AthleteInsightsIO); record HolobikeIntelligence and the
-  Lab repositories as nonmembers with reasons.
+  a gate until D-08 converts it); record HolobikeIntelligence and the
+  Lab repositories as nonmembers with reasons. AthleteInsights, the
+  other candidate this phase was written to force, was enrolled early
+  in `a2721f9` when the missing end of the InsightsIO wire made waiting
+  dishonest.
 - The roster-membership rule — what makes a repository a stack member,
   and why nonmembers carry reasons — is written into `Stack/README.md`
   beside the roster it governs.
@@ -437,12 +530,59 @@ The Linux posture depends only on M9; the Windows posture on M13.
 yields a ready, error-free editor session — services up, probed, and
 auto-connected.
 
+### M16 — the server tier
+
+Depends on M11 (the deployable axis). The first phase whose subject is
+software that does not run on a bike.
+
+- Name the server deployables in the leaves they already belong to:
+  `IdentityServer` under `id/AthleteIdentity`, `InsightsServer` under
+  `id/AthleteInsights`, `AtlasServer` and `AtlasCartographer` under
+  `geo/HexAtlas`, and the drAIs router under `ai/drAIs` once that
+  refactor lands.
+- Decide per deployable what this repository does with it, and record
+  the absences honestly. Two of the four have no deployment surface at
+  all today — AtlasServer is a network-facing HTTP API with no
+  container and no unit, and InsightsServer's own README names a
+  production deployment as outstanding — so for those the first act is
+  to record that fact, not to invent packaging on their behalf.
+  Packaging is repository-owned; a leaf declares an entry point when
+  there is one to declare.
+- `IdentityServer` is the one that can be exercised now: it has a
+  Dockerfile and a parameterized Terraform module, and its development
+  composition refuses to bind anything but loopback by construction.
+  Admit its image by digest; leave the apply alone (D-10).
+- A server profile, and emulation only where there is something honest
+  to probe.
+
+**Exit gate:** a release record names both ends of every contract that
+crosses the network, or records why an end has nothing to name.
+
 ## Deferred, with triggers
 
 - **Signing** — when a release first leaves machines we control.
 - **Artifact store** — when two hosts need the same bundle bytes and
   ad-hoc copying stops being honest.
-- **Fleet / Compatibility tiers** — when there is a second bike.
+- **A `Compatibility/` tier** — when a concrete cross-repository
+  constraint cannot be expressed by revision selection or policy. (The
+  fleet half of this entry is now the three below it.)
+- **The update hub as a service** — when server-side cohort targeting,
+  rollout telemetry, or remote kill/rollback exist (D-13). Until then a
+  signed static feed, published as a delivery workflow.
+- **The release-shipping tier** — the sibling of `Provisioning/` that
+  puts admitted releases onto provisioned things. `Rollout/` is the
+  front-runner; `Publication/` presumes the feed mechanism and so must
+  not be chosen before the mechanism is. Named when it has content.
+- **Content as a selection axis** — `Revisions/` selects code, and
+  nothing selects the MasterAtlas corpus a device actually rides. For a
+  geography product the content *is* the product, so a record pinning
+  `HexAtlas @ <sha>` while silent on which atlas is live has exactly the
+  gap D-10 closes for servers, one tier over. Deferred rather than
+  scheduled because what a content selection *is* — a corpus digest, a
+  published atlas version, HexAtlas's own versioning — is not yet known,
+  and designing it from ignorance is the scaffolding this repository
+  forbids. Trigger: when HexAtlas publishes a corpus version this
+  repository can name.
 - **CI as an institution** — the timer (D-06) is the whole of it until an
   event a workstation cannot produce demands more.
 
@@ -462,6 +602,10 @@ described here, they are born when their content arrives.
   three checkouts resolving a full line should record
   "unresolvable here" as fact, in the M3 tradition of recorded mismatch
   over refusal — shape it when the Windows host first runs `resolve`.
+- Which repository owns the device-side update agent. HolobikeCore is
+  the natural owner under D-12, but the layer boundaries it must respect
+  are the point, not the address — settle it with that repository before
+  the first feed is published, not after.
 
 ## Definition of success
 
