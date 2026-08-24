@@ -273,45 +273,60 @@ D-numbers preserved.
 the schemas canonical are true, and a field change is a one-file edit. 92
 tests green; `preflight` clean against all thirteen live checkouts.
 
-### Phase 2 — One vocabulary
+### Phase 2 — One vocabulary — COMPLETE 2026-08-24
 
-The specification learns to describe both tiers and to refuse what does not
-deploy. Cheap now, because Phase 1 made a schema change cheap.
+`19a7d65` → `1ec8742`. The membership rule went in **first**, before any
+roster change, which is the whole lesson of what the previous plan got wrong.
 
-- `kit` → `domain` across the integration schema, every leaf, and the loader.
-- `entry_points` → named `deployables`, each with `destination`, its own
-  build/serve/probe and its own artifacts. Profiles select deployables;
-  topology keys them.
-- The destination resolver (D-19): the loader proves every chain reaches a
-  reserved terminal without cycles, and consumers take the resolved value.
-  The five UE plugins get their first honest declaration — they name the
-  package they compile into, which is why they have no artifacts of their
-  own.
-- Write the membership rule into `Stack/README.md` **before** any roster
-  change, and enforce it in the schema.
-- `Stack/nonmembers.json` with its schema. **HolobikeMigration is recorded
-  here, not enrolled** — its single remaining module is `UncookedOnly` and
-  cannot enter a cooked package, both substitute modules are retired
-  (`c6a28e9` 2026-08-13, `62ad2f8` 2026-08-19), and by its own written
-  condition the plugin is deletable. Its reason names that condition and
-  points at the `HolobikeExperience.uproject` entry that retires it. Record
-  HolobikeIntelligence and the Lab repositories likewise.
-- `check` gains the stray scan: a repository adjacent to the stack and in
-  neither set is a named problem, not a discovery.
-- Fix the roster's one live inconsistency: **OrielUI** is selected in
-  `Revisions/dev.json`, present in all twelve roster enums and carries a
-  passing `orielui-dual-copy` gate, yet appears in neither roster table and
-  is the only leaf without a README. The stray scan catches the opposite
-  failure; nothing catches this one.
-- Name the server deployables in the leaves that already own them:
-  `IdentityServer`, `InsightsServer`, `AtlasServer`, `AtlasCartographer`, and
-  the drAIs router when its refactor lands. Record honest absences — two of
-  those have no deployment surface today, and the first act for them is to
-  say so, not to invent packaging on their behalf.
+Integration schema v2: `kit` → `domain`, `entry_points` → named
+`deployables`, `prove` at the leaf because it proves the repository rather
+than any one deployable. **Eighteen deployables across thirteen leaves**, and
+every name is a top-level directory in the repository that owns it rather
+than a coinage here; a repository producing exactly one names it after
+itself. `DraisAgent` is deliberately absent — it has no README, and this
+repository does not name what it cannot describe.
 
-**Exit:** every deployable states where it goes; a repository that ships
-nowhere cannot be declared a member; and both ends of every contract that
-crosses the network are named or their absence is recorded.
+**Fifteen of the eighteen are recorded absences** — named, with nothing here
+able to build them. That was the point: `AtlasServer` and `InsightsServer`
+are now visible as unbuilt rather than invisible as unmentioned.
+
+Destinations chain and resolve (D-19). The five UE plugins name
+HolobikeExperience, which is the first honest statement of why they have no
+artifacts of their own. `resolve_destination` refuses cycles, missing leaves,
+and a carrier with more than one landing deployable; `carried_by` answers what
+a release record needs — **thirteen deployables reach `device`, five of them
+through HolobikeExperience, and five reach `server`** — with no second list.
+
+The roster is closed into a loop. `Stack/nonmembers.json` records seventeen
+adjacent repositories with reasons; thirteen members plus seventeen
+non-members accounts for all thirty git checkouts under the kits, and
+`preflight` says so. **HolobikeMigration is recorded, not enrolled**, its
+entry naming the fact that decides it — one `UncookedOnly` module, which
+cannot enter a cooked package. **HolobikeIntelligence is recorded as a
+candidate**: it would pass the rule and is simply not enrolled while the drAIs
+integration is in flight, so preflight names it every run rather than letting
+it sit. Two entries say plainly that the question is unsettled rather than
+dressing a guess as a decision.
+
+The scan found something on its first run — HolobikeDeployment itself, in
+neither set. It is declared rather than skipped by teaching the scan where it
+is running from.
+
+OrielUI has the README it never had and its row in both roster tables, with
+two tests holding that shut.
+
+**Exit met:** every deployable states where it goes; a repository that ships
+nowhere is inexpressible as a member; and both ends of every contract that
+crosses the network are named or their absence is recorded. 97 tests green,
+124 fixtures, `preflight` exit 0.
+
+**Moved to Phase 3:** *profiles select deployables, topology keys them.*
+Selecting a deployable only means something once the verbs consume
+deployables, and they still select whole integrations. Landing it here would
+have created exactly the transitional double-shape Phase 1 spent itself
+removing. The leaf side carries a transitional `producer` that refuses a leaf
+where it would be ambiguous, and says in its own docstring that Phase 3
+deletes it.
 
 ### Phase 3 — One tool
 
