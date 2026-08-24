@@ -40,9 +40,34 @@ versions are compatible, which gates admit a release — it lives beside
 under `Policy/`. What stays here is the contract for driving one repository
 and what that repository exposes.
 
-Third-party software is not a domain member. Toolchains such as the Unreal
-engine and vcpkg are located by environment preflight and recorded as release
-facts; only HoloBike-owned software appears under `Stack/`.
+## What makes a repository a member
+
+**A member's code reaches a deployment destination — as its own artifact, or
+inside another member's.**
+
+That is the whole test, and it is checkable rather than a matter of taste.
+Every deployable declares a `destination`: `device`, `server`, or the name of
+another member whose artifact carries it. The five UE plugins pass on the
+second clause — UBT compiles them into HolobikeExperience's package, which is
+why they have no artifacts of their own and why that is honest rather than an
+omission.
+
+A repository this repository merely *checks out* is not thereby a member.
+Development tooling, migration scaffolding and anything with a deletion
+condition ships nowhere, so it has no destination to declare and cannot be
+expressed as one. Those are recorded in `nonmembers.json` with a reason, which
+is a stronger statement than silence: it says someone looked.
+
+The rule exists because it was missing. Thirteen members accumulated on
+judgement alone, and the first case where "checked out" and "deployed"
+genuinely diverged — `HolobikeMigration`, a plugin whose every module exists
+to be deleted — was very nearly enrolled, because membership was the only way
+to attach a parity gate to it. Gates follow from membership. Membership does
+not follow from wanting a gate.
+
+Third-party software is not a domain member either. Toolchains such as the
+Unreal engine and vcpkg are located by environment preflight and recorded as
+release facts; only HoloBike-owned software appears under `Stack/`.
 
 An integration contract may commit its adapter to:
 
