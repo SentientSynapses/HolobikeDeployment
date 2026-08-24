@@ -22,7 +22,8 @@ from . import stack as stack_contract
 
 # Tools every current workflow expects to resolve from PATH. Reported, never
 # installed; absence is a fact, not a failure of preflight itself.
-PATH_TOOLS = ("git", "cmake", "ninja", "node", "npm", "python3")
+PATH_TOOLS = ("git", "cmake", "ninja", "node", "npm", "python3",
+              "docker")
 
 
 _git = gitfacts.git_query

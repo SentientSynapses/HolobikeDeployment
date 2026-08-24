@@ -21,9 +21,20 @@ DESTINATIONS = ("device", "server")
 def run(*, destination, identity_input, root, verify, stdout, stderr):
     """Execute provisioning; returns the process exit code."""
     if destination == "server":
-        print("provisioning a server is not built yet — no server deployable "
-              "in this repository has an artifact to place (see PLAN.md, "
-              "Phase 6)", file=stderr)
+        # One server deployable builds — AthleteIdentity's IdentityServer —
+        # and what it builds is a base image its own repository says cannot
+        # start in production, because it deliberately contains no device
+        # authenticator. Applying its Terraform module against that image is
+        # refused by the module itself. The gap is a project decision, not a
+        # missing verb, so this says which one rather than failing vaguely.
+        print("provisioning a server is refused: the only server deployable "
+              "that builds is AthleteIdentity.IdentityServer, and it builds a "
+              "BASE image that cannot start in production — its Terraform "
+              "module will not create Cloud Run until container_image names a "
+              "derived image carrying a device authenticator. That derivation "
+              "is one of eight project-owned readiness items AthleteIdentity "
+              "lists and none of them exists yet. See "
+              "Stack/id/AthleteIdentity.md.", file=stderr)
         return 2
 
     if verify:

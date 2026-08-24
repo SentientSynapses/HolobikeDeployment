@@ -46,7 +46,34 @@
       }
     },
     "IdentityServer": {
-      "destination": "server"
+      "destination": "server",
+      "build": {
+        "steps": [
+          {
+            "argv": [
+              "docker",
+              "build",
+              "-f",
+              "IdentityServer/Deployment/Dockerfile",
+              "-t",
+              "athleteidentity-server:base",
+              "."
+            ]
+          },
+          {
+            "argv": [
+              "docker",
+              "save",
+              "-o",
+              "Builds/athleteidentity-server-base.tar",
+              "athleteidentity-server:base"
+            ]
+          }
+        ]
+      },
+      "artifacts": [
+        "Builds/athleteidentity-server-base.tar"
+      ]
     }
   }
 }

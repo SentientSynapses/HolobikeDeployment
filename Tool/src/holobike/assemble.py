@@ -61,16 +61,34 @@ def _source_problem(name, checkout, resolution):
     return ""
 
 
-def _run_steps(name, steps, checkout, logs_root, bundle_root):
-    """Run one integration's build steps; returns (facts, problems)."""
+def _run_steps(ref, steps, checkout, logs_root, bundle_root):
+    """Run one deployable's build steps; returns (facts, problems).
+
+    `ref` is Integration.Deployable, which is how the record keys the
+    result and therefore how a problem should name it.
+    """
     facts = {"steps": []}
     problems = []
     for index, argv in enumerate(steps):
-        log_path = logs_root / f"{name}-step{index}.log"
-        with filesystem.open_private_output(log_path) as log:
-            completed = subprocess.run(
-                list(argv), cwd=checkout, stdout=log,
-                stderr=subprocess.STDOUT, check=False)
+        log_path = logs_root / f"{ref}-step{index}.log"
+        try:
+            with filesystem.open_private_output(log_path) as log:
+                completed = subprocess.run(
+                    list(argv), cwd=checkout, stdout=log,
+                    stderr=subprocess.STDOUT, check=False)
+        except (FileNotFoundError, PermissionError, NotADirectoryError) as error:
+            # A build tool this workstation does not have is a recorded fact,
+            # not a crash — the server tier found this, where a Linux
+            # workstation with no docker cannot build a container image and
+            # should say so rather than traceback.
+            facts["status"] = "unavailable"
+            facts["detail"] = f"{argv[0]}: {error.strerror or error}"
+            facts["steps"].append({"argv": list(argv), "exit": -1,
+                                   "log": str(log_path.relative_to(bundle_root))})
+            problems.append(
+                f"{ref}: build step {index} could not run — "
+                f"{argv[0]} is not available on this host")
+            return facts, problems
         facts["steps"].append({
             "argv": list(argv),
             "exit": completed.returncode,
@@ -79,7 +97,7 @@ def _run_steps(name, steps, checkout, logs_root, bundle_root):
         if completed.returncode != 0:
             facts["status"] = "failed"
             problems.append(
-                f"{name}: build step {index} exited "
+                f"{ref}: build step {index} exited "
                 f"{completed.returncode} ({' '.join(argv)})")
             return facts, problems
     facts["status"] = "built"
@@ -228,7 +246,7 @@ def run(profile_path, record_path, environment_path, stack_root,
             problems.append(source_problem)
             continue
         facts, step_problems = _run_steps(
-            name, produced.build_steps, checkout, logs_root, bundle_root)
+            ref, produced.build_steps, checkout, logs_root, bundle_root)
         builds[ref] = facts
         problems.extend(step_problems)
         if facts["status"] != "built":

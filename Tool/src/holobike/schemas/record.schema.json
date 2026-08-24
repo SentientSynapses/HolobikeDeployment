@@ -618,7 +618,8 @@
             "built",
             "failed",
             "skipped",
-            "invalidated"
+            "invalidated",
+            "unavailable"
           ]
         },
         "steps": {

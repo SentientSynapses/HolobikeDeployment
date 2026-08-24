@@ -496,19 +496,51 @@ agents' sessions, and the `AdditionalPluginDirectories` relative paths that
 but it reorganises the whole workspace and wants a deliberate moment rather
 than being folded into a phase.
 
-### Phase 6 — The server side
+### Phase 6 — The server side — STARTED 2026-08-24
 
-- `env server` — `IdentityServer` is the one exercisable today: it has a
-  Dockerfile, a parameterized Terraform module, and a development composition
-  that refuses to bind anything but loopback by construction.
-- `build server` — admit the image by digest.
-- `provision server` — apply. This is the one verb that mutates a live system
-  whose state outlives every release, which is exactly why it is a separate
-  verb and never a side effect of a build (see D-10 below).
+Most of what this phase was written to do landed in Phase 2: the server
+deployables are named in the leaves that own them, `Profiles/server.json`
+selects the five that reach the estate, and four of them are recorded
+absences. What remained was to decide what this repository does with the one
+that can be exercised — and reading it changed the answer.
 
-**Cells closed: development × server, production × server.**
+**`IdentityServer` declares the build its own repository documents**, producing
+`athleteidentity-server:base` and saving it to a tar so the bundle carries
+bytes and `admit` has something to hash.
 
-**Exit:** all four cells run with one command each.
+**And a base image does not deploy.** AthleteIdentity says so itself: the image
+"intentionally contains no device authenticator", and its Terraform module
+refuses to create Cloud Run until `container_image` names a derived image that
+has one. The repository lists eight further readiness items as *project-owned*
+rather than its own — the derived image, a reviewed device credential format
+with manufacturing enrolment and rotation, provisioned registry entries, the
+athlete-facing pairing approval experience, operator revocation and key-rotation
+procedures, and observability. **None of them exists.**
+
+So the honest Phase 6 result is not `build server` producing a deployable. It
+is: this repository can build the base image and record its digest, it cannot
+deploy it, and `provision server` refuses by *naming which decision is
+missing* rather than failing vaguely. `Stack/id/AthleteIdentity.md` records
+the gap where a person looking at the leaf will find it. Deriving the
+production image is not AthleteIdentity's to do and is not packaging this
+repository may invent on its behalf — it is a decision the project owes, and
+the release record keeps saying the estate half is unbuilt until it is made.
+
+**Found by running it.** This workstation has no docker, and `build server`
+crashed with an unhandled `FileNotFoundError` instead of recording anything. A
+build tool a host does not have is now a recorded fact — status `unavailable`
+with the reason — so a Linux workstation that cannot build a container image
+says so in the record rather than in a traceback. `check` reports docker among
+its PATH tools for the same reason. That bug was invisible until a deployable
+needed a tool this machine lacks, which is exactly what the server tier is.
+
+`build server` on this host now produces a truthful record: one `unavailable`,
+four `skipped`, no artifacts, exit 1.
+
+**Still needed, and none of it is code:** the eight readiness items above, and
+the project decision about who derives the production image. Until then the
+server column of the 2×2 is specified, buildable in part, and honestly
+undeployable.
 
 ## Decisions this plan stands on
 
