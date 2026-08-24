@@ -39,6 +39,16 @@ def validate_integration(document_path):
     )
 
 
+def validate_nonmembers(document_path):
+    return subprocess.run(
+        [sys.executable, str(SHIM), "preflight",
+         "--validate-nonmembers", str(document_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
 def validate_revisions(document_path):
     return subprocess.run(
         [sys.executable, str(SHIM), "resolve",
@@ -101,6 +111,27 @@ class IntegrationConformance(unittest.TestCase):
     def test_every_fixture_is_classified_and_holds(self):
         run_fixture_corpus(self, INTEGRATION_FIXTURES, validate_integration)
 
+    def test_every_leaf_has_a_README(self):
+        # OrielUI was a member in every mechanism — selected, in twelve roster
+        # enums, carrying a passing gate — and the only leaf without one.
+        for leaf in sorted((REPO_ROOT / "Stack").rglob("integration.json")):
+            with self.subTest(leaf=leaf.parent.name):
+                self.assertTrue((leaf.parent / "README.md").is_file())
+
+    def test_every_leaf_is_named_in_the_roster_tables(self):
+        # The stray scan catches a repository nobody declared. This catches
+        # the opposite: a member declared everywhere except where a person
+        # reads the roster.
+        tables = "\n".join(
+            (REPO_ROOT / name).read_text(encoding="utf-8")
+            for name in ("README.md", "Stack/README.md"))
+        for leaf in sorted((REPO_ROOT / "Stack").rglob("integration.json")):
+            name = json.loads(leaf.read_text(encoding="utf-8"))["integration"]
+            with self.subTest(integration=name):
+                self.assertEqual(
+                    tables.count(f"[`{name}`]"), 2,
+                    f"{name} must appear in both roster tables")
+
     def test_every_stack_leaf_is_an_accepted_fixture(self):
         # The committed leaves are held to the same judge as the corpus: a
         # leaf that drifts from the contract fails the suite, not just the
@@ -118,6 +149,36 @@ class IntegrationConformance(unittest.TestCase):
             with self.subTest(leaf=str(leaf.relative_to(REPO_ROOT))):
                 result = validate_integration(leaf)
                 self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class NonMembersConformance(unittest.TestCase):
+    """The declaration that closes the roster into a loop.
+
+    A repository in neither the roster nor this file is a named problem
+    rather than a discovery — which only holds while the file itself is held
+    to a contract.
+    """
+
+    def test_every_fixture_is_classified_and_holds(self):
+        run_fixture_corpus(
+            self, REPO_ROOT / "Conformance" / "nonmembers", validate_nonmembers)
+
+    def test_the_declaration_validates(self):
+        result = validate_nonmembers(REPO_ROOT / "Stack" / "nonmembers.json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_no_declared_nonmember_is_also_a_member(self):
+        # Both at once would make the roster ambiguous rather than closed.
+        sys.path.insert(0, str(REPO_ROOT / "Assembler" / "src"))
+        from holobike_assemble import nonmembers, stack
+
+        declared, errors = nonmembers.load_nonmembers(
+            REPO_ROOT / "Stack" / "nonmembers.json")
+        self.assertEqual(errors, [])
+        documents, errors = stack.load_stack(REPO_ROOT / "Stack")
+        self.assertEqual(errors, [])
+        members = {d.repository for d in documents.values()}
+        self.assertEqual(members & set(declared), set())
 
 
 class RevisionsConformance(unittest.TestCase):

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/nonmembers.schema.json",
+  "title": "Non-members",
+  "description": "Repositories adjacent to the stack that are deliberately not members, each with a reason. Keys are checkout directory names, because that is what the stray scan sees. Recording a repository here is a stronger statement than silence: it says someone looked. A repository in neither this file nor the roster is a named problem rather than a discovery.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "nonmembers"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "nonmembers": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[A-Za-z0-9._-]+$" },
+      "additionalProperties": { "$ref": "#/$defs/nonmember" }
+    }
+  },
+  "$defs": {
+    "nonmember": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason"],
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 16,
+          "description": "Why this repository ships nowhere, or why it is not enrolled yet. Long enough to be an argument rather than a label."
+        },
+        "retires_when": {
+          "type": "string",
+          "minLength": 16,
+          "description": "For a repository that exists to be deleted: the checkable condition that ends it. Its absence means the repository is expected to persist."
+        },
+        "candidate": {
+          "type": "boolean",
+          "description": "True when this repository would pass the membership rule and is simply not enrolled yet. A candidate is a decision someone owes, not a settled exclusion."
+        }
+      }
+    }
+  }
+}

@@ -30,7 +30,7 @@ to the contract it implements here.
 | `os` | [`uroborOS`](os/uroborOS/README.md) |
 | `geo` | [`HexAtlas`](geo/HexAtlas/README.md), [`Assetscape`](geo/Assetscape/README.md) |
 | `id` | [`AthleteIdentity`](id/AthleteIdentity/README.md), [`AthleteInsights`](id/AthleteInsights/README.md) |
-| `ue` | [`HolobikeExperience`](ue/project/HolobikeExperience/README.md), [`HolobikeDevice`](ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](ue/plugins/HolobikeWorlds/README.md), [`HoloviewDisplay`](ue/plugins/HoloviewDisplay/README.md) |
+| `ue` | [`HolobikeExperience`](ue/project/HolobikeExperience/README.md), [`HolobikeDevice`](ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](ue/plugins/HolobikeWorlds/README.md), [`HoloviewDisplay`](ue/plugins/HoloviewDisplay/README.md), [`OrielUI`](ue/plugins/OrielUI/README.md) |
 | `ai` | [`drAIs`](ai/drAIs/README.md) |
 | `bike` | [`HolobikeCore`](bike/HolobikeCore/README.md) |
 

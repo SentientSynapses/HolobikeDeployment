@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "nonmembers": {
+    "HolobikeMigration_uplugin": {
+      "reason": "temporary"
+    }
+  }
+}

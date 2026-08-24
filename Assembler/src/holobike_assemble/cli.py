@@ -72,6 +72,11 @@ def _build_parser():
         help="judge the environment document and say nothing else",
     )
     preflight_parser.add_argument(
+        "--validate-nonmembers",
+        metavar="PATH",
+        help="judge one non-members declaration and say nothing else",
+    )
+    preflight_parser.add_argument(
         "--validate-integration",
         metavar="PATH",
         help="judge one integration contract document and say nothing else",
@@ -311,6 +316,7 @@ def _main(argv=None):
             stack_root=arguments.stack,
             validate_only=arguments.validate_only,
             validate_integration=arguments.validate_integration,
+            validate_nonmembers=arguments.validate_nonmembers,
             as_json=arguments.json,
             stdout=sys.stdout,
             stderr=sys.stderr,

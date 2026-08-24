@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "nonmembers": {
+    "HolobikeDeployment": {
+      "reason": "This repository. It is the specification of the deployed stack, the machine that realizes it, and the record of what it realized — none of which is deployed software. It reaches no device and no server, so it fails the membership rule on its own terms, which is the correct result: a tool that composed itself would be counting its own bytes as product. Recorded rather than skipped implicitly, because the scan should not need to know where it is running from."
+    },
+    "HolobikeMigration_uplugin": {
+      "reason": "Every module in it exists to be deleted. It holds the substitutes and tooling that keep HolobikeExperience content working mid-migration; its own README says none of it is product code and none of it ships. What remains is one UncookedOnly module, which cannot enter a cooked package, so it reaches no deployment destination and fails the membership rule outright. HolobikeExperience.uproject still enables it, which makes it a required development checkout — and a required checkout is not thereby a member.",
+      "retires_when": "HolobikeExperience.uproject no longer enables it. By the plugin's own written condition the remaining editor module is deleted once the last substitute module is, and both substitutes are already retired: IdentityMock in c6a28e9 (2026-08-13) and SimulatedRealityMock in 62ad2f8 (2026-08-19)."
+    },
+    "HolobikeIntelligence_uplugin": {
+      "reason": "The Unreal Engine client for the local drAIs service. It would pass the membership rule — it is HoloBike-owned software that ships inside HolobikeExperience's package exactly as the other five plugins do — and it is simply not enrolled yet, with the drAIs integration still in flight. Recorded as a candidate rather than an exclusion so the gap is a decision someone owes rather than an oversight.",
+      "candidate": true
+    },
+    "HoloBikeCore-LFS": {
+      "reason": "The legacy Unreal demo HolobikeExperience was forked from, kept for its history and its vendored plugin copies. Superseded by the member it became; nothing composes it, and its vendored plugin trees are the reason ue/plugins must contain nothing else before one AdditionalPluginDirectories entry can scan it (D-09)."
+    },
+    "HolobikeCopresenceService": {
+      "reason": "Not classified. The checkout carries no README and nothing in this repository composes it, so whether it is HoloBike-owned software that ships, an experiment, or an abandoned start has not been established. Listed so the stray scan does not report it as a discovery every run while the question stands, and flagged here as a question rather than dressed up as a decision."
+    },
+    "uroborOS-audit": {
+      "reason": "A working copy of uroborOS used for an audit pass, carrying no README of its own. It is the same software as the member, not different software; composing it would double-count the OS layer."
+    },
+    "uroborOS-refactor": {
+      "reason": "A working copy of uroborOS carrying refactor work in progress. The same software as the member; the composition selects uroborOS at a revision, which is how in-flight work reaches the stack."
+    },
+    "drAIs-backup": {
+      "reason": "A backup copy of drAIs. The same software as the member, kept against loss; a revision line selects drAIs at a commit, which is the supported way to reach an older state."
+    },
+    "helgafell_operator": {
+      "reason": "The local operations workspace for the Helgafell workstation and its attached peripherals. Machine-local operator tooling that ships to no device and no server, and is therefore not part of the deployed stack by the membership rule."
+    },
+    "RidePathsProto": {
+      "reason": "An interaction-design instrument — a UE-imitating editor shell in Three.js used to design the RidePaths surface. A design tool, not product code: nothing it produces reaches a device or a server."
+    },
+    "drAIs-Lab": {
+      "reason": "A transitional Lab repository: specification, ledger and experiments for drAIs. Lab repositories are never composition dependencies, which Assembler/README.md already states; the member repository is where anything they settle lands."
+    },
+    "HolobikeCore-Lab": {
+      "reason": "A transitional Lab repository for HolobikeCore. Lab repositories are never composition dependencies; what they settle lands in the member repository."
+    },
+    "HexAtlas-Lab": {
+      "reason": "A transitional Lab repository for HexAtlas. Lab repositories are never composition dependencies; what they settle lands in the member repository."
+    },
+    "AthleteIdentity-Lab": {
+      "reason": "A transitional Lab repository for AthleteIdentity. Lab repositories are never composition dependencies; what they settle lands in the member repository."
+    },
+    "AthleteInsights-Lab": {
+      "reason": "A transitional Lab repository for AthleteInsights. Lab repositories are never composition dependencies; what they settle lands in the member repository."
+    },
+    "uroborOS-Lab": {
+      "reason": "A transitional Lab repository for uroborOS. Lab repositories are never composition dependencies; what they settle lands in the member repository."
+    },
+    "RidePaths-Lab": {
+      "reason": "A transitional Lab repository holding the RidePaths specification and its ledger. RidePaths is a module of HolobikeWorlds, which is the member; the Lab is never a composition dependency."
+    }
+  }
+}

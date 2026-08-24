@@ -17,6 +17,7 @@ from pathlib import Path
 from . import environment
 from . import gitfacts
 from . import integration as integration_contract
+from . import nonmembers as nonmembers_contract
 
 # Tools every current workflow expects to resolve from PATH. Reported, never
 # installed; absence is a fact, not a failure of preflight itself.
@@ -192,6 +193,32 @@ def _inspect_stack(stack_root, document):
     return leaves, strays
 
 
+def _inspect_roster_closure(stack_root, document, leaves):
+    """Every adjacent checkout is a member, a declared non-member, or a
+    problem with a name. Absent the declaration this reports nothing rather
+    than reporting everything: the loop is closed by a document, not assumed.
+    """
+    declaration = Path(stack_root) / nonmembers_contract.FILENAME
+    if not declaration.exists():
+        return {"status": "undeclared",
+                "detail": f"{declaration} is absent, so nothing is scanned"}
+    declared, errors = nonmembers_contract.load_nonmembers(declaration)
+    if errors:
+        return {"status": "invalid", "errors": errors}
+    members = {entry.get("repository") for entry in leaves.values()
+               if entry.get("repository")}
+    strays = nonmembers_contract.scan(
+        nonmembers_contract.search_roots(document.checkouts),
+        members, set(declared))
+    return {
+        "status": "clean" if not strays else "unenrolled_repository",
+        "declared": len(declared),
+        "candidates": sorted(
+            name for name, entry in declared.items() if entry.get("candidate")),
+        "strays": strays,
+    }
+
+
 def build_report(document, stack_root):
     leaves, strays = _inspect_stack(stack_root, document)
     toolchains = {
@@ -206,6 +233,7 @@ def build_report(document, stack_root):
         },
         "stack": leaves,
         "stack_strays": strays,
+        "roster_closure": _inspect_roster_closure(stack_root, document, leaves),
         "toolchains": toolchains,
         "engine_associations": _inspect_engine_association(
             document, leaves, toolchains),
@@ -226,6 +254,14 @@ def _problems(report):
             problems.append(f"stack {name}: {facts['status']}")
     for stray in report["stack_strays"]:
         problems.append(f"stack stray: {stray['path']}")
+    closure = report.get("roster_closure", {})
+    if closure.get("status") == "invalid":
+        problems.extend(f"nonmembers: {error}"
+                        for error in closure.get("errors", []))
+    for stray in closure.get("strays", ()):
+        # In neither the roster nor nonmembers.json. A named problem, which
+        # is the whole reason the declaration exists.
+        problems.append(f"unenrolled_repository: {stray['path']}")
     for name, facts in report["toolchains"].items():
         if facts["status"] == "missing":
             problems.append(f"toolchain {name}: missing")
@@ -270,6 +306,21 @@ def _print_table(report, stdout):
             detail = (f"{facts['status']} — project {facts['engine_association']}, "
                       f"toolchain {facts['engine_version']}")
         print(f"engine {name}: {detail}", file=stdout)
+    closure = report.get("roster_closure", {})
+    if closure.get("status") == "clean":
+        line = f"roster: closed — {closure['declared']} declared non-members"
+        if closure.get("candidates"):
+            line += (", " + str(len(closure["candidates"]))
+                     + " awaiting a decision: "
+                     + ", ".join(closure["candidates"]))
+        print(line, file=stdout)
+    elif closure.get("status") == "unenrolled_repository":
+        for stray in closure["strays"]:
+            print(f"unenrolled repository: {stray['path']} — enrol it or "
+                  "record it in Stack/nonmembers.json with a reason",
+                  file=stdout)
+    elif closure.get("status") == "invalid":
+        print("roster: nonmembers.json is invalid", file=stdout)
     missing_tools = sorted(
         tool for tool, found in report["path_tools"].items() if not found)
     if missing_tools:
@@ -287,7 +338,7 @@ def _judge_only(loader, path, stdout, stderr):
 
 
 def run(environment_path, stack_root, validate_only, validate_integration,
-        as_json, stdout, stderr):
+        as_json, stdout, stderr, validate_nonmembers=None):
     """Execute preflight; returns the process exit code.
 
     0: report complete, every declared thing present and consistent.
@@ -298,6 +349,10 @@ def run(environment_path, stack_root, validate_only, validate_integration,
         return _judge_only(
             integration_contract.load_integration,
             validate_integration, stdout, stderr)
+    if validate_nonmembers is not None:
+        return _judge_only(
+            nonmembers_contract.load_nonmembers,
+            validate_nonmembers, stdout, stderr)
 
     document, errors = environment.load_environment(environment_path)
     if errors:
