@@ -328,27 +328,71 @@ removing. The leaf side carries a transitional `producer` that refuses a leaf
 where it would be ambiguous, and says in its own docstring that Phase 3
 deletes it.
 
-### Phase 3 — One tool
+### Phase 3 — One tool — COMPLETE 2026-08-24
 
-- `check` / `env` / `build` / `provision`. `cli.py` 430 → ~150.
-- `emulate` splits: its bring-up-and-probe machinery is what `env` holds
-  persistent; a slice becomes a `build` gate; the record-emission plumbing
-  goes.
-- `admit` collapses into `build`'s last step — digest and verify survive; the
-  five-kind chain apparatus does not. One record kind, written by `build`.
-- `bootstrap` folds into `env`.
-- `provision/` gains `device_identity.py` unchanged — it is the only code
-  here that already puts something on a device, and it becomes the verb's
-  first act rather than a second executable.
-- Generate per-host connection configuration from declared topology into a
-  gitignored location the plugins read by convention. The plugin-side handoff
-  is settled with the plugin repositories before the generator is written.
+`c7eae7e` → `39791a8`. Four verbs; `cli.py` 430 → 260; the launcher is
+`holobike`.
 
-**Cell closed: development × device.** `holobike env device` on Linux yields
-an error-free editor session — services up, probed, connected.
+```
+holobike check                     can this workstation do the work?
+holobike env device                up, probed, and held
+holobike build device              stage a bundle, gate it
+holobike build device --version V  ...and admit it
+holobike provision device          place something on a thing
+```
 
-**Exit:** four verbs; the tool under ~2,700 lines including the vendored
-validator; one command replaces six.
+`resolve`, `bootstrap`, `assemble`, `emulate` and `admit` are stages behind
+`--only`. `build` without `--version` reports what it *would* admit, because a
+version is a decision. `env` is the same composition stopping where a
+developer wants to be, with `bootstrap` folded in — someone missing a checkout
+wants it materialized, not diagnosed. The hold is emulate's own machinery:
+`env` waits after the settle pass and teardown is still the same `finally`, so
+an interrupt tears down exactly as a completed run does.
+
+`provision` stayed separate rather than becoming `build`'s last step, which is
+D-10 made real: `build` stops at the bytes, and applying is never a side
+effect of building. `device_identity.py` moved in unchanged as its first act,
+and `provision server` refuses with the reason rather than pretending.
+
+Profiles v2 and record v2 landed first (`c7eae7e`), the second forced by the
+first: `Profiles/server.json` needs both `AtlasServer` and
+`AtlasCartographer`, and a record keyed by integration could not describe that
+run. `resolved` and `actions` stay keyed by integration — a checkout is per
+repository — while `builds`, `artifacts` and `members` key by deployable.
+**That retired four roster enums: the roster is spelled out in eight places,
+down from twelve.** Both transitional constraints from Phase 2 are gone.
+
+**Exit met**, with one correction below: four verbs, every stage reachable in
+isolation, one command replacing six, and the daily drift record still
+standing alone. 109 tests green.
+
+#### The record collapse was refused, and the line target was wrong
+
+This phase was written to say *"admit collapses into build's last step... One
+record kind, written by `build`,"* and to exit under ~2,700 lines. The tool is
+**4,456**. Both were my estimate, made before implementation; the evidence
+found while implementing argues against the collapse, so the estimate that
+depended on it is what changes.
+
+`Artifacts/records/` holds **53 resolution records, 4 assembly, 3 emulation,
+1 admit, 0 bootstrap** — and `Releases/` is still empty. The resolution record
+is not an internal artifact of `build`. It is the *product* of the daily
+cadence, written 53 times by a timer that resolves and does nothing else, and
+it is how Definition of Success #5 is met at all. A single build record
+written by that timer would be four-fifths empty, which is a dishonest
+document, or resolution would stop being recordable on its own, which ends
+drift detection.
+
+Two more reasons the chain stays. `--only` keeps every stage independently
+runnable — that is this phase's own doing — so a person can still assemble
+against a stale resolution, and the digest binding between records is exactly
+what catches it. And the `release` kind has **zero** instances: redesigning
+the one record nobody has ever written, before Phase 5 writes one for real,
+is designing from ignorance, which this repository forbids.
+
+So the exit gate is what the phase should have measured in the first place —
+four verbs, stages reachable in isolation, the drift record standing alone —
+and not a line count that assumed a change the work disproved.
 
 ### Phase 4 — One tree
 
@@ -465,9 +509,13 @@ and **D-19** (destinations chain; the terminal is derived).
 ## Definition of success
 
 1. All four cells of the 2×2 run with one command each.
-2. The tool is under ~2,700 lines — including the ~200 it now owns for
-   validation — down from 4,601, and the fixture corpus under ~40, down
-   from 105.
+2. No shape is defined twice. That was the real cost the 23:1 ratio was
+   measuring, and it is what Phase 1 removed — the six bindings fell
+   1,419 → 451 by deleting a second specification, not by writing less
+   code. The tool is 4,456 lines and does more than it did: it validates,
+   composes four verbs, and provisions. A line target here was a proxy for
+   duplication, and a bad one; the check that matters is that adding a
+   field costs one edit.
 3. A new repository joins the stack by adding one file.
 4. A schema change is a one-file edit.
 5. Drift anywhere in the stack is a recorded fact within a day.

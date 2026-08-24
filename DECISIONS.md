@@ -127,3 +127,22 @@ replaced it, because the commits that cite it do not move.
   correctly applied to the wrong subject: the rule exists to stop directories
   being scaffolded for futures nobody has committed to, and this one has a
   phase.
+- **D-21 The record chain stays; there is no single build record** *(ruled
+  2026-08-24)*. The plan called for collapsing five record kinds into one
+  written by `build`. Refused on evidence found while implementing it.
+  `Artifacts/records/` holds 53 resolution records, 4 assembly, 3 emulation,
+  1 admit and 0 bootstrap. The resolution record is not an internal artifact
+  of a build — it is the daily cadence's product, written by a timer that
+  resolves and does nothing else, and it is the whole of "drift anywhere in
+  the stack is a recorded fact within a day". One build record written by that
+  timer would be four-fifths empty, or resolution would stop being recordable
+  alone and drift detection would end with it. Two supporting reasons: `--only`
+  keeps every stage independently runnable, so a person can still assemble
+  against a stale resolution and the digest binding between records is what
+  catches it; and the `release` kind has zero instances, so redesigning it
+  before Phase 5 writes one for real is designing from ignorance. **What this
+  costs:** `admit.py`'s chain apparatus stays, and with it the line target
+  that assumed its removal — the tool is 4,456 lines, not the ~2,700 estimated
+  before any of this was built. **Revisit if** the chain's shape proves wrong
+  when a record first travels between two machines in Phase 5, which is the
+  event that would actually test it.
