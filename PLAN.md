@@ -542,6 +542,79 @@ the project decision about who derives the production image. Until then the
 server column of the 2×2 is specified, buildable in part, and honestly
 undeployable.
 
+## What remains, and who owns it
+
+Collected because the defining feature of the remaining work is that most of
+it is not this repository's to do (D-22). Nothing here is blocked on the
+tooling.
+
+### This repository's own
+
+- **The canonical workstation tree (D-09)** and `checkouts` → `root`. Ready to
+  write; deliberately not done. Moving checkouts to
+  `<root>/<domain>/<repository>` breaks absolute paths in scripts, IDE
+  configuration, other agents' live sessions, and the
+  `AdditionalPluginDirectories` relative paths written in HolobikeExperience
+  `20304b5`. It reorganises the whole workspace and wants a chosen moment
+  rather than being folded into a phase.
+
+### Owed by other repositories
+
+- **HolobikeExperience — `Tools/Package-Win64.ps1`**, the packaging recipe the
+  HoloView port validated, made repository-owned. Its commit, and it cannot be
+  validated from Linux. Until it exists, `HolobikeExperience`'s leaf declares
+  no build steps, which is why `build device` stages nothing for the product
+  itself.
+- **HolobikeExperience — two Blueprint assets fail to compile on 5.7** where
+  they are clean on 5.3: `BP_CompanionAvatar` and `BP_MainRider` both report
+  *"Switch on (bad enum) must have a valid enum"*, an enum import failing
+  across the version boundary. Found by launching the rebuilt branch on
+  5.7.4; the only known blocker in the upgrade itself.
+- **HolobikeDevice_uplugin — `FHolobikeDeviceMsgSpec::SpecId` is an
+  uninitialized struct member.** Reported by `LogClass` on both engines and
+  echoed as an automation failure; 5.7 additionally suggests
+  `UPROPERTY(Meta = (IgnoreForMemberInitializationTest))`. Found by launch,
+  pre-existing, unrelated to any change here.
+- **AthleteIdentity — the seven project-owned readiness items** its
+  `IdentityServer/Deployment/README.md` lists, none of which exists. The
+  derived image carrying a device authenticator is the one that blocks
+  `provision server`; three of the seven are the same subject seen three ways
+  — device credential format, registry enrolment, and revocation — which is
+  also what D-13 said the update feed must not duplicate. Decide credentials
+  and both unblock together.
+
+### Needs a machine this session cannot reach
+
+- **The Windows panel host** — the clone, its host document, and `build
+  device` running where the bundle bytes are. Every contract is ready;
+  nothing further can be honestly written until a real Windows `check` has
+  run.
+- **A bike** — `provision device` carrying software rather than only the
+  identity document.
+
+### Decisions owed
+
+- **HolobikeIntelligence.** Recorded as a *candidate* non-member: it would
+  pass the membership rule exactly as the other five UE plugins do, and is
+  simply not enrolled while the drAIs integration is in flight. `check` names
+  it every run rather than letting it sit.
+- **Whether `HolobikeMigration_uplugin` is deleted outright.** Its retirement
+  condition is met and HolobikeExperience no longer enables it; the
+  repository's own fate is that repository's call.
+
+### Proposed and declined — recorded so they are not re-proposed blindly
+
+- **`Revisions/ue57.json`, a second revision line.** Declined 2026-08-24. A
+  daily `resolve` records existence, cleanliness and a SHA — it would have
+  reported the parked `upgrade/ue57` as green every day for the two weeks it
+  rotted. It becomes worth having once HolobikeExperience declares a build
+  entry, because then a green record means the project still compiles on 5.7.
+  Until then it is a file whose daily record proves almost nothing.
+- **A distance/staleness fact on each selection.** Declined 2026-08-24.
+  Recency is not what matters — a release line may pin deliberately old,
+  stable commits and be doing exactly its job. The tooling is not to be
+  overbuilt.
+
 ## Decisions this plan stands on
 
 The ledger lives in [`DECISIONS.md`](DECISIONS.md) — twenty entries, their
@@ -565,15 +638,17 @@ and **D-19** (destinations chain; the terminal is derived).
    SDK upgrades that replay cleanly, ~10 are project-side, and the rest edit
    in-house plugin mounts `main` has since deleted — conflicts a rebase
    cannot resolve, because their destination is a different repository.
-   **The harvest is complete**: every in-house change on the branch is
-   already upstream, verified line by line, the only differences being
-   reworded comments and one case where upstream chose better —
-   `RidePathSplineComponent` removed the editor-only assignment outright
-   instead of guarding it. `PathSplineActor`'s fix is moot; that file was
-   purged. The last two project-side fixes landed in HolobikeExperience
-   `8e83f74`. So the branch now holds nothing that belongs anywhere but the
-   5.7 upgrade, and its in-house commits drop without loss. Nobody should
-   prune it as stale before that rebuild.
+   **Done 2026-08-24.** The harvest completed — every in-house change was
+   already upstream, verified line by line — and the branch was rebuilt as
+   `upgrade/ue57-rebuilt` (HolobikeExperience `c38d69c`), carrying the nine
+   vendored SDK trees and the project-side changes onto current `main`. Two
+   local machine artifacts were dropped rather than carried: `LumaAIPlugin`
+   and `VisualStudioTools` were disabled because they are not installed on
+   the workstation that made that commit, and `main` both builds and launches
+   with them enabled. **It builds against UE 5.7.4, `Result: Succeeded`, zero
+   compile errors**, and the editor starts with no dlopen, plugin-load,
+   CoreRedirects or assertion failures. The original `upgrade/ue57` is kept
+   as the reference ref; nobody should prune it.
 3. **Standing doctrine holds:** declarations never execute; repositories
    prove their own behaviour and this repository proves only the
    composition; structure is born by content, never scaffolded ahead of it.
