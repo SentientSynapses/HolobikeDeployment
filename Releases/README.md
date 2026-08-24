@@ -64,6 +64,6 @@ facts; admission is the one step that decides, and the one writer here.
 A version is immutable: `admit` prepares the complete release beside its
 destination, publishes it atomically, and refuses a version whose directory
 already exists. Correcting a release means admitting a new version, never
-editing one. The record schema is `Schemas/record.schema.json` (the `release`
+editing one. The record schema is `schemas/record.schema.json` (the `release`
 kind); toolchain versions such as Unreal Engine join the assembly record when
 that integration begins staging product artifacts.

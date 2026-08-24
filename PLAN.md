@@ -394,30 +394,57 @@ So the exit gate is what the phase should have measured in the first place —
 four verbs, stages reachable in isolation, the drift record standing alone —
 and not a line count that assumed a change the work disproved.
 
-### Phase 4 — One tree
+### Phase 4 — One tree — HALF DONE 2026-08-24
 
-Needs a quiet moment: it moves checkouts while other agents hold working
-trees.
+The half that touches only this repository is done. The half that moves
+checkouts on the workstation is **blocked on a live conflict**, described
+below, and is not a scheduling preference.
 
-- Convert each remaining dual copy to `AdditionalPluginDirectories` (D-08),
-  pointing the descriptor at `ue/plugins` once rather than at each
-  repository.
-- Adopt the canonical workstation tree `<root>/<domain>/…` mirroring `Stack/`
-  (D-09), with `ue/plugins/` and `ue/projects/`. A host document shrinks to a
-  root, an identity, and any toolchain path that cannot be derived. `env`
-  builds the tree from nothing but the Stack and a root.
-- **Delete `Policy/`**, not empty it: `gates` carries `minItems: 1`, proven by
-  `rejected.no_gates.json`, so an emptied `parity.json` stops validating.
-  `gates.py` goes with it — `evaluate_tree_parity` is its only function and
-  D-08 retires tree parity entirely.
-- File moves, once the code no longer cares: `Schemas/` → `Tool/src/holobike/
-  schemas/` (a tool's own contract lives beside the tool — the scope test),
-  `Conformance/` → `Tool/tests/fixtures/`, `Assembler/` → `Tool/`,
-  `Provisioning/` → the verb. Flatten the thirteen leaf directories to
-  sibling `.json`/`.md` files; the 24–28-line leaf READMEs stay.
+**Done — the tool tier and its contract.** `Assembler/` → `Tool/`, the package
+`holobike_assemble` → `holobike`, and the launcher is `Tool/holobike`.
+`Schemas/` → `Tool/src/holobike/schemas/` and `Conformance/` →
+`Tool/tests/fixtures/`, because a tool's own contract lives beside the tool —
+the scope test in `README.md`, applied to the thing that enforces it. The
+schema loader now resolves its directory as a sibling rather than by climbing
+to the repository root, so the tool no longer needs to know where it is
+installed. `Provisioning/` is gone as a tier; its README moved beside the verb
+that replaced it.
 
-**Exit:** no plugin exists in two places; a host document is a root plus an
-identity; five top-level directories.
+**Done — flat leaves.** Thirteen leaf directories holding one or two files
+each became `Stack/<domain>/<Integration>.json` and `.md`. The file name is
+the integration's identity, and `load_stack` holds the two together: a leaf
+whose document names something other than its own file is a refusal. `ls
+Stack/id/` now shows the roster.
+
+Five top-level directories: `Stack/`, `Revisions/`, `Profiles/`, `Policy/`,
+`Tool/`, plus `Releases/` — three declare, one executes, one records, and
+`Policy/` is the one waiting to go.
+
+109 tests green from the new location; `check` exit 0.
+
+**Blocked — the plugin conversions, and everything that depends on them.**
+D-08 converts the four dual copies to `AdditionalPluginDirectories`, which
+retires the four parity gates, which is what lets `Policy/` be deleted rather
+than emptied. Converting means deleting
+`HolobikeExperience/Unreal/Plugins/{HolobikeDevice,HolobikeRider,HolobikeWorlds,OrielUI}`.
+
+At the time of writing, another agent holds uncommitted work in exactly one of
+them: `Unreal/Plugins/HolobikeWorlds/Source/RidePaths/Public/Net/WaypathsResolve.h`
+is modified in HolobikeExperience *and* in HolobikeWorlds_uplugin — the
+dual-copy workflow in mid-edit. Deleting the mounted copy would destroy it.
+This is the exact hazard D-08 exists to end, caught by the mechanism that will
+outlive it.
+
+**Also blocked, on the same event:** the canonical workstation tree (D-09) and
+the `checkouts` → `root` change to the environment schema. The two are
+coupled, because deriving `<root>/<domain>/<repository>` only works once the
+checkouts are actually there — and today they are at `ue_kit/HolobikeExperience`,
+not `<root>/ue/projects/HolobikeExperience`. Writing the schema change before
+the move would leave a contract no live document satisfies.
+
+**Exit, when unblocked:** no plugin exists in two places; `Policy/` and
+`gates.py` are deleted rather than emptied; a host document is a root plus an
+identity; `env` can build the tree from nothing but the Stack and a root.
 
 ### Phase 5 — Device production
 

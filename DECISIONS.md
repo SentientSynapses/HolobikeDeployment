@@ -33,7 +33,7 @@ replaced it, because the commits that cite it do not move.
   side; see HolobikeMigration above.
 - **D-05 The panel host joins the chain** — Phase 5.
 - **D-06 The machine runs on a timer** — keep. systemd is the scheduler; this
-  repository declares the unit templates. The Assembler gains no scheduler.
+  repository declares the unit templates. The tool gains no scheduler.
 - **D-07 Doctrine is written where it applies** — keep, and complete it:
   retiring `Docs/Decisions/` gave landed decisions a home in the code and
   left unlanded ones nowhere but this file. `DECISIONS.md` is that home.

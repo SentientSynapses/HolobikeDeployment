@@ -8,9 +8,14 @@ the repositories in that domain. The leaf uses exact repository names and
 owns one deployment-facing source adapter contract.
 
 ```text
-Stack/<domain>/<Repository>/
-Stack/<domain>/<kind>/<Repository>/
+Stack/<domain>/<Integration>.json   the contract
+Stack/<domain>/<Integration>.md     what it means for deployment
+Stack/<domain>/<kind>/<Integration>.json
 ```
+
+The file name is the integration's identity, and `load_stack` holds the two
+together: a leaf whose document names something other than its own file is a
+refusal, not a tolerance.
 
 A domain may insert one `<kind>` level, and only when its artifacts are
 deployed differently rather than merely numerous. `ue/` is the case that earns
@@ -22,7 +27,7 @@ stays flat.
 Repository directories contain integration contracts and declared integration
 metadata. They are not clone destinations, submodules, or copies of source
 trees — and they hold no executable adapter code. Declarations bind; the
-Assembler executes. An adapter implementation lands under `Assembler/`, bound
+Tool executes. An adapter implementation lands under `Tool/`, bound
 to the contract it implements here.
 
 | Domain | Repository integrations |

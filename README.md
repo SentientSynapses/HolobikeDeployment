@@ -13,12 +13,12 @@ wrapper directory holding "the spec" — the declarations are the repository,
 organized by role.
 
 **Where a new thing goes:** selects → `Revisions/`; constrains → `Policy/`;
-drives one repository → its `Stack/` leaf; shapes documents → `Schemas/`;
-executes → `Assembler/`; written by a run → `Releases/`. Two tests keep the
+drives one repository → its `Stack/` leaf; shapes documents → `schemas/`;
+executes → `Tool/`; written by a run → `Releases/`. Two tests keep the
 boundary honest. The **nature test**: declared content is reviewable without
 executing anything, realized content has side effects, attested content is
 written by a run. The **scope test**: this repository specifies the *product*,
-so a tool's own contract lives beside the tool (`Assembler/README.md`), exactly
+so a tool's own contract lives beside the tool (`Tool/README.md`), exactly
 as each domain repository keeps its own documentation.
 
 ## Responsibilities
@@ -56,27 +56,31 @@ stages (development versus production) are properties of data, never
 directories:
 
 ```text
-Stack/            declare the members: roster + per-repository integration contracts
-Revisions/        declare the composition: selected revisions per release line
-Profiles/         declare the product slice and its emulation topology
-Policy/           declare the constraints: parity and admission gates
-Schemas/          declare the shapes: canonical JSON Schema for every declared kind
-Conformance/      prove the bindings: accepted and rejected fixtures per schema
-Assembler/        realize: check | bootstrap | resolve | assemble | emulate | admit
+Stack/            declare the members: roster, non-members, one file per repository
+Revisions/        declare the versions: selected revisions per line
+Profiles/         declare the slice: which deployables, and where they are going
+Policy/           declare the constraints: parity gates, retiring under D-08
+Tool/             realize: check | env | build | provision
 Releases/         attest: admitted records, written by runs, never edited
-Provisioning/     deliver: device-facing workflows behind the admission boundary
 ```
+
+Three tiers declare, one executes, one records. `Tool/` carries its own
+contract — `src/holobike/schemas/` — and its own fixtures, because a tool's
+contract lives beside the tool; that is the scope test applied to the thing
+that enforces it. Provisioning is a verb of that tool rather than a tier
+beside it.
 
 Generated bundles, emulation state, logs, and pre-admission records live under
 the gitignored `Artifacts/` output root. Cross-repository version constraints
 will earn a separate `Compatibility/` declaration only when a concrete
 constraint cannot be expressed by revision selection or policy.
 
-**The filing rule:** if it selects, it is a revision manifest under
+**The filing rule:** if it selects a version, it is a revision manifest under
 `Revisions/`; if it constrains, it is policy; if it drives one repository, it
-belongs to that repository's leaf under `Stack/`; if it shapes other
-documents, it is a schema; if it selects a runnable product slice, it is a
-profile. Only the Assembler executes; only `admit` writes to `Releases/`.
+is that repository's leaf under `Stack/`; if it shapes other documents, it is
+a schema and lives with the tool that enforces it; if it selects a runnable
+product slice, it is a
+profile. Only the tool executes; only `admit` writes to `Releases/`.
 
 ## Declared and attested
 
@@ -95,20 +99,20 @@ evidence of agreement.
 
 ## Rules
 
-- Declarations never execute. Executable code lives in `Assembler/`, as a
+- Declarations never execute. Executable code lives in `Tool/`, as a
   consumer of the declarations and of repository-owned entry points.
 - Validation ownership is tiered: each repository proves its own behavior
   in-repo; this repository proves only the composition; the transitional
   `*-Lab` repositories are scaffolding, never load-bearing.
 - Schemas are canonical; a validator in any language is a binding that must
-  agree with them, proven by fixtures under `Conformance/`.
+  agree with them, proven by fixtures under `Tool/tests/fixtures/`.
 - "Manifest" names exactly one declared kind — the revision manifest. A
   release record resolves a manifest rather than being one.
 - A declared document never contains a secret, a credential, or a private
   key — not even a path to one that would be meaningful off this machine.
 - A mutable branch name is not a release identity. Declarations may select by
   branch for development lines; a release line resolves to exact commits.
-- Machine-specific documents are not committed. `Schemas/environment.schema.json`
+- Machine-specific documents are not committed. `schemas/environment.schema.json`
   describes one workstation's checkout and toolchain paths; the document
   itself lives at the gitignored `.local/environment.json`.
 
@@ -150,7 +154,7 @@ read-only report rather than an attestation.
 
 ## Current State
 
-The complete Assembler lifecycle is implemented and covered through its CLI
+The complete lifecycle is implemented and covered through its CLI
 seam. Schemas and conformance corpora cover environment, integration,
 revision, policy, profile, and five run-record kinds. Parent records and
 staged artifacts are digest-bound; admission rejects dirty source or

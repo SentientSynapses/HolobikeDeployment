@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+"""Launcher shim: the named CLI without packaging machinery."""
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent / "src"))
+
+from holobike.cli import main
+
+sys.exit(main())
