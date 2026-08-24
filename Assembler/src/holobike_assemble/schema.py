@@ -19,6 +19,7 @@ validators established.
 from __future__ import annotations
 
 import json
+import pathlib
 import re
 
 # Keywords that constrain an instance. Anything outside this set and the
@@ -81,6 +82,15 @@ class Schema:
                 f"{_SUPPORTED_DRAFT}")
         self._root = root
         self._audit(root, "#")
+
+    @property
+    def document(self):
+        """The schema document itself, for callers that read it as data.
+
+        The roster lives in these files; deriving it here is what keeps the
+        Python side from restating it and drifting.
+        """
+        return self._root
 
     # -- compile-time refusal -------------------------------------------
 
@@ -276,3 +286,18 @@ def load(path):
     """Compile the schema document at `path`."""
     with open(path, "r", encoding="utf-8") as handle:
         return Schema(json.load(handle))
+
+
+_SCHEMA_DIR = pathlib.Path(__file__).resolve().parents[3] / "Schemas"
+_COMPILED = {}
+
+
+def contract(name):
+    """The compiled schema for a declared contract, by name.
+
+    Compiled once per process: the schemas are immutable inputs, and every
+    verb that touches a document type pays the parse otherwise.
+    """
+    if name not in _COMPILED:
+        _COMPILED[name] = load(_SCHEMA_DIR / f"{name}.schema.json")
+    return _COMPILED[name]

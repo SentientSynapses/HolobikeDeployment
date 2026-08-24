@@ -94,6 +94,57 @@ class LiveDeclarationsValidate(unittest.TestCase):
                 self.assertEqual(contract.validate(document), [])
 
 
+class TheRosterAgreesWithItself(unittest.TestCase):
+    """The roster is spelled out at twelve sites across six schemas.
+
+    Adding a member means editing all twelve; a member enrolled in eleven is
+    live in some mechanisms and invisible to others, which is a failure that
+    passes every other test in this suite. This makes it fail here instead.
+    """
+
+    def _roster(self):
+        document = json.loads(_schema_path("environment").read_text("utf-8"))
+        return frozenset(document["properties"]["checkouts"]["properties"])
+
+    def _sites(self, node, roster, where="#", found=None):
+        found = [] if found is None else found
+        if isinstance(node, dict):
+            for key, value in node.items():
+                names = None
+                if key == "enum" and isinstance(value, list):
+                    names = frozenset(
+                        v for v in value if isinstance(v, str))
+                elif key == "properties" and isinstance(value, dict):
+                    names = frozenset(value)
+                if names is not None and roster & names:
+                    found.append((f"{where}/{key}", names))
+                    if key == "properties":
+                        for name, sub in value.items():
+                            self._sites(sub, roster,
+                                        f"{where}/properties/{name}", found)
+                        continue
+                self._sites(value, roster, f"{where}/{key}", found)
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                self._sites(value, roster, f"{where}/{index}", found)
+        return found
+
+    def test_every_roster_site_names_every_member(self):
+        roster = self._roster()
+        self.assertEqual(len(roster), 13)
+        sites = 0
+        for name in CONTRACTS:
+            document = json.loads(_schema_path(name).read_text("utf-8"))
+            for where, names in self._sites(document, roster):
+                sites += 1
+                with self.subTest(site=f"{name}{where}"):
+                    self.assertEqual(
+                        names, roster,
+                        f"missing {sorted(roster - names)}, "
+                        f"unexpected {sorted(names - roster)}")
+        self.assertEqual(sites, 12, "a roster site appeared or vanished")
+
+
 class AgreesWithJsonschema(unittest.TestCase):
     """Vendoring is only defensible while it costs no correctness."""
 
