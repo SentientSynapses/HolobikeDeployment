@@ -153,12 +153,21 @@ inside someone else's artifact.
 { "deployables": { "HolobikeWorlds": { "destination": "HolobikeExperience" } } }
 ```
 
-One field does four jobs: it is the second axis of the 2×2; it is what a
-profile selects on; it is where `provision` sends bytes; and it is the
-**membership test** — *a stack member's code reaches a deployment
-destination, as its own artifact or inside another member's.* All thirteen
-current members pass. A repository that ships nowhere becomes inexpressible
-rather than merely disallowed.
+**Destinations chain, and the terminal one is derived (D-19).** `device` and
+`server` are reserved lowercase terminals; any other value is the exact name
+of a roster member, which is PascalCase under D-14, so the two kinds never
+collide. `HolobikeWorlds → HolobikeExperience → device` resolves in one walk.
+Consumers ask for the *resolved* destination, never the declared one — which
+is how a device release record names the five plugin revisions compiled into
+the package without anyone maintaining a second list.
+
+One field does five jobs: it is the second axis of the 2×2; it is what a
+profile selects on; it is where `provision` sends bytes; it is how provenance
+finds everything that contributed to a build; and it is the **membership
+test** — *a stack member's code reaches a deployment destination, as its own
+artifact or inside another member's.* All thirteen current members pass. A
+repository that ships nowhere becomes inexpressible rather than merely
+disallowed.
 
 Deployable names belong to the repositories that own them. This plan gathers
 them; it does not assign them.
@@ -251,6 +260,11 @@ deploy. Cheap now, because Phase 1 made a schema change cheap.
 - `entry_points` → named `deployables`, each with `destination`, its own
   build/serve/probe and its own artifacts. Profiles select deployables;
   topology keys them.
+- The destination resolver (D-19): the loader proves every chain reaches a
+  reserved terminal without cycles, and consumers take the resolved value.
+  The five UE plugins get their first honest declaration — they name the
+  package they compile into, which is why they have no artifacts of their
+  own.
 - Write the membership rule into `Stack/README.md` **before** any roster
   change, and enforce it in the schema.
 - `Stack/nonmembers.json` with its schema. **HolobikeMigration is recorded
@@ -446,6 +460,34 @@ positions and their current status.
   resolves the duplication in the wrong direction — it keeps all 1,419 lines,
   loses a contract other tools can read, and puts this repository's central
   artifact in imperative code against its own doctrine.
+- **D-19 `destination` chains; the terminal is derived** *(ruled
+  2026-08-24)*. Five leaves — HolobikeDevice, HolobikeRider, HolobikeWorlds,
+  HoloviewDisplay, OrielUI — declare no entry points and no artifacts,
+  because UBT compiles them into HolobikeExperience's package. They name that
+  package as their destination rather than a place. Chosen over a separate
+  `compiled_into` field for one reason that outweighs the rest: a device
+  release record must name the plugin revisions compiled into the package, or
+  it describes half the build — the fault D-10 identified, one tier over.
+  With one chaining field that is a transitive walk; with two fields it is
+  two lists to keep in step. Three rules make it safe: `device` and `server`
+  are reserved lowercase terminals and every other value is a member's exact
+  PascalCase name (D-14), so the union is unambiguous by construction; the
+  loader proves each chain resolves to an existing member, terminates, and
+  has no cycles — a cross-document check, which is where Phase 1 puts those
+  anyway; and consumers ask only for the resolved destination, confining the
+  two-kinds knowledge to one resolver. Rejected alternative: the project
+  listing its own plugins, which restates what `HolobikeExperience.uproject`
+  already declares and creates a drift surface between two files that must
+  agree. **Known evolution:** a second UE project makes a single value a lie,
+  and the fix is to allow an array — a widening, not a break, and equally
+  needed under any of the shapes considered.
+- **D-20 `Releases/` stays before it holds a record** *(ruled 2026-08-24)*.
+  Zero release records have ever been written, so the structure-born-by-
+  content rule would delete the tier. It stays on the strength of Phase 5,
+  which is what fills it. Recorded because the doctrine would otherwise be
+  correctly applied to the wrong subject: the rule exists to stop directories
+  being scaffolded for futures nobody has committed to, and this one has a
+  phase.
 
 ## Constraints this plan preserves
 
@@ -486,16 +528,10 @@ positions and their current status.
 
 ## Open questions
 
-- **`destination` for compiled-in code.** Overloading the value with
-  integration names is compact; a separate `compiled_into` field is more
-  explicit at the cost of one more concept.
 - **Which repository owns the device-side update agent.** HolobikeCore is the
   natural owner under D-12, but the layer boundaries it must respect are the
   point, not the address. Settle it with that repository before the first
   feed, not after.
-- **`Releases/` before it holds anything.** Zero records have ever been
-  written. It survives this plan on the strength of Phase 5; if that slips,
-  it is a directory holding a README.
 
 ## Definition of success
 
