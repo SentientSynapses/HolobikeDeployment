@@ -560,8 +560,20 @@ and **D-19** (destinations chain; the terminal is derived).
 2. **UE 5.3 now, 5.7 retained as an option.** `dev` stays on 5.3; `ue57`
    pins HolobikeExperience to its upgrade branch and resolves on the same
    cadence, so migrating is a line flip taken when its resolve runs clean.
-   `origin/upgrade/ue57` is parked, not abandoned — rebase it before the
-   upgrade begins, not after. Nobody should prune it as stale.
+   `origin/upgrade/ue57` is parked, not abandoned. **Rebuild it rather than
+   rebasing it** (assessed 2026-08-24): of its 237 files, ~208 are vendored
+   SDK upgrades that replay cleanly, ~10 are project-side, and the rest edit
+   in-house plugin mounts `main` has since deleted — conflicts a rebase
+   cannot resolve, because their destination is a different repository.
+   **The harvest is complete**: every in-house change on the branch is
+   already upstream, verified line by line, the only differences being
+   reworded comments and one case where upstream chose better —
+   `RidePathSplineComponent` removed the editor-only assignment outright
+   instead of guarding it. `PathSplineActor`'s fix is moot; that file was
+   purged. The last two project-side fixes landed in HolobikeExperience
+   `8e83f74`. So the branch now holds nothing that belongs anywhere but the
+   5.7 upgrade, and its in-house commits drop without loss. Nobody should
+   prune it as stale before that rebuild.
 3. **Standing doctrine holds:** declarations never execute; repositories
    prove their own behaviour and this repository proves only the
    composition; structure is born by content, never scaffolded ahead of it.
