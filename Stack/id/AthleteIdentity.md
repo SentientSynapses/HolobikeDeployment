@@ -24,7 +24,7 @@ bundle carries bytes and `admit` has something to hash.
 **That image is deliberately not runnable in production.** The repository says
 so plainly: it "intentionally contains no device authenticator", and its
 Terraform module will not create Cloud Run until `container_image` names a
-derived image that has one. AthleteIdentity lists eight further items as
+derived image that has one. AthleteIdentity lists seven further items as
 *project-owned* rather than its own — among them the derived image itself, a
 reviewed device credential format with its manufacturing enrolment and
 rotation procedure, provisioned registry entries, the athlete-facing pairing

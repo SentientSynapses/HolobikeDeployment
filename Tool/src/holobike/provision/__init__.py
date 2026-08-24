@@ -32,7 +32,7 @@ def run(*, destination, identity_input, root, verify, stdout, stderr):
               "BASE image that cannot start in production — its Terraform "
               "module will not create Cloud Run until container_image names a "
               "derived image carrying a device authenticator. That derivation "
-              "is one of eight project-owned readiness items AthleteIdentity "
+              "is one of seven project-owned readiness items AthleteIdentity "
               "lists and none of them exists yet. See "
               "Stack/id/AthleteIdentity.md.", file=stderr)
         return 2

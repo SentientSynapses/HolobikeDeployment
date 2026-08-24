@@ -511,7 +511,7 @@ bytes and `admit` has something to hash.
 **And a base image does not deploy.** AthleteIdentity says so itself: the image
 "intentionally contains no device authenticator", and its Terraform module
 refuses to create Cloud Run until `container_image` names a derived image that
-has one. The repository lists eight further readiness items as *project-owned*
+has one. The repository lists seven further readiness items as *project-owned*
 rather than its own — the derived image, a reviewed device credential format
 with manufacturing enrolment and rotation, provisioned registry entries, the
 athlete-facing pairing approval experience, operator revocation and key-rotation
@@ -537,7 +537,7 @@ needed a tool this machine lacks, which is exactly what the server tier is.
 `build server` on this host now produces a truthful record: one `unavailable`,
 four `skipped`, no artifacts, exit 1.
 
-**Still needed, and none of it is code:** the eight readiness items above, and
+**Still needed, and none of it is code:** the seven readiness items above, and
 the project decision about who derives the production image. Until then the
 server column of the 2×2 is specified, buildable in part, and honestly
 undeployable.
