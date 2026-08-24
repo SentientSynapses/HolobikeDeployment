@@ -6,7 +6,7 @@ Type=oneshot
 # Both paths are per-host: point them at this repository's checkout when
 # installing (see README.md beside this file).
 WorkingDirectory=/home/odin/Documents/git_projects/os_kit/HolobikeDeployment
-ExecStart=/usr/bin/python3 /home/odin/Documents/git_projects/os_kit/HolobikeDeployment/Assembler/holobike build --only resolve --line %i
+ExecStart=/usr/bin/python3 /home/odin/Documents/git_projects/os_kit/HolobikeDeployment/Tool/holobike build --only resolve --line %i
 # resolve exits 1 when the record carries problems and 2 on refused
 # input; both leave this unit red. A red unit is the line demanding a
 # look — the record under Artifacts/ says why.

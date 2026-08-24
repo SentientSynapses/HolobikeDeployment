@@ -236,7 +236,7 @@ def run(profile_path, record_path, environment_path, stack_root,
                 "status": "skipped", "steps": [],
                 "detail": "no build entry point declared in the Stack leaf"}
             problems.append(
-                f"{name}: skipped — no build entry point declared")
+                f"{ref}: skipped — no build entry point declared")
             continue
         checkout = Path(document.checkouts[name])
         source_problem = _source_problem(name, checkout, resolution)

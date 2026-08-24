@@ -181,6 +181,33 @@ class TheRosterAgreesWithItself(unittest.TestCase):
         self.assertEqual(sites, 7, "a roster site appeared or vanished")
 
 
+class DeclaredUnitsPointAtRealThings(unittest.TestCase):
+    """The cadence runs from a tracked template, installed per host.
+
+    Renaming the launcher broke it silently: the unit kept pointing at a path
+    that no longer existed, the timer fired, and the only evidence was a failed
+    service nobody was watching. A declared unit that names a file which is not
+    there is a broken cadence waiting for its next tick.
+    """
+
+    def test_every_unit_execstart_exists(self):
+        units = sorted((REPO_ROOT / "Tool" / "timers").glob("*.service"))
+        self.assertTrue(units, "the cadence must declare its units")
+        for unit in units:
+            for line in unit.read_text(encoding="utf-8").splitlines():
+                if not line.startswith("ExecStart="):
+                    continue
+                with self.subTest(unit=unit.name):
+                    # ExecStart=<interpreter> <script> <args...>
+                    parts = line[len("ExecStart="):].split()
+                    named = [p for p in parts if "/" in p and not p.startswith("-")]
+                    self.assertTrue(named, f"no path in {line}")
+                    for path in named:
+                        self.assertTrue(
+                            pathlib.Path(path).exists(),
+                            f"{unit.name} names {path}, which is not there")
+
+
 class AgreesWithJsonschema(unittest.TestCase):
     """Vendoring is only defensible while it costs no correctness."""
 
