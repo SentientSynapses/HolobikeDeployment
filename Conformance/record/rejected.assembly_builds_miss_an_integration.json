@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "assembly",
   "run": {
     "verb": "assemble",
@@ -12,17 +12,13 @@
   },
   "line": "dev",
   "profile": "services",
-  "integrations": [
-    "AthleteIdentity",
-    "HolobikeCore"
-  ],
   "resolution": {
     "record": "resolve-dev-20260804T120000000000Z.json",
     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "line": "dev"
   },
   "builds": {
-    "AthleteIdentity": {
+    "AthleteIdentity.IdentityClient": {
       "status": "built",
       "steps": [
         {
@@ -37,14 +33,18 @@
     }
   },
   "artifacts": {
-    "AthleteIdentity": [
+    "AthleteIdentity.IdentityClient": [
       {
-        "path": "AthleteIdentity/athleteidentity_service",
+        "path": "AthleteIdentity.IdentityClient/athleteidentity_service",
         "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         "bytes": 4816304
       }
     ]
   },
   "problems": [],
-  "bundle": "bundles/services-20260804T120000000000Z"
+  "bundle": "bundles/services-20260804T120000000000Z",
+  "deployables": [
+    "AthleteIdentity.IdentityClient",
+    "HolobikeCore.HolobikeCore"
+  ]
 }

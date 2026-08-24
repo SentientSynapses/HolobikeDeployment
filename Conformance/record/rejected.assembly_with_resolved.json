@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "assembly",
   "run": {
     "verb": "assemble",
@@ -12,24 +12,30 @@
   },
   "line": "dev",
   "profile": "services",
-  "integrations": ["AthleteIdentity"],
   "resolution": {
     "record": "resolve-dev-20260804T120000000000Z.json",
     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "line": "dev"
   },
   "builds": {
-    "AthleteIdentity": {
+    "AthleteIdentity.IdentityClient": {
       "status": "built",
-      "steps": [{
-        "argv": ["fixture-build"],
-        "exit": 0,
-        "log": "logs/fixture.log"
-      }]
+      "steps": [
+        {
+          "argv": [
+            "fixture-build"
+          ],
+          "exit": 0,
+          "log": "logs/fixture.log"
+        }
+      ]
     }
   },
   "artifacts": {},
   "resolved": {},
   "problems": [],
-  "bundle": "bundles/services-20260804T120000000000Z"
+  "bundle": "bundles/services-20260804T120000000000Z",
+  "deployables": [
+    "AthleteIdentity.IdentityClient"
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "emulation",
   "run": {
     "verb": "emulate",
@@ -12,31 +12,45 @@
   },
   "line": "dev",
   "profile": "services",
-  "integrations": ["AthleteIdentity", "HolobikeCore"],
   "assembly": {
     "record": "assemble-services-20260804T120000000000Z.json",
     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "bundle": "bundles/services-20260804T120000000000Z"
   },
   "members": {
-    "AthleteIdentity": {
+    "AthleteIdentity.IdentityClient": {
       "status": "healthy",
       "run": "host",
       "serve": {
-        "argv": ["/tmp/bundle/AthleteIdentity/athleteidentity_service", "--profiles-root", "/tmp/state/profiles"],
-        "env": { "ATHLETE_IDENTITY_KEY_PROVIDER": "filesystem" }
+        "argv": [
+          "/tmp/bundle/AthleteIdentity/athleteidentity_service",
+          "--profiles-root",
+          "/tmp/state/profiles"
+        ],
+        "env": {
+          "ATHLETE_IDENTITY_KEY_PROVIDER": "filesystem"
+        }
       },
-      "probe": { "attempts": 3, "ready_after_ms": 750 },
+      "probe": {
+        "attempts": 3,
+        "ready_after_ms": 750
+      },
       "log": "logs/AthleteIdentity.serve.log",
-      "shutdown": { "clean": true }
+      "shutdown": {
+        "clean": true
+      }
     },
-    "HolobikeCore": {
+    "HolobikeCore.HolobikeCore": {
       "status": "skipped",
       "run": "host",
       "detail": "no topology declared for this member"
     }
   },
   "problems": [
-    "HolobikeCore: skipped — no topology declared for this member"
+    "HolobikeCore: skipped \u2014 no topology declared for this member"
+  ],
+  "deployables": [
+    "AthleteIdentity.IdentityClient",
+    "HolobikeCore.HolobikeCore"
   ]
 }

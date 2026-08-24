@@ -154,7 +154,7 @@ python3 -m unittest discover -s Assembler/tests    # the gate
 ./Assembler/holobike-assemble resolve --validate-record <path>
 ./Assembler/holobike-assemble resolve --validate-policy <path>
 ./Assembler/holobike-assemble bootstrap                  # materialize the dev line
-./Assembler/holobike-assemble assemble                   # stage Profiles/services.json
+./Assembler/holobike-assemble assemble --profile device  # stage Profiles/device.json
 ./Assembler/holobike-assemble assemble --validate-profile <path>
 ./Assembler/holobike-assemble emulate                    # run the newest assembly's members
 ./Assembler/holobike-assemble admit --version <v>        # promote a clean chain into Releases/

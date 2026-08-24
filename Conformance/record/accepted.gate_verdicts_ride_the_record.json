@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "resolution",
   "run": {
     "verb": "resolve",
@@ -13,7 +13,9 @@
   "line": "dev",
   "resolved": {
     "HolobikeRider": {
-      "selected": { "branch": "main" },
+      "selected": {
+        "branch": "main"
+      },
       "status": "resolved",
       "revision": "0123456789abcdef0123456789abcdef01234567",
       "branch": "main",
@@ -24,15 +26,27 @@
     "rider-dual-copy": {
       "kind": "tree_parity",
       "status": "pass",
-      "counts": { "compared": 42, "only_left": 0, "only_right": 0, "differing": 0 },
+      "counts": {
+        "compared": 42,
+        "only_left": 0,
+        "only_right": 0,
+        "differing": 0
+      },
       "mismatches": [],
       "truncated": 0
     },
     "device-dual-copy": {
       "kind": "tree_parity",
       "status": "fail",
-      "counts": { "compared": 40, "only_left": 1, "only_right": 0, "differing": 6 },
-      "mismatches": ["differs: Source/HolobikeDevice/HolobikeDevice.Build.cs"],
+      "counts": {
+        "compared": 40,
+        "only_left": 1,
+        "only_right": 0,
+        "differing": 6
+      },
+      "mismatches": [
+        "differs: Source/HolobikeDevice/HolobikeDevice.Build.cs"
+      ],
       "truncated": 6
     },
     "worlds-dual-copy": {
@@ -43,6 +57,6 @@
   },
   "problems": [
     "gate device-dual-copy: fail (7 mismatches)",
-    "gate worlds-dual-copy: skipped — HolobikeWorlds: no checkout declared"
+    "gate worlds-dual-copy: skipped \u2014 HolobikeWorlds: no checkout declared"
   ]
 }

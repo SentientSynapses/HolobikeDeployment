@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "release",
   "run": {
     "verb": "admit",
@@ -13,7 +13,6 @@
   "line": "dev",
   "version": "0.1.0-rc1",
   "profile": "services",
-  "integrations": ["AthleteIdentity"],
   "chain": {
     "resolution": {
       "record": "resolve-dev-x.json",
@@ -31,5 +30,8 @@
     "selections": "pass",
     "emulation": "absent"
   },
-  "problems": []
+  "problems": [],
+  "deployables": [
+    "AthleteIdentity.IdentityClient"
+  ]
 }

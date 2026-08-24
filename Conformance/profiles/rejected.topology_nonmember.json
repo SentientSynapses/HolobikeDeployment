@@ -1,8 +1,0 @@
-{
-  "schema_version": 1,
-  "profile": "dev-sim",
-  "integrations": ["AthleteIdentity"],
-  "topology": {
-    "HexAtlas": { "run": "host" }
-  }
-}

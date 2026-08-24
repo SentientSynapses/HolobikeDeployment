@@ -79,15 +79,17 @@ class AssembleBehaviour(unittest.TestCase):
 
         profile = self.root / "bundle.json"
         profile.write_text(json.dumps({
-            "schema_version": 1,
+            "schema_version": 2,
             "profile": "bundle",
-            "integrations": ["HexAtlas"],
+            "destination": "device",
+            "deployables": [
+                {"integration": "HexAtlas", "deployable": "AtlasClient"}],
         }), encoding="utf-8")
 
         record = self.artifacts / "records" / "resolve-dev-fixture.json"
         record.parent.mkdir(parents=True, exist_ok=True)
         record.write_text(json.dumps({
-            "schema_version": 1,
+            "schema_version": 2,
             "kind": "resolution",
             "run": {"verb": "resolve",
                     "started_at_utc": "2026-08-04T12:00:00Z",
@@ -133,16 +135,16 @@ class AssembleBehaviour(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
 
         record, bundle = self.outputs_of(result)
-        staged = bundle / "HexAtlas" / "out.bin"
+        staged = bundle / "HexAtlas.AtlasClient" / "out.bin"
         self.assertTrue(staged.is_file())
-        entry = record["artifacts"]["HexAtlas"][0]
+        entry = record["artifacts"]["HexAtlas.AtlasClient"][0]
         self.assertEqual(entry["sha256"], sha256_of(staged))
         self.assertEqual(entry["bytes"], staged.stat().st_size)
-        self.assertEqual(record["builds"]["HexAtlas"]["status"], "built")
+        self.assertEqual(record["builds"]["HexAtlas.AtlasClient"]["status"], "built")
         self.assertEqual(record["resolution"]["record"],
                          "resolve-dev-fixture.json")
         self.assertEqual(len(record["resolution"]["sha256"]), 64)
-        build_log = bundle / record["builds"]["HexAtlas"]["steps"][0]["log"]
+        build_log = bundle / record["builds"]["HexAtlas.AtlasClient"]["steps"][0]["log"]
         self.assertEqual(stat.S_IMODE(build_log.stat().st_mode), 0o600)
         self.assertEqual(
             stat.S_IMODE((bundle / "logs").stat().st_mode), 0o700)
@@ -159,7 +161,7 @@ class AssembleBehaviour(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
 
         record, bundle = self.outputs_of(result)
-        build = record["builds"]["HexAtlas"]
+        build = record["builds"]["HexAtlas.AtlasClient"]
         self.assertEqual(build["status"], "failed")
         self.assertEqual(len(build["steps"]), 1)
         self.assertEqual(build["steps"][0]["exit"], 3)
@@ -181,14 +183,14 @@ class AssembleBehaviour(unittest.TestCase):
         result = self.assemble(*self.write_inputs(None, None))
         self.assertEqual(result.returncode, 1)
         record, _ = self.outputs_of(result)
-        self.assertEqual(record["builds"]["HexAtlas"]["status"], "skipped")
+        self.assertEqual(record["builds"]["HexAtlas.AtlasClient"]["status"], "skipped")
         self.assertTrue(record["problems"])
 
     def test_assemble_refuses_a_record_that_is_not_a_resolution(self):
         profile, record, environment, stack = self.write_inputs(
             [[sys.executable, "-c", "pass"]], ["out.bin"])
         record.write_text(json.dumps({
-            "schema_version": 1,
+            "schema_version": 2,
             "kind": "bootstrap",
             "run": {"verb": "bootstrap",
                     "started_at_utc": "2026-08-04T12:00:00Z",
@@ -216,7 +218,7 @@ class AssembleBehaviour(unittest.TestCase):
 
         self.assertEqual(result.returncode, 1, result.stderr)
         output, _ = self.outputs_of(result)
-        self.assertEqual(output["builds"]["HexAtlas"]["status"], "skipped")
+        self.assertEqual(output["builds"]["HexAtlas.AtlasClient"]["status"], "skipped")
         self.assertFalse((self.checkout / "out.bin").exists())
 
     def test_a_build_that_mutates_tracked_source_is_invalidated(self):
@@ -238,7 +240,7 @@ class AssembleBehaviour(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stderr)
         output, _ = self.outputs_of(result)
         self.assertEqual(
-            output["builds"]["HexAtlas"]["status"], "invalidated")
+            output["builds"]["HexAtlas.AtlasClient"]["status"], "invalidated")
         self.assertNotIn("HexAtlas", output["artifacts"])
 
 

@@ -9,11 +9,8 @@
     }
   ],
   "topology": {
-    "AthleteIdentity.IdentityClient": {
-      "run": "host",
-      "environment": {
-        "ATHLETE_IDENTITY_KEY_PROVIDER": "filesystem"
-      }
+    "HolobikeCore.HolobikeCore": {
+      "run": "host"
     }
   }
 }

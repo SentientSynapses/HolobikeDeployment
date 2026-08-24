@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "profile": "server",
+  "destination": "server",
+  "deployables": [
+    {
+      "integration": "AthleteIdentity",
+      "deployable": "IdentityServer"
+    },
+    {
+      "integration": "AthleteInsights",
+      "deployable": "InsightsServer"
+    },
+    {
+      "integration": "HexAtlas",
+      "deployable": "AtlasServer"
+    },
+    {
+      "integration": "HexAtlas",
+      "deployable": "AtlasCartographer"
+    },
+    {
+      "integration": "drAIs",
+      "deployable": "DraisServer"
+    }
+  ]
+}

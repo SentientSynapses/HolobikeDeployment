@@ -33,6 +33,21 @@ def _utc_now():
         "%Y-%m-%dT%H:%M:%SZ")
 
 
+def _integrations_of(refs):
+    """The distinct repositories behind a list of deployable references.
+
+    A resolution is keyed by integration because a checkout is per
+    repository; an assembly is keyed by deployable because the work is.
+    Joining the two chains means collapsing one to the other.
+    """
+    seen = []
+    for ref in refs:
+        name = ref.split(".", 1)[0]
+        if name not in seen:
+            seen.append(name)
+    return seen
+
+
 def _judge_resolution(resolution, expected_integrations):
     problems = []
     if resolution["deployment"]["dirty"]:
@@ -178,17 +193,17 @@ def run(version, assembly_record_path, emulation_record_path, artifacts_root,
                 or reference["bundle"] != assembly["bundle"] \
                 or emulation["line"] != assembly["line"] \
                 or emulation["profile"] != assembly["profile"] \
-                or emulation["integrations"] != assembly["integrations"]:
+                or emulation["deployables"] != assembly["deployables"]:
             print("emulation does not bind the exact assembly — the chain "
                   "does not connect", file=stderr)
             return 2
         emulation_name = emulation_path.name
 
-    profile_members = assembly["integrations"]
+    profile_members = assembly["deployables"]
     _, artifact_problems = artifact_contract.verify_bundle(
         artifacts_root, assembly)
     problems = (
-        _judge_resolution(resolution, profile_members)
+        _judge_resolution(resolution, _integrations_of(profile_members))
         + _judge_assembly(assembly, profile_members)
         + (_judge_emulation(emulation) if emulation is not None else [])
         + artifact_problems
@@ -254,7 +269,7 @@ def run(version, assembly_record_path, emulation_record_path, artifacts_root,
         "line": assembly["line"],
         "version": version,
         "profile": assembly["profile"],
-        "integrations": list(assembly["integrations"]),
+        "deployables": list(assembly["deployables"]),
         "chain": {
             "resolution": {
                 "record": resolution_name,

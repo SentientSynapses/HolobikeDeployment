@@ -157,8 +157,12 @@ staged artifacts are digest-bound; admission rejects dirty source or
 deployment state, failed or absent gates, incomplete builds, unhealthy
 emulation, chain drift, and changed artifact bytes.
 
-The current `services` profile contains AthleteIdentity and exercises its
-repository-owned package, service, and health surfaces in bounded host mode.
+There are two profiles, one per destination: `device` selects the thirteen
+deployables that reach a bike — five of them through HolobikeExperience's
+package — and `server` selects the five that reach the estate. Emulation
+exercises whichever of them declare a serve and a probe, today
+AthleteIdentity's `IdentityClient`, in bounded host mode; the rest are
+recorded absences and are skipped by name rather than silently.
 HolobikeCore now declares repository-owned prove/package outputs in its Stack
 leaf, but joins a profile only after its source checkout is clean enough to
 produce meaningful provenance. OS, graphical, privileged, and hardware claims

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "release",
   "run": {
     "verb": "admit",
@@ -13,13 +13,26 @@
   "line": "dev",
   "version": "0.1.0",
   "profile": "services",
-  "integrations": ["AthleteIdentity"],
   "chain": {
-    "resolution": { "record": "r.json", "sha256": "0000000000000000000000000000000000000000000000000000000000000000" },
-    "assembly": { "record": "a.json", "sha256": "0000000000000000000000000000000000000000000000000000000000000000" },
+    "resolution": {
+      "record": "r.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "assembly": {
+      "record": "a.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
     "emulation": null
   },
-  "attestation": { "gates": "pass", "builds": "pass", "selections": "pass", "emulation": "absent" },
+  "attestation": {
+    "gates": "pass",
+    "builds": "pass",
+    "selections": "pass",
+    "emulation": "absent"
+  },
   "builds": {},
-  "problems": []
+  "problems": [],
+  "deployables": [
+    "AthleteIdentity.IdentityClient"
+  ]
 }

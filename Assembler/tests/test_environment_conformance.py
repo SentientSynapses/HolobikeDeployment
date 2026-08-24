@@ -269,19 +269,6 @@ class ProfilesConformance(unittest.TestCase):
                 document = json.loads(path.read_text(encoding="utf-8"))
                 self.assertEqual(document["profile"], path.stem)
 
-    def test_the_binding_matches_the_schema(self):
-        sys.path.insert(0, str(REPO_ROOT / "Assembler" / "src"))
-        from holobike_assemble import environment, profiles
-
-        schema = json.loads(
-            (REPO_ROOT / "Schemas" / "profiles.schema.json")
-            .read_text(encoding="utf-8"))
-        self.assertEqual(
-            set(schema["properties"]["integrations"]["items"]["enum"]),
-            set(environment.INTEGRATIONS))
-        self.assertEqual(
-            schema["properties"]["schema_version"]["const"],
-            profiles.SCHEMA_VERSION)
 
 
 class RecordConformance(unittest.TestCase):

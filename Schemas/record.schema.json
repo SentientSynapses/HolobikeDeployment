@@ -5,141 +5,352 @@
   "description": "What one Assembler run resolved and attested. The shape follows the run-record idiom this ecosystem already proved (a run block with timing, a source-identity block, per-subject facts) hardened with provenance vocabulary: 'revision' is a full git commit id and corresponds to SLSA's digest.gitCommit; the deployment block is the record's self-identity, because a resolution that cannot identify itself is not provenance. Records are written by runs into the untracked Artifacts/ directory and are never edited; admission copies a record into Releases/, it does not rewrite one.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "kind", "run", "deployment", "line", "problems"],
+  "required": [
+    "schema_version",
+    "kind",
+    "run",
+    "deployment",
+    "line",
+    "problems"
+  ],
   "allOf": [
     {
-      "if": { "properties": { "kind": { "const": "resolution" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "resolution"
+          }
+        }
+      },
       "then": {
-        "required": ["resolved", "gates"],
-        "properties": { "run": { "properties": { "verb": { "const": "resolve" } } },
-                        "actions": false, "profile": false,
-                        "integrations": false,
-                        "builds": false, "artifacts": false,
-                        "resolution": false, "bundle": false,
-                        "assembly": false, "members": false }
+        "required": [
+          "resolved",
+          "gates"
+        ],
+        "properties": {
+          "run": {
+            "properties": {
+              "verb": {
+                "const": "resolve"
+              }
+            }
+          },
+          "actions": false,
+          "profile": false,
+          "builds": false,
+          "artifacts": false,
+          "resolution": false,
+          "bundle": false,
+          "assembly": false,
+          "members": false,
+          "deployables": false
+        }
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "bootstrap" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "bootstrap"
+          }
+        }
+      },
       "then": {
-        "required": ["actions"],
-        "properties": { "run": { "properties": { "verb": { "const": "bootstrap" } } },
-                        "resolved": false, "gates": false,
-                        "integrations": false,
-                        "profile": false, "builds": false,
-                        "artifacts": false, "resolution": false,
-                        "bundle": false, "assembly": false,
-                        "members": false }
+        "required": [
+          "actions"
+        ],
+        "properties": {
+          "run": {
+            "properties": {
+              "verb": {
+                "const": "bootstrap"
+              }
+            }
+          },
+          "resolved": false,
+          "gates": false,
+          "profile": false,
+          "builds": false,
+          "artifacts": false,
+          "resolution": false,
+          "bundle": false,
+          "assembly": false,
+          "members": false,
+          "deployables": false
+        }
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "assembly" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "assembly"
+          }
+        }
+      },
       "then": {
-        "required": ["profile", "integrations", "resolution", "builds", "artifacts",
-                     "bundle"],
-        "properties": { "run": { "properties": { "verb": { "const": "assemble" } } },
-                        "resolved": false, "gates": false,
-                        "actions": false, "assembly": false,
-                        "members": false }
+        "required": [
+          "profile",
+          "deployables",
+          "resolution",
+          "builds",
+          "artifacts",
+          "bundle"
+        ],
+        "properties": {
+          "run": {
+            "properties": {
+              "verb": {
+                "const": "assemble"
+              }
+            }
+          },
+          "resolved": false,
+          "gates": false,
+          "actions": false,
+          "assembly": false,
+          "members": false
+        }
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "emulation" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "emulation"
+          }
+        }
+      },
       "then": {
-        "required": ["profile", "integrations", "assembly", "members"],
-        "properties": { "run": { "properties": { "verb": { "const": "emulate" } } },
-                        "resolved": false, "gates": false,
-                        "actions": false, "resolution": false,
-                        "builds": false, "artifacts": false,
-                        "bundle": false, "version": false,
-                        "chain": false, "attestation": false }
+        "required": [
+          "profile",
+          "deployables",
+          "assembly",
+          "members"
+        ],
+        "properties": {
+          "run": {
+            "properties": {
+              "verb": {
+                "const": "emulate"
+              }
+            }
+          },
+          "resolved": false,
+          "gates": false,
+          "actions": false,
+          "resolution": false,
+          "builds": false,
+          "artifacts": false,
+          "bundle": false,
+          "version": false,
+          "chain": false,
+          "attestation": false
+        }
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "release" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "release"
+          }
+        }
+      },
       "then": {
-        "required": ["version", "profile", "integrations", "chain", "attestation"],
-        "properties": { "run": { "properties": { "verb": { "const": "admit" } } },
-                        "resolved": false, "gates": false,
-                        "actions": false, "resolution": false,
-                        "builds": false, "artifacts": false,
-                        "bundle": false, "assembly": false,
-                        "members": false }
+        "required": [
+          "version",
+          "profile",
+          "deployables",
+          "chain",
+          "attestation"
+        ],
+        "properties": {
+          "run": {
+            "properties": {
+              "verb": {
+                "const": "admit"
+              }
+            }
+          },
+          "resolved": false,
+          "gates": false,
+          "actions": false,
+          "resolution": false,
+          "builds": false,
+          "artifacts": false,
+          "bundle": false,
+          "assembly": false,
+          "members": false
+        }
       }
     }
   ],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": {
+      "const": 2
+    },
     "kind": {
-      "enum": ["resolution", "bootstrap", "assembly", "emulation", "release"]
+      "enum": [
+        "resolution",
+        "bootstrap",
+        "assembly",
+        "emulation",
+        "release"
+      ]
     },
     "run": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["verb", "started_at_utc", "finished_at_utc"],
+      "required": [
+        "verb",
+        "started_at_utc",
+        "finished_at_utc"
+      ],
       "properties": {
         "verb": {
-          "enum": ["resolve", "bootstrap", "assemble", "emulate", "admit"]
+          "enum": [
+            "resolve",
+            "bootstrap",
+            "assemble",
+            "emulate",
+            "admit"
+          ]
         },
-        "started_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" },
-        "finished_at_utc": { "type": "string", "minLength": 1, "pattern": "Z$" }
+        "started_at_utc": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "Z$"
+        },
+        "finished_at_utc": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "Z$"
+        }
       }
     },
     "deployment": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["revision", "dirty"],
+      "required": [
+        "revision",
+        "dirty"
+      ],
       "properties": {
-        "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-        "dirty": { "type": "boolean" }
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "dirty": {
+          "type": "boolean"
+        }
       }
     },
-    "line": { "type": "string", "minLength": 1 },
+    "line": {
+      "type": "string",
+      "minLength": 1
+    },
     "resolved": {
       "type": "object",
       "minProperties": 1,
       "additionalProperties": false,
       "properties": {
-        "uroborOS": { "$ref": "#/$defs/resolution" },
-        "HexAtlas": { "$ref": "#/$defs/resolution" },
-        "Assetscape": { "$ref": "#/$defs/resolution" },
-        "HolobikeCore": { "$ref": "#/$defs/resolution" },
-        "AthleteIdentity": { "$ref": "#/$defs/resolution" },
-        "AthleteInsights": { "$ref": "#/$defs/resolution" },
-        "drAIs": { "$ref": "#/$defs/resolution" },
-        "HolobikeExperience": { "$ref": "#/$defs/resolution" },
-        "HolobikeDevice": { "$ref": "#/$defs/resolution" },
-        "HolobikeRider": { "$ref": "#/$defs/resolution" },
-        "HolobikeWorlds": { "$ref": "#/$defs/resolution" },
-        "HoloviewDisplay": { "$ref": "#/$defs/resolution" },
-        "OrielUI": { "$ref": "#/$defs/resolution" }
+        "uroborOS": {
+          "$ref": "#/$defs/resolution"
+        },
+        "HexAtlas": {
+          "$ref": "#/$defs/resolution"
+        },
+        "Assetscape": {
+          "$ref": "#/$defs/resolution"
+        },
+        "HolobikeCore": {
+          "$ref": "#/$defs/resolution"
+        },
+        "AthleteIdentity": {
+          "$ref": "#/$defs/resolution"
+        },
+        "AthleteInsights": {
+          "$ref": "#/$defs/resolution"
+        },
+        "drAIs": {
+          "$ref": "#/$defs/resolution"
+        },
+        "HolobikeExperience": {
+          "$ref": "#/$defs/resolution"
+        },
+        "HolobikeDevice": {
+          "$ref": "#/$defs/resolution"
+        },
+        "HolobikeRider": {
+          "$ref": "#/$defs/resolution"
+        },
+        "HolobikeWorlds": {
+          "$ref": "#/$defs/resolution"
+        },
+        "HoloviewDisplay": {
+          "$ref": "#/$defs/resolution"
+        },
+        "OrielUI": {
+          "$ref": "#/$defs/resolution"
+        }
       }
     },
     "gates": {
       "type": "object",
       "description": "Verdicts from the Policy/ gates evaluated during this run, keyed by gate name. Empty when no policy is declared. A skip is a problem: a gate that silently cannot run reads as coverage that does not exist.",
-      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9-]*$" },
-      "additionalProperties": { "$ref": "#/$defs/gate_verdict" }
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/gate_verdict"
+      }
     },
     "actions": {
       "type": "object",
-      "description": "bootstrap records only: what materialization did per integration. Bounded mutations exclusively — clone missing, fast-forward clean-on-branch; everything else is a reported status, never a reset.",
+      "description": "bootstrap records only: what materialization did per integration. Bounded mutations exclusively \u2014 clone missing, fast-forward clean-on-branch; everything else is a reported status, never a reset.",
       "minProperties": 1,
       "additionalProperties": false,
       "properties": {
-        "uroborOS": { "$ref": "#/$defs/action" },
-        "HexAtlas": { "$ref": "#/$defs/action" },
-        "Assetscape": { "$ref": "#/$defs/action" },
-        "HolobikeCore": { "$ref": "#/$defs/action" },
-        "AthleteIdentity": { "$ref": "#/$defs/action" },
-        "AthleteInsights": { "$ref": "#/$defs/action" },
-        "drAIs": { "$ref": "#/$defs/action" },
-        "HolobikeExperience": { "$ref": "#/$defs/action" },
-        "HolobikeDevice": { "$ref": "#/$defs/action" },
-        "HolobikeRider": { "$ref": "#/$defs/action" },
-        "HolobikeWorlds": { "$ref": "#/$defs/action" },
-        "HoloviewDisplay": { "$ref": "#/$defs/action" },
-        "OrielUI": { "$ref": "#/$defs/action" }
+        "uroborOS": {
+          "$ref": "#/$defs/action"
+        },
+        "HexAtlas": {
+          "$ref": "#/$defs/action"
+        },
+        "Assetscape": {
+          "$ref": "#/$defs/action"
+        },
+        "HolobikeCore": {
+          "$ref": "#/$defs/action"
+        },
+        "AthleteIdentity": {
+          "$ref": "#/$defs/action"
+        },
+        "AthleteInsights": {
+          "$ref": "#/$defs/action"
+        },
+        "drAIs": {
+          "$ref": "#/$defs/action"
+        },
+        "HolobikeExperience": {
+          "$ref": "#/$defs/action"
+        },
+        "HolobikeDevice": {
+          "$ref": "#/$defs/action"
+        },
+        "HolobikeRider": {
+          "$ref": "#/$defs/action"
+        },
+        "HolobikeWorlds": {
+          "$ref": "#/$defs/action"
+        },
+        "HoloviewDisplay": {
+          "$ref": "#/$defs/action"
+        },
+        "OrielUI": {
+          "$ref": "#/$defs/action"
+        }
       }
     },
     "profile": {
@@ -147,53 +358,48 @@
       "minLength": 1,
       "pattern": "^[a-z0-9][a-z0-9-]*$"
     },
-    "integrations": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
-                 "AthleteIdentity", "AthleteInsights", "drAIs",
-                 "HolobikeExperience", "HolobikeDevice",
-                 "HolobikeRider", "HolobikeWorlds", "HoloviewDisplay",
-                 "OrielUI"]
-      }
-    },
     "resolution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["record", "sha256", "line"],
-      "description": "assembly records only: the resolution this bundle was built from — a bundle that cannot say what it was built from is not provenance.",
+      "required": [
+        "record",
+        "sha256",
+        "line"
+      ],
+      "description": "assembly records only: the resolution this bundle was built from \u2014 a bundle that cannot say what it was built from is not provenance.",
       "properties": {
-        "record": { "$ref": "#/$defs/record_name" },
-        "sha256": { "$ref": "#/$defs/sha256" },
-        "line": { "type": "string", "minLength": 1 }
+        "record": {
+          "$ref": "#/$defs/record_name"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "line": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "builds": {
       "type": "object",
       "minProperties": 1,
       "propertyNames": {
-        "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
-                 "AthleteIdentity", "AthleteInsights", "drAIs",
-                 "HolobikeExperience", "HolobikeDevice",
-                 "HolobikeRider", "HolobikeWorlds", "HoloviewDisplay",
-                 "OrielUI"]
+        "pattern": "^[A-Za-z][A-Za-z0-9]*\\.[A-Za-z][A-Za-z0-9]*$"
       },
-      "additionalProperties": { "$ref": "#/$defs/build_result" }
+      "additionalProperties": {
+        "$ref": "#/$defs/build_result"
+      }
     },
     "artifacts": {
       "type": "object",
       "propertyNames": {
-        "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
-                 "AthleteIdentity", "AthleteInsights", "drAIs",
-                 "HolobikeExperience", "HolobikeDevice",
-                 "HolobikeRider", "HolobikeWorlds", "HoloviewDisplay",
-                 "OrielUI"]
+        "pattern": "^[A-Za-z][A-Za-z0-9]*\\.[A-Za-z][A-Za-z0-9]*$"
       },
       "additionalProperties": {
         "type": "array",
-        "items": { "$ref": "#/$defs/staged_artifact" }
+        "items": {
+          "$ref": "#/$defs/staged_artifact"
+        }
       }
     },
     "bundle": {
@@ -203,25 +409,33 @@
     "assembly": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["record", "sha256", "bundle"],
-      "description": "emulation records only: the assembly this run executed — the chain reads emulation → assembly → resolution → declaration, and no step can lie about its parent.",
+      "required": [
+        "record",
+        "sha256",
+        "bundle"
+      ],
+      "description": "emulation records only: the assembly this run executed \u2014 the chain reads emulation \u2192 assembly \u2192 resolution \u2192 declaration, and no step can lie about its parent.",
       "properties": {
-        "record": { "$ref": "#/$defs/record_name" },
-        "sha256": { "$ref": "#/$defs/sha256" },
-        "bundle": { "$ref": "#/$defs/relative_path" }
+        "record": {
+          "$ref": "#/$defs/record_name"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bundle": {
+          "$ref": "#/$defs/relative_path"
+        }
       }
     },
     "members": {
       "type": "object",
       "minProperties": 1,
       "propertyNames": {
-        "enum": ["uroborOS", "HexAtlas", "Assetscape", "HolobikeCore",
-                 "AthleteIdentity", "AthleteInsights", "drAIs",
-                 "HolobikeExperience", "HolobikeDevice",
-                 "HolobikeRider", "HolobikeWorlds", "HoloviewDisplay",
-                 "OrielUI"]
+        "pattern": "^[A-Za-z][A-Za-z0-9]*\\.[A-Za-z][A-Za-z0-9]*$"
       },
-      "additionalProperties": { "$ref": "#/$defs/member" }
+      "additionalProperties": {
+        "$ref": "#/$defs/member"
+      }
     },
     "version": {
       "type": "string",
@@ -232,15 +446,27 @@
     "chain": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["resolution", "assembly", "emulation"],
+      "required": [
+        "resolution",
+        "assembly",
+        "emulation"
+      ],
       "description": "release records only: the records this release was admitted from, copied into the release directory so it references nothing ephemeral. emulation is null when the release was admitted un-emulated.",
       "properties": {
-        "resolution": { "$ref": "#/$defs/record_reference" },
-        "assembly": { "$ref": "#/$defs/record_reference" },
+        "resolution": {
+          "$ref": "#/$defs/record_reference"
+        },
+        "assembly": {
+          "$ref": "#/$defs/record_reference"
+        },
         "emulation": {
           "oneOf": [
-            { "$ref": "#/$defs/record_reference" },
-            { "type": "null" }
+            {
+              "$ref": "#/$defs/record_reference"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       }
@@ -248,140 +474,294 @@
     "attestation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["gates", "builds", "selections", "emulation"],
+      "required": [
+        "gates",
+        "builds",
+        "selections",
+        "emulation"
+      ],
       "description": "release records only: what admission verified. An admitted release attests pass on gates, builds, and selections; emulation is healthy or honestly absent.",
       "properties": {
-        "gates": { "const": "pass" },
-        "builds": { "const": "pass" },
-        "selections": { "const": "pass" },
-        "emulation": { "enum": ["healthy", "absent"] }
+        "gates": {
+          "const": "pass"
+        },
+        "builds": {
+          "const": "pass"
+        },
+        "selections": {
+          "const": "pass"
+        },
+        "emulation": {
+          "enum": [
+            "healthy",
+            "absent"
+          ]
+        }
       }
     },
     "problems": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 }
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "deployables": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9]*\\.[A-Za-z][A-Za-z0-9]*$"
+      },
+      "description": "The deployables this record is about, as Integration.Deployable. A repository may contribute more than one \u2014 the server tier is where that first became real \u2014 so naming the repository would describe less than the run did."
     }
   },
   "$defs": {
     "member": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "run"],
+      "required": [
+        "status",
+        "run"
+      ],
       "properties": {
         "status": {
-          "enum": ["healthy", "skipped", "spawn_failed", "exited_early",
-                   "never_ready", "failed_settle", "unclean_shutdown"]
+          "enum": [
+            "healthy",
+            "skipped",
+            "spawn_failed",
+            "exited_early",
+            "never_ready",
+            "failed_settle",
+            "unclean_shutdown"
+          ]
         },
-        "run": { "enum": ["host"] },
+        "run": {
+          "enum": [
+            "host"
+          ]
+        },
         "serve": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["argv"],
+          "required": [
+            "argv"
+          ],
           "properties": {
             "argv": {
               "type": "array",
               "minItems": 1,
-              "items": { "type": "string", "minLength": 1 }
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             },
             "env": {
               "type": "object",
-              "propertyNames": { "minLength": 1 },
-              "additionalProperties": { "type": "string" }
+              "propertyNames": {
+                "minLength": 1
+              },
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         },
         "probe": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["attempts"],
+          "required": [
+            "attempts"
+          ],
           "properties": {
-            "attempts": { "type": "integer", "minimum": 0 },
-            "ready_after_ms": { "type": "integer", "minimum": 0 }
+            "attempts": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ready_after_ms": {
+              "type": "integer",
+              "minimum": 0
+            }
           }
         },
-        "log": { "$ref": "#/$defs/relative_path" },
+        "log": {
+          "$ref": "#/$defs/relative_path"
+        },
         "shutdown": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["clean"],
+          "required": [
+            "clean"
+          ],
           "properties": {
-            "clean": { "type": "boolean" },
-            "detail": { "type": "string", "minLength": 1 }
+            "clean": {
+              "type": "boolean"
+            },
+            "detail": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
-        "detail": { "type": "string", "minLength": 1 }
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "build_result": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "steps"],
+      "required": [
+        "status",
+        "steps"
+      ],
       "properties": {
-        "status": { "enum": ["built", "failed", "skipped", "invalidated"] },
+        "status": {
+          "enum": [
+            "built",
+            "failed",
+            "skipped",
+            "invalidated"
+          ]
+        },
         "steps": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["argv", "exit", "log"],
+            "required": [
+              "argv",
+              "exit",
+              "log"
+            ],
             "properties": {
               "argv": {
                 "type": "array",
                 "minItems": 1,
-                "items": { "type": "string", "minLength": 1 }
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
               },
-              "exit": { "type": "integer" },
-              "log": { "$ref": "#/$defs/relative_path" }
+              "exit": {
+                "type": "integer"
+              },
+              "log": {
+                "$ref": "#/$defs/relative_path"
+              }
             }
           }
         },
-        "detail": { "type": "string", "minLength": 1 }
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "staged_artifact": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "sha256", "bytes"],
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
       "properties": {
-        "path": { "$ref": "#/$defs/relative_path" },
-        "sha256": { "$ref": "#/$defs/sha256" },
-        "bytes": { "type": "integer", "minimum": 0 }
+        "path": {
+          "$ref": "#/$defs/relative_path"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "action": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status"],
+      "required": [
+        "status"
+      ],
       "properties": {
         "status": {
-          "enum": ["cloned", "clone_failed", "updated", "up_to_date",
-                   "matched", "dirty_skipped", "selection_mismatch",
-                   "diverged", "fetch_failed", "unclonable",
-                   "unreadable_repository"]
+          "enum": [
+            "cloned",
+            "clone_failed",
+            "updated",
+            "up_to_date",
+            "matched",
+            "dirty_skipped",
+            "selection_mismatch",
+            "diverged",
+            "fetch_failed",
+            "unclonable",
+            "unreadable_repository"
+          ]
         },
-        "detail": { "type": "string", "minLength": 1 },
-        "revision_before": { "type": "string" },
-        "revision_after": { "type": "string" }
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision_before": {
+          "type": "string"
+        },
+        "revision_after": {
+          "type": "string"
+        }
       }
     },
     "gate_verdict": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "status"],
+      "required": [
+        "kind",
+        "status"
+      ],
       "properties": {
-        "kind": { "enum": ["tree_parity"] },
-        "status": { "enum": ["pass", "fail", "skipped", "linked"] },
+        "kind": {
+          "enum": [
+            "tree_parity"
+          ]
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "skipped",
+            "linked"
+          ]
+        },
         "counts": {
           "type": "object",
-          "additionalProperties": { "type": "integer", "minimum": 0 }
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
         },
         "mismatches": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
-        "truncated": { "type": "integer", "minimum": 0 },
-        "detail": { "type": "string", "minLength": 1 },
-        "target": { "type": "string", "minLength": 1 }
+        "truncated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "record_name": {
@@ -399,16 +779,26 @@
     "record_reference": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["record", "sha256"],
+      "required": [
+        "record",
+        "sha256"
+      ],
       "properties": {
-        "record": { "$ref": "#/$defs/record_name" },
-        "sha256": { "$ref": "#/$defs/sha256" }
+        "record": {
+          "$ref": "#/$defs/record_name"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
       }
     },
     "resolution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["selected", "status"],
+      "required": [
+        "selected",
+        "status"
+      ],
       "properties": {
         "selected": {
           "type": "object",
@@ -416,17 +806,37 @@
           "minProperties": 1,
           "maxProperties": 1,
           "properties": {
-            "branch": { "type": "string", "minLength": 1 },
-            "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            }
           }
         },
         "status": {
-          "enum": ["resolved", "selection_mismatch", "unresolvable"]
+          "enum": [
+            "resolved",
+            "selection_mismatch",
+            "unresolvable"
+          ]
         },
-        "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
-        "branch": { "type": "string" },
-        "dirty": { "type": "boolean" },
-        "detail": { "type": "string", "minLength": 1 }
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "dirty": {
+          "type": "boolean"
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }

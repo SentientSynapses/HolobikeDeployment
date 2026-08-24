@@ -1,1 +1,7 @@
-{"schema_version": 1, "profile": "services", "profile": "services", "integrations": ["AthleteIdentity"]}
+{
+  "schema_version": 2,
+  "profile": "device",
+  "profile": "server",
+  "destination": "device",
+  "deployables": [{ "integration": "AthleteIdentity", "deployable": "IdentityClient" }]
+}

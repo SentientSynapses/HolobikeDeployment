@@ -11,8 +11,10 @@ is refused there, as a category error rather than a tolerance.
 
 Three rules remain here because no schema can state them. Two are cross-field
 set equalities — an assembly's `builds` and an emulation's `members` must key
-exactly the integrations the same record claims, so a record cannot describe
-work on a component it did not say it composed. The third is conditional on a
+exactly the deployables the same record claims, so a record cannot describe
+work on something it did not say it composed. Those are keyed by deployable
+while `resolved` and `actions` stay keyed by integration, because a checkout
+is per repository however many deployables it produces. The third is conditional on a
 sibling's value: a `linked` gate verdict must name the shared target, since a
 bare "linked" attests sameness without naming the same what.
 """
@@ -24,7 +26,7 @@ from pathlib import Path
 
 from . import document, filesystem, schema
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 MAX_RECORD_BYTES = 4 * 1024 * 1024
 
 # Which key must agree with `integrations`, per kind.
@@ -37,11 +39,11 @@ def _bind(root):
 
     holder = _ROSTER_AGREEMENT.get(kind)
     if holder:
-        declared = set(root["integrations"])
+        declared = set(root["deployables"])
         if set(root[holder]) != declared:
             errors.append(
                 f"{holder}: keys must exactly match the recorded "
-                "integrations")
+                "deployables")
 
     for name, verdict in sorted((root.get("gates") or {}).items()):
         if verdict.get("status") == "linked" and "target" not in verdict:

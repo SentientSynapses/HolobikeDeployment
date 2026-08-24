@@ -10,11 +10,14 @@ rather than any single deployable. A deployable with no build and no
 artifacts is a *recorded absence* — named, visibly unbuildable here, and
 honest about it rather than silently missing.
 
-Two rules a schema cannot state live here. Artifact file names must be unique
-across the whole leaf, because `assemble` stages them flat into one bundle
-and two paths ending in the same name would collide. And a leaf may carry at
-most one deployable that builds, for as long as the verbs still work per
-integration — see `producer` below.
+One rule a schema cannot state lives here: artifact file names must be unique
+across the whole leaf, because `assemble` stages them flat into one bundle and
+two paths ending in the same name would collide.
+
+A leaf may declare any number of deployables that build. It could not until
+records were keyed by deployable rather than by repository, which is what the
+server tier forced: HexAtlas produces both AtlasServer and AtlasCartographer,
+and a record naming only the repository would describe less than the run did.
 """
 
 from __future__ import annotations
@@ -76,35 +79,6 @@ class IntegrationDocument:
                 return candidate
         return None
 
-    @property
-    def producer(self):
-        """The one deployable that builds, or None.
-
-        Transitional. The verbs still work per integration, and every leaf
-        today has at most one deployable that builds, so this is unambiguous
-        — the binding refuses a leaf where it would not be. Phase 3 selects
-        deployables directly and this goes.
-        """
-        building = [d for d in self.deployables if d.build_steps or d.artifacts
-                    or d.serve.argv or d.probe.argv]
-        return building[0] if building else None
-
-    @property
-    def build_steps(self):
-        return self.producer.build_steps if self.producer else ()
-
-    @property
-    def artifacts(self):
-        return self.producer.artifacts if self.producer else ()
-
-    @property
-    def serve(self):
-        return self.producer.serve if self.producer else Command()
-
-    @property
-    def probe(self):
-        return self.producer.probe if self.producer else Command()
-
 
 def _command(value):
     if not value:
@@ -134,14 +108,6 @@ def _bind(root):
         errors.append(
             "deployables: artifact file names must be unique across the "
             "leaf — assemble stages them flat into one bundle")
-
-    active = [d for d in deployables
-              if d.build_steps or d.artifacts or d.serve.argv or d.probe.argv]
-    if len(active) > 1:
-        errors.append(
-            "deployables: more than one deployable declares work, and the "
-            "verbs still select whole integrations — "
-            f"{', '.join(sorted(d.name for d in active))}")
 
     if errors:
         return None, errors

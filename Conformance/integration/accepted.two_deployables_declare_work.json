@@ -12,7 +12,7 @@
             "argv": [
               "cmake",
               "--build",
-              "Builds"
+              "B"
             ]
           }
         ]
@@ -27,15 +27,13 @@
         "steps": [
           {
             "argv": [
-              "cmake",
-              "--build",
-              "Builds"
+              "./build-image.sh"
             ]
           }
         ]
       },
       "artifacts": [
-        "Builds/bin/atlas_server"
+        "Builds/atlasserver-image.tar"
       ]
     }
   }

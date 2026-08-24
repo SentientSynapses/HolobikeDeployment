@@ -114,23 +114,23 @@ class _Member:
         self.ready = False
 
 
-def _spawn_and_await(member, leaf, topology, bundle_root, run_root,
+def _spawn_and_await(member, served, topology, bundle_root, run_root,
                      ready_timeout):
     facts = member.facts
     facts["run"] = topology.run
-    if not leaf.serve.argv:
+    if not served.serve.argv:
         facts["status"] = "skipped"
-        facts["detail"] = "no serve entry point declared in the Stack leaf"
+        facts["detail"] = "no serve entry point declared for this deployable"
         return
-    if not leaf.probe.argv:
+    if not served.probe.argv:
         facts["status"] = "skipped"
-        facts["detail"] = "no probe entry point declared in the Stack leaf"
+        facts["detail"] = "no probe entry point declared for this deployable"
         return
 
     bundle_dir = Path(bundle_root) / member.name
     referenced = any(
         "${BUNDLE}" in item
-        for item in list(leaf.serve.argv) + list(leaf.probe.argv))
+        for item in list(served.serve.argv) + list(served.probe.argv))
     if referenced and not bundle_dir.is_dir():
         facts["status"] = "spawn_failed"
         facts["detail"] = "member is absent from the bundle"
@@ -139,9 +139,9 @@ def _spawn_and_await(member, leaf, topology, bundle_root, run_root,
     member.state_dir = run_root / "members" / member.name
     member.state_dir.mkdir(mode=0o700)
     serve_argv, serve_env = _substitute_command(
-        leaf.serve, topology.environment, bundle_dir, member.state_dir)
+        served.serve, topology.environment, bundle_dir, member.state_dir)
     member.probe_argv, member.probe_env = _substitute_command(
-        leaf.probe, topology.environment, bundle_dir, member.state_dir)
+        served.probe, topology.environment, bundle_dir, member.state_dir)
     facts["serve"] = {"argv": serve_argv, "env": serve_env}
 
     log_path = run_root / "logs" / f"{member.name}.serve.log"
@@ -266,7 +266,8 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
         for error in errors:
             print(f"{profile_path}: {error}", file=stderr)
         return 2
-    if tuple(profile.integrations) != tuple(assembly["integrations"]):
+    if [s.ref for s in profile.selections] != list(
+            assembly["deployables"]):
         print(
             f"{profile_path}: profile membership changed after assembly",
             file=stderr)
@@ -292,24 +293,34 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
 
     members = []
     try:
-        for name in profile.integrations:
-            member = _Member(name)
+        for selection in profile.selections:
+            # The member's name is the deployable's reference: two halves of
+            # one repository run as two members, with two state directories
+            # and two logs, which is what they are.
+            member = _Member(selection.ref)
             members.append(member)
-            topology = profile.topology.get(name)
+            topology = profile.topology.get(selection.ref)
             if topology is None:
                 member.facts["run"] = "host"
                 member.facts["status"] = "skipped"
                 member.facts["detail"] = \
                     "no topology declared for this member"
                 continue
-            leaf = leaves.get(name)
+            leaf = leaves.get(selection.integration)
             if leaf is None:
                 member.facts["run"] = topology.run
                 member.facts["status"] = "skipped"
                 member.facts["detail"] = "no Stack leaf found"
                 continue
+            served = leaf.deployable(selection.deployable)
+            if served is None:
+                member.facts["run"] = topology.run
+                member.facts["status"] = "skipped"
+                member.facts["detail"] = \
+                    "the Stack leaf declares no such deployable"
+                continue
             _spawn_and_await(
-                member, leaf, topology, bundle_root, run_root,
+                member, served, topology, bundle_root, run_root,
                 ready_timeout)
 
         # The settle pass: every ready member must still answer once all of
@@ -353,7 +364,7 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
         },
         "line": assembly["line"],
         "profile": profile.profile,
-        "integrations": list(assembly["integrations"]),
+        "deployables": list(assembly["deployables"]),
         "assembly": {
             "record": assembly_path.name,
             "sha256": assembly_digest,

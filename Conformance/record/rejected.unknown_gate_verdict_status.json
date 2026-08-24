@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "resolution",
   "run": {
     "verb": "resolve",
@@ -12,10 +12,18 @@
   },
   "line": "dev",
   "resolved": {
-    "HexAtlas": { "selected": { "branch": "main" }, "status": "resolved" }
+    "HexAtlas": {
+      "selected": {
+        "branch": "main"
+      },
+      "status": "resolved"
+    }
   },
   "gates": {
-    "rider-dual-copy": { "kind": "tree_parity", "status": "mostly" }
+    "rider-dual-copy": {
+      "kind": "tree_parity",
+      "status": "mostly"
+    }
   },
   "problems": []
 }

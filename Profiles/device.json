@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "profile": "device",
+  "destination": "device",
+  "deployables": [
+    {
+      "integration": "Assetscape",
+      "deployable": "AssetResolver"
+    },
+    {
+      "integration": "AthleteIdentity",
+      "deployable": "IdentityClient"
+    },
+    {
+      "integration": "AthleteInsights",
+      "deployable": "InsightsClient"
+    },
+    {
+      "integration": "HexAtlas",
+      "deployable": "AtlasClient"
+    },
+    {
+      "integration": "HolobikeCore",
+      "deployable": "HolobikeCore"
+    },
+    {
+      "integration": "HolobikeDevice",
+      "deployable": "HolobikeDevice"
+    },
+    {
+      "integration": "HolobikeExperience",
+      "deployable": "HolobikeExperience"
+    },
+    {
+      "integration": "HolobikeRider",
+      "deployable": "HolobikeRider"
+    },
+    {
+      "integration": "HolobikeWorlds",
+      "deployable": "HolobikeWorlds"
+    },
+    {
+      "integration": "HoloviewDisplay",
+      "deployable": "HoloviewDisplay"
+    },
+    {
+      "integration": "OrielUI",
+      "deployable": "OrielUI"
+    },
+    {
+      "integration": "drAIs",
+      "deployable": "DraisClient"
+    },
+    {
+      "integration": "uroborOS",
+      "deployable": "uroborOS"
+    }
+  ],
+  "topology": {
+    "AthleteIdentity.IdentityClient": {
+      "run": "host"
+    },
+    "AthleteInsights.InsightsClient": {
+      "run": "host"
+    }
+  }
+}

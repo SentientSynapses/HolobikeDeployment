@@ -127,3 +127,39 @@ def carried_by(documents, terminal):
             if not problems and resolved == terminal:
                 reached.append((integration, deployable.name))
     return tuple(reached)
+
+
+def select(documents, profile):
+    """Resolve a profile's selections against the Stack.
+
+    Returns ``(selections, errors)``. Every selected deployable must exist,
+    and its own destination must resolve to the profile's — a profile that
+    put a server deployable in a device build would otherwise be caught by
+    nothing until something failed to run in the wrong place.
+    """
+    errors = []
+    for selection in profile.selections:
+        leaf = documents.get(selection.integration)
+        if leaf is None:
+            errors.append(
+                f"{selection.ref}: no Stack leaf for "
+                f"{selection.integration}")
+            continue
+        if leaf.deployable(selection.deployable) is None:
+            declared = ", ".join(sorted(d.name for d in leaf.deployables))
+            errors.append(
+                f"{selection.ref}: {selection.integration} declares no such "
+                f"deployable (it declares {declared})")
+            continue
+        terminal, _, problems = resolve_destination(
+            documents, selection.integration, selection.deployable)
+        if problems:
+            errors.extend(problems)
+            continue
+        if terminal != profile.destination:
+            errors.append(
+                f"{selection.ref}: resolves to {terminal!r}, but the "
+                f"{profile.profile!r} profile is for {profile.destination!r}")
+    if errors:
+        return None, errors
+    return profile.selections, []

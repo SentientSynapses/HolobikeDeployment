@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "release",
   "run": {
     "verb": "admit",
@@ -13,7 +13,6 @@
   "line": "dev",
   "version": "0.1.0",
   "profile": "services",
-  "integrations": ["AthleteIdentity", "HolobikeCore"],
   "chain": {
     "resolution": {
       "record": "resolve-dev-20260804T120000000000Z.json",
@@ -34,5 +33,9 @@
     "selections": "pass",
     "emulation": "healthy"
   },
-  "problems": []
+  "problems": [],
+  "deployables": [
+    "AthleteIdentity.IdentityClient",
+    "HolobikeCore.HolobikeCore"
+  ]
 }

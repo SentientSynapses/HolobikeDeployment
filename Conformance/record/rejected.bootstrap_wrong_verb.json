@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "bootstrap",
   "run": {
     "verb": "resolve",
@@ -12,7 +12,9 @@
   },
   "line": "dev",
   "actions": {
-    "HexAtlas": { "status": "up_to_date" }
+    "HexAtlas": {
+      "status": "up_to_date"
+    }
   },
   "problems": []
 }

@@ -2,72 +2,93 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/profiles.schema.json",
   "title": "Profile",
-  "description": "A named composition of integrations: which components a bundle carries. Topology — where components run, which simulated ports replace hardware — arrives as this kind grows; membership comes first because assemble needs it first.",
+  "description": "A named composition: which deployables a build carries, and where they are going. One profile per destination \u2014 the verb chooses the posture, so a development run and a release run of the same product are the same profile rather than two documents that must agree (D-16).",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "profile", "integrations"],
+  "required": [
+    "schema_version",
+    "profile",
+    "destination",
+    "deployables"
+  ],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": {
+      "const": 2
+    },
     "profile": {
       "type": "string",
       "minLength": 1,
       "pattern": "^[a-z0-9][a-z0-9-]*$",
       "description": "The profile's name; also its file name under Profiles/."
     },
-    "integrations": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "enum": [
-          "uroborOS",
-          "HexAtlas",
-          "Assetscape",
-          "HolobikeCore",
-          "AthleteIdentity",
-          "AthleteInsights",
-          "drAIs",
-          "HolobikeExperience",
-          "HolobikeDevice",
-          "HolobikeRider",
-          "HolobikeWorlds",
-          "HoloviewDisplay",
-          "OrielUI"
-        ]
-      }
-    },
     "topology": {
       "type": "object",
-      "description": "How emulate runs each member: keys must be members of this profile's integrations (the binding enforces the subset), values declare the run mode and a non-secret environment overlay. host is the only mode today; vm arrives with the promoted uroborOS validation surface.",
+      "description": "How emulate runs a selected deployable. Keys are Integration.Deployable and must name a deployable this profile selects \u2014 the binding enforces the subset. host is the only run mode today; vm arrives with the promoted uroborOS validation surface.",
       "propertyNames": {
-        "enum": [
-          "uroborOS",
-          "HexAtlas",
-          "Assetscape",
-          "HolobikeCore",
-          "AthleteIdentity",
-          "AthleteInsights",
-          "drAIs",
-          "HolobikeExperience",
-          "HolobikeDevice",
-          "HolobikeRider",
-          "HolobikeWorlds",
-          "HoloviewDisplay",
-          "OrielUI"
-        ]
+        "pattern": "^[A-Za-z][A-Za-z0-9]*\\.[A-Za-z][A-Za-z0-9]*$"
       },
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "run": { "enum": ["host"] },
+          "run": {
+            "enum": [
+              "host"
+            ]
+          },
           "environment": {
             "type": "object",
-            "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+            "propertyNames": {
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+            },
             "additionalProperties": {
               "type": "string",
               "pattern": "^[^\\u0000]*$"
             }
+          }
+        }
+      }
+    },
+    "destination": {
+      "enum": [
+        "device",
+        "server"
+      ],
+      "description": "Where this profile's deployables are going. A selection whose own destination does not resolve here is refused by the binding."
+    },
+    "deployables": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "The chosen deployables, each named by its integration and its own name. A profile is a choice: it may deliberately carry less than everything that could reach its destination.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "integration",
+          "deployable"
+        ],
+        "properties": {
+          "integration": {
+            "enum": [
+              "uroborOS",
+              "HexAtlas",
+              "Assetscape",
+              "HolobikeCore",
+              "AthleteIdentity",
+              "AthleteInsights",
+              "drAIs",
+              "HolobikeExperience",
+              "HolobikeDevice",
+              "HolobikeRider",
+              "HolobikeWorlds",
+              "HoloviewDisplay",
+              "OrielUI"
+            ]
+          },
+          "deployable": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9]*$"
           }
         }
       }

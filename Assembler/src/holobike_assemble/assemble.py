@@ -86,17 +86,22 @@ def _run_steps(name, steps, checkout, logs_root, bundle_root):
     return facts, problems
 
 
-def _stage_artifacts(name, leaf, checkout, bundle_root):
-    """Copy declared artifacts into the bundle; returns (entries, problems)."""
+def _stage_artifacts(name, produced, checkout, bundle_root):
+    """Copy a deployable's artifacts into the bundle.
+
+    `name` is the deployable's Integration.Deployable reference, which is also
+    its directory in the bundle: two deployables of one repository stage side
+    by side rather than into each other.
+    """
     entries = []
     problems = []
-    if not leaf.artifacts:
+    if not produced.artifacts:
         problems.append(f"{name}: built, but no artifacts are declared")
         return entries, problems
     destination_root = bundle_root / name
     destination_root.mkdir(parents=True, exist_ok=True)
     staged_names = set()
-    for relative in leaf.artifacts:
+    for relative in produced.artifacts:
         try:
             source = filesystem.resolve_beneath(
                 checkout, relative, kind="file")
@@ -187,21 +192,29 @@ def run(profile_path, record_path, environment_path, stack_root,
     builds = {}
     staged = {}
     problems = []
-    for name in profile.integrations:
+    for selection in profile.selections:
+        name, ref = selection.integration, selection.ref
         leaf = leaves.get(name)
         if leaf is None:
-            builds[name] = {"status": "skipped", "steps": [],
+            builds[ref] = {"status": "skipped", "steps": [],
                             "detail": "no Stack leaf found"}
-            problems.append(f"{name}: skipped — no Stack leaf found")
+            problems.append(f"{ref}: skipped — no Stack leaf found")
             continue
         if name not in document.checkouts:
-            builds[name] = {
+            builds[ref] = {
                 "status": "skipped", "steps": [],
                 "detail": "no checkout declared in the environment mapping"}
-            problems.append(f"{name}: skipped — no checkout declared")
+            problems.append(f"{ref}: skipped — no checkout declared")
             continue
-        if not leaf.build_steps:
-            builds[name] = {
+        produced = leaf.deployable(selection.deployable)
+        if produced is None:
+            builds[ref] = {"status": "skipped", "steps": [],
+                           "detail": "the Stack leaf declares no such "
+                                     "deployable"}
+            problems.append(f"{ref}: skipped — not declared by its leaf")
+            continue
+        if not produced.build_steps:
+            builds[ref] = {
                 "status": "skipped", "steps": [],
                 "detail": "no build entry point declared in the Stack leaf"}
             problems.append(
@@ -210,13 +223,13 @@ def run(profile_path, record_path, environment_path, stack_root,
         checkout = Path(document.checkouts[name])
         source_problem = _source_problem(name, checkout, resolution)
         if source_problem:
-            builds[name] = {
+            builds[ref] = {
                 "status": "skipped", "steps": [], "detail": source_problem}
             problems.append(source_problem)
             continue
         facts, step_problems = _run_steps(
-            name, leaf.build_steps, checkout, logs_root, bundle_root)
-        builds[name] = facts
+            name, produced.build_steps, checkout, logs_root, bundle_root)
+        builds[ref] = facts
         problems.extend(step_problems)
         if facts["status"] != "built":
             continue
@@ -227,8 +240,8 @@ def run(profile_path, record_path, environment_path, stack_root,
             problems.append(source_problem)
             continue
         entries, staging_problems = _stage_artifacts(
-            name, leaf, checkout, bundle_root)
-        staged[name] = entries
+            ref, produced, checkout, bundle_root)
+        staged[ref] = entries
         problems.extend(staging_problems)
 
     body = {
@@ -245,7 +258,7 @@ def run(profile_path, record_path, environment_path, stack_root,
         },
         "line": resolution["line"],
         "profile": profile.profile,
-        "integrations": list(profile.integrations),
+        "deployables": [s.ref for s in profile.selections],
         "resolution": {
             "record": resolution_path.name,
             "sha256": resolution_digest,
@@ -273,9 +286,10 @@ def run(profile_path, record_path, environment_path, stack_root,
 
     print(f"bundle: {bundle_root}", file=stdout)
     print(f"record: {record_file}", file=stdout)
-    for name in profile.integrations:
-        count = len(staged.get(name, []))
-        print(f"{name}: {builds[name]['status']}, {count} artifact(s) "
+    for selection in profile.selections:
+        ref = selection.ref
+        count = len(staged.get(ref, []))
+        print(f"{ref}: {builds[ref]['status']}, {count} artifact(s) "
               "staged", file=stdout)
     for problem in problems:
         print(f"problem: {problem}", file=stdout)

@@ -28,7 +28,7 @@ def _resolution(deployment_revision, *, gate_status="pass",
                 selection_status="resolved",
                 source_dirty=False, deployment_dirty=False):
     return {
-        "schema_version": 1, "kind": "resolution",
+        "schema_version": 2, "kind": "resolution",
         "run": {"verb": "resolve",
                 "started_at_utc": "2026-08-04T12:00:00Z",
                 "finished_at_utc": "2026-08-04T12:00:01Z"},
@@ -59,18 +59,18 @@ def _assembly(deployment_revision, resolution_name, resolution_digest,
     if build_status == "skipped":
         build["detail"] = "fixture skip"
     return {
-        "schema_version": 1, "kind": "assembly",
+        "schema_version": 2, "kind": "assembly",
         "run": {"verb": "assemble",
                 "started_at_utc": "2026-08-04T12:01:00Z",
                 "finished_at_utc": "2026-08-04T12:01:01Z"},
         "deployment": {"revision": deployment_revision, "dirty": False},
         "line": "dev", "profile": "services",
-        "integrations": ["AthleteIdentity"],
+        "deployables": ["AthleteIdentity.IdentityClient"],
         "resolution": {"record": resolution_name,
                        "sha256": resolution_digest, "line": "dev"},
-        "builds": {"AthleteIdentity": build},
-        "artifacts": {"AthleteIdentity": (
-            [{"path": "AthleteIdentity/svc", "sha256": artifact_digest,
+        "builds": {"AthleteIdentity.IdentityClient": build},
+        "artifacts": {"AthleteIdentity.IdentityClient": (
+            [{"path": "AthleteIdentity.IdentityClient/svc", "sha256": artifact_digest,
               "bytes": 10}] if with_artifact else [])},
         "bundle": "bundles/services-fixture",
         "problems": [],
@@ -123,8 +123,8 @@ class AdmitBehaviour(unittest.TestCase):
         self.records.mkdir(parents=True)
         self.releases = self.root / "Releases"
         self.bundle = self.artifacts / "bundles/services-fixture"
-        (self.bundle / "AthleteIdentity").mkdir(parents=True)
-        self.service = self.bundle / "AthleteIdentity/svc"
+        (self.bundle / "AthleteIdentity.IdentityClient").mkdir(parents=True)
+        self.service = self.bundle / "AthleteIdentity.IdentityClient/svc"
         self.service.write_bytes(b"0123456789")
         self.artifact_digest = hashlib.sha256(
             self.service.read_bytes()).hexdigest()
@@ -227,18 +227,18 @@ class AdmitBehaviour(unittest.TestCase):
         assembly_path = self._chain()
         assembly_digest = self._digest(assembly_path)
         emulation = {
-            "schema_version": 1, "kind": "emulation",
+            "schema_version": 2, "kind": "emulation",
             "run": {"verb": "emulate",
                     "started_at_utc": "2026-08-04T12:02:00Z",
                     "finished_at_utc": "2026-08-04T12:02:01Z"},
             "deployment": {
                 "revision": self.deployment_revision, "dirty": False},
             "line": "dev", "profile": "services",
-            "integrations": ["AthleteIdentity"],
+            "deployables": ["AthleteIdentity.IdentityClient"],
             "assembly": {"record": "assemble-services-fixture.json",
                          "sha256": assembly_digest,
                          "bundle": "bundles/services-fixture"},
-            "members": {"AthleteIdentity": {
+            "members": {"AthleteIdentity.IdentityClient": {
                 "status": "healthy", "run": "host"}},
             "problems": [],
         }
@@ -257,18 +257,18 @@ class AdmitBehaviour(unittest.TestCase):
     def test_an_emulation_of_a_different_bundle_is_refused(self):
         assembly_path = self._chain()
         emulation = {
-            "schema_version": 1, "kind": "emulation",
+            "schema_version": 2, "kind": "emulation",
             "run": {"verb": "emulate",
                     "started_at_utc": "2026-08-04T12:02:00Z",
                     "finished_at_utc": "2026-08-04T12:02:01Z"},
             "deployment": {
                 "revision": self.deployment_revision, "dirty": False},
             "line": "dev", "profile": "services",
-            "integrations": ["AthleteIdentity"],
+            "deployables": ["AthleteIdentity.IdentityClient"],
             "assembly": {"record": "other.json",
                          "sha256": "2" * 64,
                          "bundle": "bundles/some-other-bundle"},
-            "members": {"AthleteIdentity": {
+            "members": {"AthleteIdentity.IdentityClient": {
                 "status": "healthy", "run": "host"}},
             "problems": [],
         }

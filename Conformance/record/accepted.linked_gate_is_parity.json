@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "resolution",
   "run": {
     "verb": "resolve",
@@ -13,7 +13,9 @@
   "line": "dev",
   "resolved": {
     "OrielUI": {
-      "selected": { "branch": "main" },
+      "selected": {
+        "branch": "main"
+      },
       "status": "resolved",
       "revision": "0123456789abcdef0123456789abcdef01234567",
       "branch": "main",

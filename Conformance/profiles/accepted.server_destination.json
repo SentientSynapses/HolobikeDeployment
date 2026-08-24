@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "profile": "server",
+  "destination": "server",
+  "deployables": [
+    {
+      "integration": "AthleteIdentity",
+      "deployable": "IdentityServer"
+    }
+  ]
+}

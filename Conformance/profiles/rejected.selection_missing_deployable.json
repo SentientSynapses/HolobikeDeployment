@@ -4,8 +4,7 @@
   "destination": "device",
   "deployables": [
     {
-      "integration": "HexAtlasIO",
-      "deployable": "AtlasClient"
+      "integration": "AthleteIdentity"
     }
   ]
 }

@@ -85,7 +85,7 @@ class LiveDeclarationsValidate(unittest.TestCase):
     def test_the_declared_compositions_validate(self):
         for name, relative in (
                 ("revisions", "Revisions/dev.json"),
-                ("profiles", "Profiles/services.json"),
+                ("profiles", "Profiles/device.json"),
                 ("policy", "Policy/parity.json")):
             with self.subTest(document=relative):
                 contract = vendored.load(_schema_path(name))
@@ -120,9 +120,9 @@ class VersionConstantsAgree(unittest.TestCase):
 
 
 class TheRosterAgreesWithItself(unittest.TestCase):
-    """The roster is spelled out at twelve sites across six schemas.
+    """The roster is spelled out at eight sites across six schemas.
 
-    Adding a member means editing all twelve; a member enrolled in eleven is
+    Adding a member means editing all eight; a member enrolled in seven is
     live in some mechanisms and invisible to others, which is a failure that
     passes every other test in this suite. This makes it fail here instead.
     """
@@ -172,7 +172,7 @@ class TheRosterAgreesWithItself(unittest.TestCase):
                         declared, roster,
                         f"missing {sorted(roster - declared)}, "
                         f"unexpected {sorted(declared - roster)}")
-        self.assertEqual(sites, 13, "a roster site appeared or vanished")
+        self.assertEqual(sites, 8, "a roster site appeared or vanished")
 
 
 class AgreesWithJsonschema(unittest.TestCase):

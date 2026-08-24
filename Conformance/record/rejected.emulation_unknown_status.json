@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "emulation",
   "run": {
     "verb": "emulate",
@@ -12,14 +12,19 @@
   },
   "line": "dev",
   "profile": "services",
-  "integrations": ["AthleteIdentity"],
   "assembly": {
     "record": "assemble-services-20260804T120000000000Z.json",
     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "bundle": "bundles/services-20260804T120000000000Z"
   },
   "members": {
-    "AthleteIdentity": { "status": "mostly-fine", "run": "host" }
+    "AthleteIdentity.IdentityClient": {
+      "status": "mostly-fine",
+      "run": "host"
+    }
   },
-  "problems": []
+  "problems": [],
+  "deployables": [
+    "AthleteIdentity.IdentityClient"
+  ]
 }

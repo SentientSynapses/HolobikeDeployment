@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "emulation",
   "run": {
     "verb": "emulate",
@@ -12,16 +12,13 @@
   },
   "line": "dev",
   "profile": "services",
-  "integrations": [
-    "AthleteIdentity"
-  ],
   "assembly": {
     "record": "assemble-services-20260804T120000000000Z.json",
     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
     "bundle": "bundles/services-20260804T120000000000Z"
   },
   "members": {
-    "AthleteIdentity": {
+    "AthleteIdentity.IdentityClient": {
       "status": "healthy",
       "run": "host",
       "serve": {
@@ -43,7 +40,7 @@
         "clean": true
       }
     },
-    "HolobikeCore": {
+    "HolobikeCore.HolobikeCore": {
       "status": "skipped",
       "run": "host",
       "detail": "no topology declared for this member"
@@ -51,5 +48,8 @@
   },
   "problems": [
     "HolobikeCore: skipped \u2014 no topology declared for this member"
+  ],
+  "deployables": [
+    "AthleteIdentity.IdentityClient"
   ]
 }

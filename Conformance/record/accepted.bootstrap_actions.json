@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "kind": "bootstrap",
   "run": {
     "verb": "bootstrap",
@@ -28,6 +28,6 @@
     }
   },
   "problems": [
-    "HolobikeExperience: dirty_skipped — working tree is dirty; bootstrap never resets"
+    "HolobikeExperience: dirty_skipped \u2014 working tree is dirty; bootstrap never resets"
   ]
 }

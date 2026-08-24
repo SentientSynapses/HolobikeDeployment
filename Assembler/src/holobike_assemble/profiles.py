@@ -3,9 +3,16 @@
 Canonical contract: `Schemas/profiles.schema.json`, enforced by `schema.py`
 and held by the fixtures under `Conformance/profiles`.
 
-What remains here is what a schema cannot say. The topology map may only key
-integrations *this profile* carries — a cross-field rule, which the schema's
-own description defers to this binding — and the typed view the verbs consume.
+A profile names **deployables**, not whole repositories (D-11), so a
+development composition can take the device half of a contract and leave the
+estate half alone. One profile per destination: the verb chooses the posture,
+so a development run and a release run of the same product are the same
+document rather than two that must be kept in agreement (D-16).
+
+What remains here is what a schema cannot say: `topology` may only key
+deployables *this profile* selects. Whether a selected deployable exists at
+all, and whether its own destination resolves to this profile's, needs the
+whole Stack and lives in `stack.select`.
 """
 
 from __future__ import annotations
@@ -14,8 +21,21 @@ from dataclasses import dataclass, field
 
 from . import document, schema
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 RUN_MODES = ("host",)
+
+
+@dataclass(frozen=True)
+class Selection:
+    """One chosen deployable, named by its integration and its own name."""
+    integration: str
+    deployable: str
+
+    @property
+    def ref(self):
+        """`Integration.Deployable` — how topology keys it, and how a
+        problem names it."""
+        return f"{self.integration}.{self.deployable}"
 
 
 @dataclass(frozen=True)
@@ -27,30 +47,57 @@ class MemberTopology:
 @dataclass(frozen=True)
 class ProfileDocument:
     profile: str
-    integrations: tuple
+    destination: str
+    selections: tuple
     topology: dict = field(default_factory=dict)
+
+    @property
+    def integrations(self):
+        """The distinct integrations selected, in declaration order.
+
+        Derived, never declared: a profile that listed both would be two
+        statements of one fact, and they would drift.
+        """
+        seen = []
+        for selection in self.selections:
+            if selection.integration not in seen:
+                seen.append(selection.integration)
+        return tuple(seen)
+
+    def selection_for(self, integration):
+        for selection in self.selections:
+            if selection.integration == integration:
+                return selection
+        return None
+
+    def topology_for(self, selection):
+        return self.topology.get(selection.ref, MemberTopology())
 
 
 def _bind(root):
     errors = []
-    members = set(root["integrations"])
-    topology = {}
-    declared = root.get("topology") or {}
-    for name in sorted(declared):
-        if name not in members:
+    selections = tuple(
+        Selection(integration=item["integration"],
+                  deployable=item["deployable"])
+        for item in root["deployables"])
+
+    refs = {selection.ref for selection in selections}
+    for ref in sorted(root.get("topology") or {}):
+        if ref not in refs:
             errors.append(
-                f"topology.{name}: not a member of this profile's "
-                "integrations")
-            continue
-        entry = declared[name]
-        topology[name] = MemberTopology(
-            run=entry.get("run", "host"),
-            environment=dict(entry.get("environment") or {}))
+                f"topology.{ref}: not a deployable this profile selects")
+
     if errors:
         return None, errors
+    topology = {
+        ref: MemberTopology(run=entry.get("run", "host"),
+                            environment=dict(entry.get("environment") or {}))
+        for ref, entry in (root.get("topology") or {}).items()
+    }
     return ProfileDocument(
         profile=root["profile"],
-        integrations=tuple(root["integrations"]),
+        destination=root["destination"],
+        selections=selections,
         topology=topology), []
 
 

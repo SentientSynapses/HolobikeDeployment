@@ -52,7 +52,7 @@ class EmulateBehaviour(unittest.TestCase):
         self.root = pathlib.Path(self.scratch.name)
         self.addCleanup(self.scratch.cleanup)
         self.artifacts = self.root / "Artifacts"
-        member_dir = self.artifacts / "bundles" / "bundle-test" / "HexAtlas"
+        member_dir = self.artifacts / "bundles" / "bundle-test" / "HexAtlas.AtlasClient"
         member_dir.mkdir(parents=True)
         (member_dir / "member.py").write_text(
             MEMBER_SCRIPT, encoding="utf-8")
@@ -80,18 +80,20 @@ class EmulateBehaviour(unittest.TestCase):
         profiles = self.root / "Profiles"
         profiles.mkdir(exist_ok=True)
         (profiles / "bundle.json").write_text(json.dumps({
-            "schema_version": 1,
+            "schema_version": 2,
             "profile": "bundle",
-            "integrations": ["HexAtlas"],
-            "topology": {"HexAtlas": {"run": "host"}},
+            "destination": "device",
+            "deployables": [
+                {"integration": "HexAtlas", "deployable": "AtlasClient"}],
+            "topology": {"HexAtlas.AtlasClient": {"run": "host"}},
         }), encoding="utf-8")
 
-        member = self.artifacts / "bundles/bundle-test/HexAtlas/member.py"
-        probe = self.artifacts / "bundles/bundle-test/HexAtlas/probe.py"
+        member = self.artifacts / "bundles/bundle-test/HexAtlas.AtlasClient/member.py"
+        probe = self.artifacts / "bundles/bundle-test/HexAtlas.AtlasClient/probe.py"
         record = self.artifacts / "records" / "assemble-bundle-fixture.json"
         record.parent.mkdir(parents=True, exist_ok=True)
         record.write_text(json.dumps({
-            "schema_version": 1,
+            "schema_version": 2,
             "kind": "assembly",
             "run": {"verb": "assemble",
                     "started_at_utc": "2026-08-04T12:00:00Z",
@@ -99,18 +101,18 @@ class EmulateBehaviour(unittest.TestCase):
             "deployment": {"revision": "0" * 40, "dirty": False},
             "line": "dev",
             "profile": "bundle",
-            "integrations": ["HexAtlas"],
+            "deployables": ["HexAtlas.AtlasClient"],
             "resolution": {"record": "resolve-dev-fixture.json",
                            "sha256": "1" * 64,
                            "line": "dev"},
-            "builds": {"HexAtlas": {"status": "built", "steps": [{
+            "builds": {"HexAtlas.AtlasClient": {"status": "built", "steps": [{
                 "argv": ["fixture-build"], "exit": 0,
                 "log": "logs/fixture.log"}]}},
-            "artifacts": {"HexAtlas": [
-                {"path": "HexAtlas/member.py",
+            "artifacts": {"HexAtlas.AtlasClient": [
+                {"path": "HexAtlas.AtlasClient/member.py",
                  "sha256": hashlib.sha256(member.read_bytes()).hexdigest(),
                  "bytes": member.stat().st_size},
-                {"path": "HexAtlas/probe.py",
+                {"path": "HexAtlas.AtlasClient/probe.py",
                  "sha256": hashlib.sha256(probe.read_bytes()).hexdigest(),
                  "bytes": probe.stat().st_size},
             ]},
@@ -137,7 +139,7 @@ class EmulateBehaviour(unittest.TestCase):
         judged = run_cli("resolve", "--validate-record", str(record_path))
         self.assertEqual(judged.returncode, 0, judged.stderr)
         record = json.loads(record_path.read_text(encoding="utf-8"))
-        return record["members"]["HexAtlas"], record
+        return record["members"]["HexAtlas.AtlasClient"], record
 
     def test_a_healthy_member_closes_the_provenance_chain(self):
         result = self.emulate(self.write_inputs())
@@ -161,12 +163,12 @@ class EmulateBehaviour(unittest.TestCase):
             run_root,
             run_root / "logs",
             run_root / "members",
-            run_root / "members/HexAtlas",
+            run_root / "members/HexAtlas.AtlasClient",
         ):
             self.assertEqual(stat.S_IMODE(directory.stat().st_mode), 0o700)
         self.assertEqual(
             stat.S_IMODE(
-                (run_root / "logs/HexAtlas.serve.log").stat().st_mode),
+                (run_root / "logs/HexAtlas.AtlasClient.serve.log").stat().st_mode),
             0o600,
         )
 
@@ -203,7 +205,7 @@ class EmulateBehaviour(unittest.TestCase):
     def test_emulate_refuses_a_record_that_is_not_an_assembly(self):
         record = self.write_inputs()
         record.write_text(json.dumps({
-            "schema_version": 1,
+            "schema_version": 2,
             "kind": "bootstrap",
             "run": {"verb": "bootstrap",
                     "started_at_utc": "2026-08-04T12:00:00Z",
@@ -219,7 +221,7 @@ class EmulateBehaviour(unittest.TestCase):
 
     def test_tampered_bundle_bytes_are_refused_before_spawn(self):
         record = self.write_inputs()
-        (self.artifacts / "bundles/bundle-test/HexAtlas/member.py").write_text(
+        (self.artifacts / "bundles/bundle-test/HexAtlas.AtlasClient/member.py").write_text(
             "raise SystemExit(99)\n", encoding="utf-8")
 
         result = self.emulate(record)
