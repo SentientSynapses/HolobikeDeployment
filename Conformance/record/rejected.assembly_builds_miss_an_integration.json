@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "kind": "assembly",
+  "run": {
+    "verb": "assemble",
+    "started_at_utc": "2026-08-04T12:00:00Z",
+    "finished_at_utc": "2026-08-04T12:03:00Z"
+  },
+  "deployment": {
+    "revision": "a652f43a652f43a652f43a652f43a652f43a6520",
+    "dirty": false
+  },
+  "line": "dev",
+  "profile": "services",
+  "integrations": [
+    "AthleteIdentity",
+    "HolobikeCore"
+  ],
+  "resolution": {
+    "record": "resolve-dev-20260804T120000000000Z.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "line": "dev"
+  },
+  "builds": {
+    "AthleteIdentity": {
+      "status": "built",
+      "steps": [
+        {
+          "argv": [
+            "./IdentityClient/identityclient.sh",
+            "build"
+          ],
+          "exit": 0,
+          "log": "logs/AthleteIdentity-step0.log"
+        }
+      ]
+    }
+  },
+  "artifacts": {
+    "AthleteIdentity": [
+      {
+        "path": "AthleteIdentity/athleteidentity_service",
+        "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        "bytes": 4816304
+      }
+    ]
+  },
+  "problems": [],
+  "bundle": "bundles/services-20260804T120000000000Z"
+}

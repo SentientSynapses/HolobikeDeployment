@@ -1,28 +1,30 @@
-"""Strict validation for a Stack leaf's integration contract.
+"""A Stack leaf's integration contract, and its binding.
 
-The canonical contract is Schemas/integration.schema.json; this module is a
-hand-written binding held to it by the fixtures under
-Conformance/integration and by the roster-parity test. Fail-closed
-throughout: unknown keys and unknown names are rejections.
+Canonical contract: `Schemas/integration.schema.json`, enforced by
+`schema.py` and held by the fixtures under `Conformance/integration`. The
+shape rules — the closed roster, the closed kit set, a repository name, an
+origin without spaces, checkout-relative artifact paths that never escape, a
+`.uproject` that is a real relative path — are stated there.
+
+Two things remain here. The one rule a schema cannot state: artifact *file
+names* must be unique, because `assemble` stages them flat into one bundle
+and two paths ending in the same name would collide even though the paths
+differ. And the flattening the verbs consume — `entry_points` is a document
+shape, while `preflight` wants argv, `assemble` wants build steps, and
+`emulate` wants commands.
 """
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import PurePosixPath
 
-from . import document, filesystem
-from .environment import INTEGRATIONS
+from . import document, schema
 
 SCHEMA_VERSION = 1
 
-KITS = ("ai_kit", "bike_kit", "geo_kit", "id_kit", "os_kit", "ue_kit")
-
-_ROOT_KEYS = ("schema_version", "integration", "kit", "repository",
-              "origin", "unreal_project", "entry_points", "artifacts")
-_ENTRY_POINTS = ("prove", "build", "serve", "probe")
-_ENVIRONMENT_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+KITS = tuple(
+    schema.contract("integration").document["properties"]["kit"]["enum"])
 
 
 @dataclass(frozen=True)
@@ -47,232 +49,50 @@ class IntegrationDocument:
     probe: Command = Command()
 
 
-def _check_repository_name(errors, value):
-    if not isinstance(value, str) or not value:
-        errors.append("repository: must be a non-empty string")
-        return
-    allowed = set(
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-")
-    if not set(value) <= allowed:
-        errors.append("repository: must match ^[A-Za-z0-9._-]+$")
-
-
-def _check_argv(errors, where, value):
-    if not isinstance(value, list) or not value:
-        errors.append(f"{where}: must be a non-empty array")
-        return ()
-    if any(not isinstance(item, str) or not item or "\0" in item
-           for item in value):
-        errors.append(f"{where}: every element must be a non-empty string")
-        return ()
-    return tuple(value)
-
-
-def _check_environment_map(errors, where, value):
-    if not isinstance(value, dict):
-        errors.append(f"{where}: must be an object")
-        return ()
-    for key, entry in sorted(value.items()):
-        if not isinstance(key, str) or not _ENVIRONMENT_NAME.fullmatch(key) \
-                or not isinstance(entry, str) or "\0" in entry:
-            errors.append(
-                f"{where}: keys must be environment names and values must "
-                "be NUL-free strings")
-            return ()
-    return tuple(sorted(value.items()))
-
-
-def _check_command(errors, where, value):
-    """A serve/probe entry: {argv, env?}; returns a Command."""
-    if not isinstance(value, dict):
-        errors.append(f"{where}: must be an object")
+def _command(value):
+    if not value:
         return Command()
-    for key in sorted(value):
-        if key not in ("argv", "env"):
-            errors.append(f"{where}.{key}: unknown name")
-    argv = _check_argv(errors, f"{where}.argv", value.get("argv"))
-    env = ()
-    if "env" in value:
-        env = _check_environment_map(errors, f"{where}.env", value["env"])
-    return Command(argv=argv, env=env)
+    return Command(
+        argv=tuple(value["argv"]),
+        env=tuple(sorted((value.get("env") or {}).items())))
 
 
-def _check_entry_points(errors, value):
-    prove_argv = ()
-    build_steps = ()
-    serve = Command()
-    probe = Command()
-    if not isinstance(value, dict):
-        errors.append("entry_points: must be an object")
-        return prove_argv, build_steps, serve, probe
-    for key in sorted(value):
-        if key not in _ENTRY_POINTS:
-            errors.append(f"entry_points.{key}: unknown name")
-    if "prove" in value:
-        prove = value["prove"]
-        if not isinstance(prove, dict):
-            errors.append("entry_points.prove: must be an object")
-        else:
-            for key in sorted(prove):
-                if key != "argv":
-                    errors.append(f"entry_points.prove.{key}: unknown name")
-            prove_argv = _check_argv(
-                errors, "entry_points.prove.argv", prove.get("argv"))
-    if "build" in value:
-        build = value["build"]
-        if not isinstance(build, dict):
-            errors.append("entry_points.build: must be an object")
-        else:
-            for key in sorted(build):
-                if key != "steps":
-                    errors.append(f"entry_points.build.{key}: unknown name")
-            steps = build.get("steps")
-            if not isinstance(steps, list) or not steps:
-                errors.append(
-                    "entry_points.build.steps: must be a non-empty array")
-            else:
-                collected = []
-                for index, step in enumerate(steps):
-                    where = f"entry_points.build.steps[{index}]"
-                    if not isinstance(step, dict) \
-                            or sorted(step) != ["argv"]:
-                        errors.append(f"{where}: must be an object "
-                                      "with exactly argv")
-                        continue
-                    argv = _check_argv(errors, f"{where}.argv", step["argv"])
-                    if argv:
-                        collected.append(argv)
-                build_steps = tuple(collected)
-    if "serve" in value:
-        serve = _check_command(errors, "entry_points.serve", value["serve"])
-    if "probe" in value:
-        probe = _check_command(errors, "entry_points.probe", value["probe"])
-    return prove_argv, build_steps, serve, probe
+def _bind(root):
+    entry_points = root.get("entry_points") or {}
+    artifacts = tuple(root.get("artifacts") or ())
 
+    names = [PurePosixPath(path).name for path in artifacts]
+    if len(set(names)) != len(names):
+        return None, [
+            "artifacts: file names must be unique in the staged bundle"]
 
-def _check_artifacts(errors, value):
-    if not isinstance(value, list) or not value:
-        errors.append("artifacts: must be a non-empty array")
-        return ()
-    collected = []
-    for index, path in enumerate(value):
-        where = f"artifacts[{index}]"
-        if not isinstance(path, str) or not path:
-            errors.append(f"{where}: must be a non-empty string")
-            continue
-        try:
-            filesystem.relative_parts(path)
-        except filesystem.FilesystemContractError as error:
-            errors.append(f"{where}: {error}")
-            continue
-        collected.append(path)
-    if len(set(collected)) != len(collected):
-        errors.append("artifacts: paths must be unique")
-    basenames = [Path(path).name for path in collected]
-    if len(set(basenames)) != len(basenames):
-        errors.append(
-            "artifacts: file names must be unique in the staged bundle")
-    return tuple(collected)
+    build = entry_points.get("build") or {}
+    return IntegrationDocument(
+        integration=root["integration"],
+        kit=root["kit"],
+        repository=root["repository"],
+        origin=root.get("origin", ""),
+        unreal_project=root.get("unreal_project", ""),
+        prove_argv=tuple((entry_points.get("prove") or {}).get("argv") or ()),
+        build_steps=tuple(
+            tuple(step["argv"]) for step in build.get("steps") or ()),
+        artifacts=artifacts,
+        serve=_command(entry_points.get("serve")),
+        probe=_command(entry_points.get("probe")),
+    ), []
 
 
 def validate_integration_text(text):
     """Validate one leaf document; returns (IntegrationDocument or None, errors)."""
-    errors = []
-    try:
-        root = document.loads(text)
-    except document.JsonDocumentError as error:
-        return None, [f"document: not valid JSON ({error})"]
-    if not isinstance(root, dict):
-        return None, ["document: the root must be an object"]
-
-    for key in sorted(root):
-        if key not in _ROOT_KEYS:
-            errors.append(f"document.{key}: unknown name")
-
-    version = root.get("schema_version")
-    if "schema_version" not in root:
-        errors.append("schema_version: required")
-    elif isinstance(version, bool) or not isinstance(version, int) \
-            or version != SCHEMA_VERSION:
-        errors.append(f"schema_version: must be the integer {SCHEMA_VERSION}")
-
-    integration = root.get("integration")
-    if "integration" not in root:
-        errors.append("integration: required")
-    elif integration not in INTEGRATIONS:
-        errors.append(
-            f"integration: unknown name {integration!r} — the roster is "
-            "closed")
-
-    kit = root.get("kit")
-    if "kit" not in root:
-        errors.append("kit: required")
-    elif kit not in KITS:
-        errors.append(f"kit: unknown kit {kit!r}")
-
-    if "repository" not in root:
-        errors.append("repository: required")
-    else:
-        _check_repository_name(errors, root["repository"])
-
-    origin = ""
-    if "origin" in root:
-        raw_origin = root["origin"]
-        if not isinstance(raw_origin, str) or not raw_origin \
-                or raw_origin.startswith("-") or "\0" in raw_origin \
-                or any(character.isspace() for character in raw_origin):
-            errors.append(
-                "origin: must be a NUL-free, non-option string without spaces")
-        else:
-            origin = raw_origin
-
-    unreal_project = ""
-    if "unreal_project" in root:
-        raw_project = root["unreal_project"]
-        if not isinstance(raw_project, str) or not raw_project:
-            errors.append("unreal_project: must be a non-empty string")
-        elif not raw_project.endswith(".uproject"):
-            errors.append("unreal_project: must name a .uproject file")
-        else:
-            try:
-                filesystem.relative_parts(raw_project)
-            except filesystem.FilesystemContractError as error:
-                errors.append(f"unreal_project: {error}")
-            else:
-                unreal_project = raw_project
-
-    prove_argv = ()
-    build_steps = ()
-    serve = Command()
-    probe = Command()
-    if "entry_points" in root:
-        prove_argv, build_steps, serve, probe = _check_entry_points(
-            errors, root["entry_points"])
-
-    artifacts = ()
-    if "artifacts" in root:
-        artifacts = _check_artifacts(errors, root["artifacts"])
-
+    root, errors = document.parse(text, schema.contract("integration"))
     if errors:
         return None, errors
-    return IntegrationDocument(
-        integration=integration,
-        kit=kit,
-        repository=root["repository"],
-        origin=origin,
-        unreal_project=unreal_project,
-        prove_argv=prove_argv,
-        build_steps=build_steps,
-        artifacts=artifacts,
-        serve=serve,
-        probe=probe,
-    ), []
+    return _bind(root)
 
 
 def load_integration(path):
     """Read and validate the leaf at path; returns (doc or None, errors)."""
-    try:
-        text = Path(path).read_text(encoding="utf-8")
-    except OSError as error:
-        return None, [f"document: unreadable: {error}"]
-    return validate_integration_text(text)
+    root, errors = document.read(path, schema.contract("integration"))
+    if errors:
+        return None, errors
+    return _bind(root)

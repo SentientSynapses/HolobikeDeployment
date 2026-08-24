@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "kind": "emulation",
+  "run": {
+    "verb": "emulate",
+    "started_at_utc": "2026-08-04T12:05:00Z",
+    "finished_at_utc": "2026-08-04T12:05:20Z"
+  },
+  "deployment": {
+    "revision": "a652f43a652f43a652f43a652f43a652f43a6520",
+    "dirty": false
+  },
+  "line": "dev",
+  "profile": "services",
+  "integrations": [
+    "AthleteIdentity"
+  ],
+  "assembly": {
+    "record": "assemble-services-20260804T120000000000Z.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "bundle": "bundles/services-20260804T120000000000Z"
+  },
+  "members": {
+    "AthleteIdentity": {
+      "status": "healthy",
+      "run": "host",
+      "serve": {
+        "argv": [
+          "/tmp/bundle/AthleteIdentity/athleteidentity_service",
+          "--profiles-root",
+          "/tmp/state/profiles"
+        ],
+        "env": {
+          "ATHLETE_IDENTITY_KEY_PROVIDER": "filesystem"
+        }
+      },
+      "probe": {
+        "attempts": 3,
+        "ready_after_ms": 750
+      },
+      "log": "logs/AthleteIdentity.serve.log",
+      "shutdown": {
+        "clean": true
+      }
+    },
+    "HolobikeCore": {
+      "status": "skipped",
+      "run": "host",
+      "detail": "no topology declared for this member"
+    }
+  },
+  "problems": [
+    "HolobikeCore: skipped \u2014 no topology declared for this member"
+  ]
+}
