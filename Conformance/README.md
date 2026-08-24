@@ -12,8 +12,11 @@ Rules:
   classify — a fixture nobody runs is a contract nobody keeps.
 - A rejected fixture exists per rule, not per bug: every constraint the
   schema states should have at least one fixture that violates only it.
-- `Schemas/*.example.json` documents are validated as accepted fixtures in
-  place, so an example can never drift from its own contract.
+- An accepted fixture doubles as the worked example a human copies:
+  `environment/accepted.full.json` is what a new workstation starts
+  from. One document teaches the shape and proves it, so an example
+  cannot drift from its own contract by construction rather than by
+  a test that compares two files.
 - Document decoding is strict across every binding: duplicate object members
   and non-finite numeric extensions are rejected before schema validation.
 - Fixtures are data. Nothing here executes, and nothing here is a secret.

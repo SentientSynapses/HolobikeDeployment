@@ -6,7 +6,7 @@ must agree with it.
 
 | Schema | Kind |
 |---|---|
-| `environment.schema.json` | One workstation's checkout and toolchain paths. Machine-specific: the document lives at the gitignored `.local/environment.json`, and `environment.example.json` shows its shape. |
+| `environment.schema.json` | One workstation's checkout and toolchain paths. Machine-specific: the document lives at the gitignored `.local/environment.json`, and `Conformance/environment/accepted.full.json` shows its shape. |
 | `integration.schema.json` | One Stack leaf's drive contract: roster identity, source origin, repository-owned prove/build/serve/probe entry points, and staged artifact paths. Instances live at `Stack/<domain>/<Integration>/integration.json`. |
 | `revisions.schema.json` | One line's declared composition: branch selections for development lines, full 40-hex commits for release lines, exactly one of the two per integration. Instances live at `Revisions/<line>.json`. |
 | `record.schema.json` | The five lifecycle facts: resolution, bootstrap, assembly, emulation, and release. Parent records carry SHA-256 bindings; assemblies inventory staged bytes; releases carry the admitted chain. Pre-admission records live under `Artifacts/records/`; admitted copies live under `Releases/`. |

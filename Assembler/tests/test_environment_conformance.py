@@ -1,8 +1,8 @@
 """The environment schema's conformance suite.
 
 Drives the CLI — the Assembler's testable surface — over every fixture
-under Conformance/environment, plus the schema's own example document, and
-holds the Python binding's roster to the canonical schema.
+under Conformance/environment and Conformance/integration, and holds the
+committed Stack leaves to the same judge as the corpus.
 """
 
 import json
@@ -17,7 +17,6 @@ FIXTURES = REPO_ROOT / "Conformance" / "environment"
 INTEGRATION_FIXTURES = REPO_ROOT / "Conformance" / "integration"
 SCHEMA = REPO_ROOT / "Schemas" / "environment.schema.json"
 INTEGRATION_SCHEMA = REPO_ROOT / "Schemas" / "integration.schema.json"
-EXAMPLE = REPO_ROOT / "Schemas" / "environment.example.json"
 
 
 def validate_only(document_path):
@@ -97,44 +96,10 @@ class EnvironmentConformance(unittest.TestCase):
     def test_every_fixture_is_classified_and_holds(self):
         run_fixture_corpus(self, FIXTURES, validate_only)
 
-    def test_the_example_document_is_an_accepted_fixture(self):
-        result = validate_only(EXAMPLE)
-        self.assertEqual(result.returncode, 0, result.stderr)
-
-    def test_the_binding_roster_matches_the_schema(self):
-        sys.path.insert(0, str(REPO_ROOT / "Assembler" / "src"))
-        from holobike_assemble import environment
-
-        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
-        schema_integrations = set(
-            schema["properties"]["checkouts"]["properties"])
-        schema_toolchains = set(
-            schema["properties"]["toolchains"]["properties"])
-        self.assertEqual(schema_integrations, set(environment.INTEGRATIONS))
-        self.assertEqual(schema_toolchains, set(environment.TOOLCHAINS))
-        self.assertEqual(
-            schema["properties"]["schema_version"]["const"],
-            environment.SCHEMA_VERSION)
-
 
 class IntegrationConformance(unittest.TestCase):
     def test_every_fixture_is_classified_and_holds(self):
         run_fixture_corpus(self, INTEGRATION_FIXTURES, validate_integration)
-
-    def test_the_binding_matches_the_schema(self):
-        sys.path.insert(0, str(REPO_ROOT / "Assembler" / "src"))
-        from holobike_assemble import environment, integration
-
-        schema = json.loads(INTEGRATION_SCHEMA.read_text(encoding="utf-8"))
-        self.assertEqual(
-            set(schema["properties"]["integration"]["enum"]),
-            set(environment.INTEGRATIONS))
-        self.assertEqual(
-            set(schema["properties"]["kit"]["enum"]),
-            set(integration.KITS))
-        self.assertEqual(
-            schema["properties"]["schema_version"]["const"],
-            integration.SCHEMA_VERSION)
 
     def test_every_stack_leaf_is_an_accepted_fixture(self):
         # The committed leaves are held to the same judge as the corpus: a

@@ -94,6 +94,31 @@ class LiveDeclarationsValidate(unittest.TestCase):
                 self.assertEqual(contract.validate(document), [])
 
 
+class VersionConstantsAgree(unittest.TestCase):
+    """Each binding still declares SCHEMA_VERSION by hand.
+
+    The roster and the kit set are read out of the schema now, so they cannot
+    drift. The version constant is the one value still stated twice, and D-03
+    is the reason it matters: six schemas hold six independent constants, and
+    each spends its own once. A binding a version behind its contract would
+    otherwise refuse every document the schema accepts.
+    """
+
+    def test_every_binding_matches_its_schema(self):
+        sys.path.insert(0, str(REPO_ROOT / "Assembler" / "src"))
+        from holobike_assemble import (environment, integration, policy,
+                                       profiles, record, revisions)
+        bindings = {"environment": environment, "integration": integration,
+                    "policy": policy, "profiles": profiles, "record": record,
+                    "revisions": revisions}
+        for name, binding in bindings.items():
+            with self.subTest(contract=name):
+                document = json.loads(_schema_path(name).read_text("utf-8"))
+                self.assertEqual(
+                    document["properties"]["schema_version"]["const"],
+                    binding.SCHEMA_VERSION)
+
+
 class TheRosterAgreesWithItself(unittest.TestCase):
     """The roster is spelled out at twelve sites across six schemas.
 

@@ -99,15 +99,16 @@ a self-contained directory under `Releases/`; there is no other writer.
 
 Checkout locations differ per workstation, so they are declared in
 `.local/environment.json`, which is gitignored and never committed. The
-committed artifacts are its schema and an example:
+committed artifacts are its schema and the accepted fixture that doubles
+as the worked example:
 
 ```text
-Schemas/environment.schema.json    the contract
-Schemas/environment.example.json   the shape, with example paths
-.local/environment.json            your machine (untracked)
+Schemas/environment.schema.json               the contract
+Conformance/environment/accepted.full.json    the shape, with example paths
+.local/environment.json                       your machine (untracked)
 ```
 
-To set up a workstation, copy the example to `.local/environment.json` and
+To set up a workstation, copy that fixture to `.local/environment.json` and
 correct the paths. The schema closes the integration roster deliberately: a
 misspelled name fails validation rather than silently deselecting an
 integration. These paths are development defaults, not deployment contracts —

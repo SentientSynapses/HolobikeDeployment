@@ -4,8 +4,8 @@ The declared cadence for the lifecycle's read-only truth: a daily
 `resolve` per revision line, so drift anywhere in the stack becomes a
 recorded fact within a day instead of a discovery. The Assembler gains no
 scheduler — systemd is the scheduler; this directory only declares the
-units, on the `environment.example.json` precedent: the tracked file is
-the template, the per-host install is local.
+units, on the precedent `.local/environment.json` set: the tracked file
+is the template, the per-host install is local.
 
 The unit is a template; the instance name is the revision line
 (`holobike-resolve@dev`, `holobike-resolve@ue57`, …), so enrolling a new
