@@ -216,40 +216,62 @@ Each phase closes with something a person can run or a body of code that is
 gone. Phases 1–3 are sequential; 4, 5 and 6 depend on 3 and not on each
 other.
 
-### Phase 1 — One specification
+### Phase 1 — One specification — COMPLETE 2026-08-24
 
-Subtraction only. No behaviour changes.
+Subtraction only; no behaviour changes. `ca8222b` → `c70db2c`.
 
-- Vendor the validator (D-18): ~200 lines under `Tool/src/holobike/`,
-  covering the twenty keywords these schemas use, resolving `$ref` as a JSON
-  pointer into the same document. It **refuses to load a schema that uses a
-  keyword it does not implement** — under-enforcement must be an error, never
-  a silent pass.
-- Prove it against the corpus before deleting anything. The tests assert
-  accept/reject over the 105 fixtures rather than error text, so the existing
-  corpus is a ready-made harness: the new validator must agree with the
-  hand-written one on every fixture. Keep that agreement as a permanent test
-  that runs `jsonschema` alongside when it is importable and skips when it is
-  not — conformance assurance without the dependency.
-- Delete the six `validate_*_text` bodies. What survives per document type is
-  a typed loader plus the **cross-document** checks a schema cannot express
-  — "every deployable a profile names exists in some leaf". Estimate:
-  1,419 lines → ~240.
-- Reduce `Conformance/` to a regression set: a few accepted and rejected
-  shapes per document type. Estimate: 105 fixtures → ~30.
-- Collapse `Schemas/environment.example.json` into the accepted full
-  fixture. Four documents cite it — `Schemas/README.md`,
-  `Assembler/README.md`, D-06, and `Assembler/timers/README.md` — and a
-  fifth, `Conformance/README.md`, carries the rule *"`Schemas/*.example.json`
-  documents are validated as accepted fixtures in place"*, whose only
-  subject is that file. All five change together or the rule outlives its
-  subject.
-- Extract the decision ledger from this file into `DECISIONS.md`, preserving
-  the D-numbers. Landed decisions continue to live in the code they govern
-  (D-07); this is the home that rule never gave the unlanded ones.
+The validator is vendored at 303 lines (`schema.py`), draft 2020-12, local
+`$ref` only, and refuses a schema using a keyword it does not implement. All
+six schemas compile, so the subset is not aspirational.
 
-**Exit:** one place defines each document shape, the docstrings that call the
-schemas canonical are true, and a field change is a one-file edit.
+It was proven before anything was deleted: 104 of 104 parseable fixtures
+agree with `jsonschema`, no accepted fixture is refused, and all seventeen
+live declarations validate. That agreement is now a permanent test, running
+`jsonschema` where it is installed and skipping where it is not — D-18's
+whole shape.
+
+The six bindings fell **1,419 → 451**, past the ~240 estimate only because a
+typed view of five record kinds is real work. The Assembler is **4,173 →
+3,536** including the validator. What a schema cannot say turned out to be
+five rules, and naming them was the point:
+
+- a profile's `topology` may only key integrations it carries;
+- policy gate names are unique (`uniqueItems` compares whole gates);
+- artifact **file names** must be unique, since `assemble` stages them flat;
+- an assembly's `builds` and an emulation's `members` must key exactly the
+  integrations the same record claims;
+- a `linked` gate verdict must name its target.
+
+`revisions` and `environment` kept **nothing** — the eighteen-line git
+ref-name check was a lookahead pattern in the schema all along.
+
+Two things went further than planned, and one went the other way:
+
+- **The roster and the kit set are now read out of the schema** rather than
+  declared in Python and held in agreement by a test. Structural agreement
+  beats tested agreement. A new test walks all six schemas for roster sites —
+  there are twelve — and fails if they disagree, so a member enrolled in
+  eleven of them can no longer be live in some mechanisms and invisible to
+  others.
+- **Three of the five surviving rules had no fixture.** They were being
+  enforced on trust, against this repository's own "no binding without a
+  fixture". Each has one now.
+- **`Conformance/` was not reduced to ~30; it grew to 108.** The planned
+  pruning assumed the corpus existed only to keep two specifications in step.
+  It now does something better: it is the evidence that the vendored
+  validator matches a reference implementation, which is the mechanism making
+  D-18 safe. Cutting it would weaken the reason vendoring was affordable.
+  **This is a deliberate departure from the plan as written.**
+
+`Schemas/environment.example.json` is deleted, collapsed into
+`Conformance/environment/accepted.full.json`, with all five citations moved —
+including `Conformance/README.md`'s rule about `*.example.json`, whose only
+subject was the deleted file. The decision ledger moved to `DECISIONS.md`,
+D-numbers preserved.
+
+**Exit met:** one place defines each document shape, the docstrings calling
+the schemas canonical are true, and a field change is a one-file edit. 92
+tests green; `preflight` clean against all thirteen live checkouts.
 
 ### Phase 2 — One vocabulary
 
@@ -374,120 +396,12 @@ admitted where the product runs.
 
 ## Decisions this plan stands on
 
-The full arguments move to `DECISIONS.md` in Phase 1; these are the standing
-positions and their current status.
-
-- **D-01 `linked` verdict** — vestigial under D-08; dies with `gates.py` in
-  Phase 4.
-- **D-02 Engine as a versioned fact** — *partly landed at v1.* An
-  integration declaring `unreal_project` has its `EngineAssociation` held
-  against the declared engine's `Engine/Build/Build.version`. This was not
-  academic: the mapping pointed at 5.7.4 while `main` asked for 5.3, and
-  because both engines exist here the old presence check called it healthy.
-  Still owed: the version-keyed map, and `build` refusing a mismatch.
-- **D-03 One v2 schema sweep** — **superseded.** Its premise was that
-  batching saves version constants. There are six independent
-  `SCHEMA_VERSION` constants, one per contract; batching saves nothing and
-  cost a four-way dependency bottleneck.
-- **D-04 Roster completeness** — survives as the membership rule and
-  `nonmembers.json` (Phase 2). Its own first example was routed to the wrong
-  side; see HolobikeMigration above.
-- **D-05 The panel host joins the chain** — Phase 5.
-- **D-06 The machine runs on a timer** — keep. systemd is the scheduler; this
-  repository declares the unit templates. The Assembler gains no scheduler.
-- **D-07 Doctrine is written where it applies** — keep, and complete it:
-  retiring `Docs/Decisions/` gave landed decisions a home in the code and
-  left unlanded ones nowhere but this file. `DECISIONS.md` is that home.
-- **D-08 One tree per repository; no mounts** — keep. Decided on two measured
-  properties: binaries land in the consuming project's `Binaries/`, and a
-  link broke module loading because UBT computes RPATH from the output file's
-  own directory, so `${ORIGIN}` resolved through the link with the wrong hop
-  count.
-- **D-09 The workstation tree is canonical, mirroring `Stack/`** — Phase 4.
-  Plugin discovery recurses and stops at the first descriptor, so one
-  `AdditionalPluginDirectories` entry finds every plugin repository — safe
-  only because `ue/plugins` contains nothing else.
-- **D-10 Specification spans both tiers; `build` stops at the bytes** —
-  keep, **with its conclusion revised.** The insight holds: a container image
-  has bytes and a Terraform apply has none; it mutates a live system whose
-  state outlives every release. The old conclusion put estate delivery
-  outside this tool entirely. It is now `provision`, a verb of this tool —
-  because the stated goal names provisioning both ends. What the insight
-  buys is that `provision` is *separate*: `build` never applies, and applying
-  is never a side effect of building.
-- **D-11 A leaf may name more than one deployable** — lands in Phase 2 as
-  `deployables` + `destination`.
-- **D-12 Updating a HoloBike is not the OS updating itself** — keep.
-  uroborOS owns its own layer's mechanism and must not learn HoloBike
-  composition. A device service reads the release and delegates the OS layer.
-- **D-13 Build the update hub, do not become it** — keep. An OTA authority is
-  a service; this is a tool that is run. The first honest feed is a signed
-  static manifest per line.
-- **D-14 Casing convention** — keep: PascalCase names a top-level tier, every
-  level below that classifies is lowercase, and only a level naming a real
-  thing carries that thing's exact name. `Provisioning/` as a tier is
-  retired — provisioning is a verb — but the naming rule stands.
-- **D-15 The schemas are the contract, and the tool loads them.** The
-  hand-written validators were a second specification, and the fixture corpus
-  was the cost of keeping two specifications in step.
-- **D-16 One profile per destination; the verb chooses the posture.** A
-  `dev` block holds what development adds. Two postures never fork into two
-  documents.
-- **D-17 A member reaches a destination.** As its own artifact, or inside
-  another member's. This is the membership test the roster never had.
-- **D-18 The validator is vendored, not depended on** *(ruled 2026-08-24)*.
-  The tool keeps its zero-dependency install — clone and run — on both
-  operating systems Phase 5 puts in play. Affordable because the surface is
-  small and was measured, not guessed: Draft 2020-12, **twenty** validation
-  keywords in use, all **81** `$ref`s local (`#/$defs/…`) so there is no
-  registry and no remote resolution, `if`/`then` without `else`, one `allOf`
-  and one `oneOf`, and none of `not`, `format`, `patternProperties`,
-  `unevaluatedProperties`, `dependentSchemas`, `contains`, `anyOf`,
-  `maximum`, `maxLength` or `multipleOf` present anywhere. The install story
-  is worth more here than in a normal project: `pip` is not available on this
-  workstation's Python (`No module named pip`, PEP 668 externally-managed),
-  so a dependency is a setup step on Linux and a second one on the panel
-  host — friction inside the tool whose purpose is removing friction.
-  Two rules make it safe: **refuse unknown keywords at schema load**, which
-  turns the silent-under-enforcement failure mode into a loud error and is
-  safe because this repository owns the closed set of schemas; and **keep the
-  differential test against `jsonschema`**, skipped where it is absent.
-  **Revisit when the first rule fires** — a schema needing an unimplemented
-  keyword. Implement the keyword, or take the dependency then, with the
-  evidence in hand. Rejected alternatives: `jsonschema` as a hard dependency
-  (lower maintenance over years, but pays the setup cost on two operating
-  systems); and deleting the schemas to let Python be the single spec, which
-  resolves the duplication in the wrong direction — it keeps all 1,419 lines,
-  loses a contract other tools can read, and puts this repository's central
-  artifact in imperative code against its own doctrine.
-- **D-19 `destination` chains; the terminal is derived** *(ruled
-  2026-08-24)*. Five leaves — HolobikeDevice, HolobikeRider, HolobikeWorlds,
-  HoloviewDisplay, OrielUI — declare no entry points and no artifacts,
-  because UBT compiles them into HolobikeExperience's package. They name that
-  package as their destination rather than a place. Chosen over a separate
-  `compiled_into` field for one reason that outweighs the rest: a device
-  release record must name the plugin revisions compiled into the package, or
-  it describes half the build — the fault D-10 identified, one tier over.
-  With one chaining field that is a transitive walk; with two fields it is
-  two lists to keep in step. Three rules make it safe: `device` and `server`
-  are reserved lowercase terminals and every other value is a member's exact
-  PascalCase name (D-14), so the union is unambiguous by construction; the
-  loader proves each chain resolves to an existing member, terminates, and
-  has no cycles — a cross-document check, which is where Phase 1 puts those
-  anyway; and consumers ask only for the resolved destination, confining the
-  two-kinds knowledge to one resolver. Rejected alternative: the project
-  listing its own plugins, which restates what `HolobikeExperience.uproject`
-  already declares and creates a drift surface between two files that must
-  agree. **Known evolution:** a second UE project makes a single value a lie,
-  and the fix is to allow an array — a widening, not a break, and equally
-  needed under any of the shapes considered.
-- **D-20 `Releases/` stays before it holds a record** *(ruled 2026-08-24)*.
-  Zero release records have ever been written, so the structure-born-by-
-  content rule would delete the tier. It stays on the strength of Phase 5,
-  which is what fills it. Recorded because the doctrine would otherwise be
-  correctly applied to the wrong subject: the rule exists to stop directories
-  being scaffolded for futures nobody has committed to, and this one has a
-  phase.
+The ledger lives in [`DECISIONS.md`](DECISIONS.md) — twenty entries, their
+status, and what would overturn each. The ones this plan leans on hardest:
+**D-10** (the specification spans both tiers; `build` stops at the bytes and
+`provision` is the separate verb that does not), **D-15** (the schemas are the
+contract), **D-17** (a member reaches a destination — the membership test),
+and **D-19** (destinations chain; the terminal is derived).
 
 ## Constraints this plan preserves
 
