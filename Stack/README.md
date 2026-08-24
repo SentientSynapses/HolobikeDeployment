@@ -66,7 +66,7 @@ to attach a parity gate to it. Gates follow from membership. Membership does
 not follow from wanting a gate.
 
 Third-party software is not a domain member either. Toolchains such as the
-Unreal engine and vcpkg are located by environment preflight and recorded as
+Unreal engine and vcpkg are located by environment checking and recorded as
 release facts; only HoloBike-owned software appears under `Stack/`.
 
 An integration contract may commit its adapter to:

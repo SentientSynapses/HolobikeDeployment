@@ -13,7 +13,7 @@ import tempfile
 import unittest
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
-SHIM = REPO_ROOT / "Assembler" / "holobike-assemble"
+SHIM = REPO_ROOT / "Assembler" / "holobike"
 
 
 def run_cli(*arguments):
@@ -107,7 +107,7 @@ class AssembleBehaviour(unittest.TestCase):
 
     def assemble(self, profile, record, environment, stack):
         return run_cli(
-            "assemble",
+            "build", "--only", "assemble",
             "--profile-path", str(profile),
             "--record", str(record),
             "--environment", str(environment),
@@ -123,7 +123,7 @@ class AssembleBehaviour(unittest.TestCase):
             if line.startswith("bundle: "))
         record_path = pathlib.Path(record_line[len("record: "):])
         bundle_path = pathlib.Path(bundle_line[len("bundle: "):])
-        judged = run_cli("resolve", "--validate-record", str(record_path))
+        judged = run_cli("check", "--validate-record", str(record_path))
         self.assertEqual(judged.returncode, 0, judged.stderr)
         return json.loads(record_path.read_text(encoding="utf-8")), \
             bundle_path

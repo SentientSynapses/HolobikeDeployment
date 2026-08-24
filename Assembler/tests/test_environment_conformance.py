@@ -12,7 +12,7 @@ import sys
 import unittest
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
-SHIM = REPO_ROOT / "Assembler" / "holobike-assemble"
+SHIM = REPO_ROOT / "Assembler" / "holobike"
 FIXTURES = REPO_ROOT / "Conformance" / "environment"
 INTEGRATION_FIXTURES = REPO_ROOT / "Conformance" / "integration"
 SCHEMA = REPO_ROOT / "Schemas" / "environment.schema.json"
@@ -21,7 +21,7 @@ INTEGRATION_SCHEMA = REPO_ROOT / "Schemas" / "integration.schema.json"
 
 def validate_only(document_path):
     return subprocess.run(
-        [sys.executable, str(SHIM), "preflight",
+        [sys.executable, str(SHIM), "check",
          "--validate-only", "--environment", str(document_path)],
         capture_output=True,
         text=True,
@@ -31,7 +31,7 @@ def validate_only(document_path):
 
 def validate_integration(document_path):
     return subprocess.run(
-        [sys.executable, str(SHIM), "preflight",
+        [sys.executable, str(SHIM), "check",
          "--validate-integration", str(document_path)],
         capture_output=True,
         text=True,
@@ -41,7 +41,7 @@ def validate_integration(document_path):
 
 def validate_nonmembers(document_path):
     return subprocess.run(
-        [sys.executable, str(SHIM), "preflight",
+        [sys.executable, str(SHIM), "check",
          "--validate-nonmembers", str(document_path)],
         capture_output=True,
         text=True,
@@ -51,7 +51,7 @@ def validate_nonmembers(document_path):
 
 def validate_revisions(document_path):
     return subprocess.run(
-        [sys.executable, str(SHIM), "resolve",
+        [sys.executable, str(SHIM), "check",
          "--validate-revisions", str(document_path)],
         capture_output=True,
         text=True,
@@ -61,7 +61,7 @@ def validate_revisions(document_path):
 
 def validate_record(document_path):
     return subprocess.run(
-        [sys.executable, str(SHIM), "resolve",
+        [sys.executable, str(SHIM), "check",
          "--validate-record", str(document_path)],
         capture_output=True,
         text=True,
@@ -71,7 +71,7 @@ def validate_record(document_path):
 
 def validate_policy(document_path):
     return subprocess.run(
-        [sys.executable, str(SHIM), "resolve",
+        [sys.executable, str(SHIM), "check",
          "--validate-policy", str(document_path)],
         capture_output=True,
         text=True,
@@ -245,7 +245,7 @@ class PolicyConformance(unittest.TestCase):
 
 def validate_profile(document_path):
     return subprocess.run(
-        [sys.executable, str(SHIM), "assemble",
+        [sys.executable, str(SHIM), "check",
          "--validate-profile", str(document_path)],
         capture_output=True,
         text=True,

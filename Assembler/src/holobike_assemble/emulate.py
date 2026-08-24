@@ -223,7 +223,7 @@ def _teardown(member, grace):
 
 
 def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
-        ready_timeout, terminate_grace, stdout, stderr):
+        ready_timeout, terminate_grace, stdout, stderr, hold=False):
     """Execute emulate; returns the process exit code.
 
     0: every member healthy — ready, settled, cleanly shut down.
@@ -333,6 +333,21 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
                     member.facts["status"] = "failed_settle"
                     member.facts["detail"] = \
                         "probe failed once every member was up"
+
+        if hold:
+            # The development posture: the same bring-up, then stay. Teardown
+            # is still the `finally` below, so an interrupt tears down exactly
+            # as a completed run does — one path, not two.
+            ready = [m for m in members if m.ready]
+            print(f"ready: {len(ready)} of {len(members)} member(s) serving",
+                  file=stdout)
+            for member in ready:
+                print(f"  {member.name}: {member.state_dir}", file=stdout)
+            print("holding — interrupt to stop", file=stdout)
+            try:
+                signal.pause()
+            except (KeyboardInterrupt, AttributeError):
+                pass
     finally:
         for member in reversed(members):
             _teardown(member, terminate_grace)

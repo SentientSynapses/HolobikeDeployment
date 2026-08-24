@@ -1,7 +1,7 @@
 # Assembler
 
 The Assembler is this repository's one executable: it turns the declarations
-into staged artifacts and attested records. The CLI is `holobike-assemble`;
+into staged artifacts and attested records. The CLI is `holobike`;
 the implementation is a Python package under this directory (the uroborOS-Lab
 idiom), growing one module per verb.
 
@@ -15,7 +15,7 @@ release identities. It is deliberately thin: the moment it starts resembling
 a build system, the design has failed.
 
 The complete lifecycle is implemented. Each stage writes a self-validating,
-immutable record except read-only `preflight`; records bind their parent by
+immutable record except read-only `check`; records bind their parent by
 file name and SHA-256, and staged artifact bytes are verified again before
 emulation and admission.
 
@@ -23,7 +23,7 @@ emulation and admission.
 
 Verbs land in dependency order; each consumes the ones before it.
 
-### `preflight` — read-only discovery
+### `check` — read-only discovery
 
 Validates `.local/environment.json` against
 `Schemas/environment.schema.json`, normalizes and checks every declared path,
@@ -39,7 +39,7 @@ Consumes the environment mapping and a revision manifest: clones missing
 checkouts, updates clean ones to declared revisions, and materializes
 repository-local tooling (vcpkg, node modules). A dirty or diverged checkout
 is reported, never reset. System-level tools — compilers, engines, drivers —
-are preflight's to report, never bootstrap's to install: host mutation
+are check's to report, never bootstrap's to install: host mutation
 outside the declared checkout roots requires an explicit opt-in, a line this
 ecosystem's incident history has earned.
 
@@ -129,7 +129,7 @@ provisioning derives nothing from them.
 ```text
 src/holobike_assemble/   the package — Python, standard library only
 tests/                   suites that drive the CLI seam, nothing beneath it
-holobike-assemble        launcher shim
+holobike                 launcher shim
 ```
 
 Shared infrastructure has narrow homes: `document.py` owns strict JSON
@@ -141,21 +141,23 @@ mechanics.
 From the repository root:
 
 ```bash
-./Assembler/holobike-assemble preflight            # human table
-./Assembler/holobike-assemble preflight --json     # the report as JSON
-./Assembler/holobike-assemble preflight --validate-only
+./Assembler/holobike check                        # human table
+./Assembler/holobike check --json                 # the report as JSON
+./Assembler/holobike check --validate-only
 python3 -m unittest discover -s Assembler/tests    # the gate
 ```
 
-```bash
-./Assembler/holobike-assemble resolve                    # pin Revisions/dev.json
-./Assembler/holobike-assemble resolve --line <line>
-./Assembler/holobike-assemble resolve --validate-revisions <path>
-./Assembler/holobike-assemble resolve --validate-record <path>
-./Assembler/holobike-assemble resolve --validate-policy <path>
-./Assembler/holobike-assemble bootstrap                  # materialize the dev line
-./Assembler/holobike-assemble assemble --profile device  # stage Profiles/device.json
-./Assembler/holobike-assemble assemble --validate-profile <path>
-./Assembler/holobike-assemble emulate                    # run the newest assembly's members
-./Assembler/holobike-assemble admit --version <v>        # promote a clean chain into Releases/
+```text
+./Assembler/holobike check                       # can this workstation do the work?
+./Assembler/holobike check --validate-<kind> <path>
+./Assembler/holobike env device                  # up, probed, and held
+./Assembler/holobike build device                # stage a bundle and gate it
+./Assembler/holobike build device --version 1.2.0    # ...and admit it
+./Assembler/holobike build device --only assemble    # one stage, for debugging
+./Assembler/holobike provision device --root <mount> --identity <doc>
 ```
+
+`resolve`, `bootstrap`, `assemble`, `emulate` and `admit` are stages of those
+verbs, not verbs themselves — reachable with `--only` when something needs
+debugging. Six stages exposed as an interface is a pipeline, not a tool.
+

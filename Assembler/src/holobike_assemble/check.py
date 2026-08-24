@@ -226,7 +226,7 @@ def build_report(document, stack_root):
         for name in environment.TOOLCHAINS
     }
     return {
-        "generated_by": "holobike-assemble preflight",
+        "generated_by": "holobike check",
         "integrations": {
             name: _inspect_integration(name, document)
             for name in environment.INTEGRATIONS

@@ -27,7 +27,7 @@ HoloBike Deployment owns, or is the designated owner as delivery expands:
 
 - selection of compatible source revisions;
 - cross-repository compatibility and the deployed-stack specification;
-- developer environment discovery and preflight;
+- developer environment discovery and check;
 - deterministic invocation of repository-owned build and test entry points;
 - assembly of named artifacts into an inspectable product bundle;
 - integrated emulation and end-to-end validation;
@@ -62,7 +62,7 @@ Profiles/         declare the product slice and its emulation topology
 Policy/           declare the constraints: parity and admission gates
 Schemas/          declare the shapes: canonical JSON Schema for every declared kind
 Conformance/      prove the bindings: accepted and rejected fixtures per schema
-Assembler/        realize: preflight | bootstrap | resolve | assemble | emulate | admit
+Assembler/        realize: check | bootstrap | resolve | assemble | emulate | admit
 Releases/         attest: admitted records, written by runs, never edited
 Provisioning/     deliver: device-facing workflows behind the admission boundary
 ```
@@ -113,11 +113,11 @@ evidence of agreement.
   itself lives at the gitignored `.local/environment.json`.
 
 Third-party toolchains are not stack members. The Unreal engine is located
-and validated by preflight and recorded as a release fact; it is not HoloBike
+and validated by check and recorded as a release fact; it is not HoloBike
 software and has no integration directory under `Stack/`.
 
 Located is not the same as correct. An integration that owns an Unreal project
-declares it as `unreal_project`, and preflight holds that project's
+declares it as `unreal_project`, and check holds that project's
 `EngineAssociation` against the declared engine's own
 `Engine/Build/Build.version`. A workstation carrying two engines answers
 "present" to either of them, so presence alone once let the mapping name one
@@ -128,7 +128,7 @@ reporting.
 
 The lifecycle is ordered and evidence-carrying:
 
-1. **`preflight`** validates declarations, checkouts, tools, and dirty state
+1. **`check`** validates declarations, checkouts, tools, and dirty state
    without mutation.
 2. **`bootstrap`** clones missing checkouts and fast-forwards only clean,
    on-branch repositories; everything else is recorded and left untouched.
@@ -145,7 +145,7 @@ The lifecycle is ordered and evidence-carrying:
    primitive described in `Provisioning/README.md`.
 
 `bootstrap` through `emulate` write immutable run records under `Artifacts/`.
-Admission copies the complete record chain into `Releases/`; preflight is a
+Admission copies the complete record chain into `Releases/`; check is a
 read-only report rather than an attestation.
 
 ## Current State

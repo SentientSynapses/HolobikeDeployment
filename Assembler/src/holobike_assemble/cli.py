@@ -1,8 +1,21 @@
-"""The holobike-assemble command line.
+"""The `holobike` command line.
 
-The CLI is the Assembler's testable surface: suites drive these verbs and
-nothing beneath them. Each verb delegates its domain work to its own module;
-this file owns argument contracts and dispatch only.
+Four verbs, because there are four things a person wants: know whether this
+workstation can do the work, run the product for development, build it for
+release, and put a build somewhere.
+
+    holobike check                 toolchains, checkouts, engine, roster
+    holobike env <profile>         bring the product up and hold it
+    holobike build <profile>       stage a bundle, gate it, admit a release
+    holobike provision <device|server>   place a build on a thing
+
+`resolve`, `bootstrap`, `assemble`, `emulate` and `admit` are stages of those
+verbs rather than verbs themselves — reachable with `--only` when something
+needs debugging, and run in order otherwise. Six stages exposed as an
+interface is a pipeline, not a tool.
+
+The CLI is the tool's testable surface: suites drive these verbs and nothing
+beneath them. This file owns argument contracts and dispatch only.
 """
 
 from __future__ import annotations
@@ -12,22 +25,38 @@ import math
 import sys
 from pathlib import Path
 
-from . import admit
-from . import assemble
-from . import bootstrap
-from . import emulate
+from . import build as build_verb
+from . import check
+from . import env as env_verb
 from . import filesystem
+from . import integration as integration_contract
+from . import nonmembers as nonmembers_contract
 from . import policy as policy_contract
 from . import profiles as profiles_contract
-from . import preflight
+from . import provision as provision_verb
 from . import record as record_contract
-from . import resolve
 from . import revisions as revisions_contract
 
 # .../Assembler/src/holobike_assemble/cli.py -> the repository root.
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ENVIRONMENT = REPO_ROOT / ".local" / "environment.json"
 DEFAULT_STACK = REPO_ROOT / "Stack"
+DEFAULT_PROFILES = REPO_ROOT / "Profiles"
+DEFAULT_REVISIONS = REPO_ROOT / "Revisions"
+DEFAULT_POLICY = REPO_ROOT / "Policy"
+DEFAULT_RELEASES = REPO_ROOT / "Releases"
+DEFAULT_ARTIFACTS = REPO_ROOT / "Artifacts"
+
+#: Every declared document kind `check` will judge, and its loader.
+JUDGES = {
+    "environment": None,  # handled inside check.run, which also reports
+    "integration": integration_contract.load_integration,
+    "nonmembers": nonmembers_contract.load_nonmembers,
+    "policy": policy_contract.load_policy,
+    "profile": profiles_contract.load_profile,
+    "record": record_contract.load_record,
+    "revisions": revisions_contract.load_revisions,
+}
 
 
 def _positive_seconds(value):
@@ -41,261 +70,100 @@ def _positive_seconds(value):
     return parsed
 
 
+def _common(parser, *, stack=True, artifacts=True):
+    parser.add_argument(
+        "--environment", default=str(DEFAULT_ENVIRONMENT),
+        help="path to the environment mapping "
+        "(default: .local/environment.json)")
+    if stack:
+        parser.add_argument(
+            "--stack", default=str(DEFAULT_STACK),
+            help="path to the Stack tree of integration contracts")
+    if artifacts:
+        parser.add_argument(
+            "--artifacts", default=str(DEFAULT_ARTIFACTS),
+            help="path to the working Artifacts/ root")
+
+
+def _composition(parser):
+    parser.add_argument(
+        "profile", nargs="?", default="device",
+        help="the profile to compose, named as under Profiles/ "
+             "(default: device)")
+    parser.add_argument(
+        "--line", default="dev",
+        help="the revision line to compose (default: dev)")
+    parser.add_argument("--profile-path", help="an explicit profile document")
+    parser.add_argument("--revisions", help="an explicit revision manifest")
+    parser.add_argument("--profiles", default=str(DEFAULT_PROFILES))
+    parser.add_argument("--policy", default=str(DEFAULT_POLICY))
+    parser.add_argument(
+        "--ready-timeout", type=_positive_seconds, default=30.0,
+        help="seconds to wait for a member to probe healthy")
+    parser.add_argument(
+        "--terminate-grace", type=_positive_seconds, default=5.0,
+        help="seconds between SIGTERM and SIGKILL at teardown")
+    parser.add_argument(
+        "--record", metavar="PATH",
+        help="pin a stage's input record instead of taking the newest under "
+             "Artifacts/records/ — for debugging one stage in isolation")
+
+
 def _build_parser():
     parser = argparse.ArgumentParser(
-        prog="holobike-assemble",
-        description="Turn the declared HoloBike specification into staged "
-        "artifacts and attested records.",
-    )
+        prog="holobike",
+        description="Compose the declared HoloBike stack into a development "
+        "environment or a release, for a device or for a server.")
     verbs = parser.add_subparsers(dest="verb", required=True)
 
-    preflight_parser = verbs.add_parser(
-        "preflight",
-        help="read-only: validate the environment mapping and report every "
-        "integration's revision, dirty state, and toolchain presence",
-    )
-    preflight_parser.add_argument(
-        "--environment",
-        default=str(DEFAULT_ENVIRONMENT),
-        help="path to the environment mapping "
-        "(default: .local/environment.json)",
-    )
-    preflight_parser.add_argument(
-        "--stack",
-        default=str(DEFAULT_STACK),
-        help="path to the Stack tree of integration contracts "
-        "(default: Stack/)",
-    )
-    preflight_parser.add_argument(
-        "--validate-only",
-        action="store_true",
-        help="judge the environment document and say nothing else",
-    )
-    preflight_parser.add_argument(
-        "--validate-nonmembers",
-        metavar="PATH",
-        help="judge one non-members declaration and say nothing else",
-    )
-    preflight_parser.add_argument(
-        "--validate-integration",
-        metavar="PATH",
-        help="judge one integration contract document and say nothing else",
-    )
-    preflight_parser.add_argument(
-        "--json",
-        action="store_true",
-        help="emit the report as JSON instead of a table",
-    )
+    checker = verbs.add_parser(
+        "check", help="read-only: is this workstation able to do the work?")
+    _common(checker, artifacts=False)
+    checker.add_argument(
+        "--json", action="store_true",
+        help="emit the report as JSON instead of a table")
+    for kind in sorted(JUDGES):
+        checker.add_argument(
+            f"--validate-{kind}", metavar="PATH",
+            help=f"judge one {kind} document and say nothing else")
+    checker.add_argument(
+        "--validate-only", action="store_true",
+        help="judge the environment document and say nothing else")
 
-    bootstrap_parser = verbs.add_parser(
-        "bootstrap",
-        help="materialize the environment: clone missing checkouts from "
-        "their declared origins, fast-forward clean on-branch ones; "
-        "dirty or diverged trees are reported, never reset",
-    )
-    bootstrap_parser.add_argument(
-        "--line",
-        default="dev",
-        help="the line to materialize: Revisions/<line>.json (default: dev)",
-    )
-    bootstrap_parser.add_argument(
-        "--revisions",
-        metavar="PATH",
-        help="explicit revision manifest path (overrides --line)",
-    )
-    bootstrap_parser.add_argument(
-        "--environment",
-        default=str(DEFAULT_ENVIRONMENT),
-        help="path to the environment mapping "
-        "(default: .local/environment.json)",
-    )
-    bootstrap_parser.add_argument(
-        "--stack",
-        default=str(DEFAULT_STACK),
-        help="path to the Stack tree of integration contracts "
-        "(default: Stack/)",
-    )
-    bootstrap_parser.add_argument(
-        "--artifacts",
-        default=str(REPO_ROOT / "Artifacts"),
-        help="untracked output root for records (default: Artifacts/)",
-    )
+    environment = verbs.add_parser(
+        "env", help="bring the product up for development and hold it")
+    _common(environment)
+    _composition(environment)
+    environment.add_argument(
+        "--only", choices=env_verb.STAGES,
+        help="run one stage instead of the whole composition")
 
-    resolve_parser = verbs.add_parser(
-        "resolve",
-        help="pin a revision manifest against the workstation's checkouts "
-        "and write the resolution record to Artifacts/",
-    )
-    resolve_parser.add_argument(
-        "--line",
-        default="dev",
-        help="the line to resolve: Revisions/<line>.json (default: dev)",
-    )
-    resolve_parser.add_argument(
-        "--revisions",
-        metavar="PATH",
-        help="explicit revision manifest path (overrides --line)",
-    )
-    resolve_parser.add_argument(
-        "--environment",
-        default=str(DEFAULT_ENVIRONMENT),
-        help="path to the environment mapping "
-        "(default: .local/environment.json)",
-    )
-    resolve_parser.add_argument(
-        "--artifacts",
-        default=str(REPO_ROOT / "Artifacts"),
-        help="untracked output root for records (default: Artifacts/)",
-    )
-    resolve_parser.add_argument(
-        "--policy",
-        default=str(REPO_ROOT / "Policy"),
-        help="directory of policy documents whose gates ride the record "
-        "(default: Policy/)",
-    )
-    resolve_parser.add_argument(
-        "--validate-revisions",
-        metavar="PATH",
-        help="judge one revision manifest and say nothing else",
-    )
-    resolve_parser.add_argument(
-        "--validate-policy",
-        metavar="PATH",
-        help="judge one policy document and say nothing else",
-    )
-    resolve_parser.add_argument(
-        "--validate-record",
-        metavar="PATH",
-        help="judge one run record and say nothing else",
-    )
+    builder = verbs.add_parser(
+        "build", help="stage a bundle, gate it, and admit a release")
+    _common(builder)
+    _composition(builder)
+    builder.add_argument(
+        "--version", help="admit the build as this release version")
+    builder.add_argument(
+        "--emulation", metavar="PATH",
+        help="pin the emulation record the admit stage carries")
+    builder.add_argument("--releases", default=str(DEFAULT_RELEASES))
+    builder.add_argument(
+        "--only", choices=build_verb.STAGES,
+        help="run one stage instead of the whole pipeline")
 
-    assemble_parser = verbs.add_parser(
-        "assemble",
-        help="stage a product bundle: run each profile member's declared "
-        "build steps and stage its artifacts, digested, into Artifacts/",
-    )
-    assemble_parser.add_argument(
-        "--profile",
-        default="services",
-        help="the profile to assemble: Profiles/<profile>.json "
-        "(default: services)",
-    )
-    assemble_parser.add_argument(
-        "--profile-path",
-        metavar="PATH",
-        help="explicit profile path (overrides --profile)",
-    )
-    assemble_parser.add_argument(
-        "--record",
-        metavar="PATH",
-        help="the resolution record to build from "
-        "(default: the newest resolve record under Artifacts/records/)",
-    )
-    assemble_parser.add_argument(
-        "--environment",
-        default=str(DEFAULT_ENVIRONMENT),
-        help="path to the environment mapping "
-        "(default: .local/environment.json)",
-    )
-    assemble_parser.add_argument(
-        "--stack",
-        default=str(DEFAULT_STACK),
-        help="path to the Stack tree of integration contracts "
-        "(default: Stack/)",
-    )
-    assemble_parser.add_argument(
-        "--artifacts",
-        default=str(REPO_ROOT / "Artifacts"),
-        help="untracked output root for bundles and records "
-        "(default: Artifacts/)",
-    )
-    assemble_parser.add_argument(
-        "--validate-profile",
-        metavar="PATH",
-        help="judge one profile document and say nothing else",
-    )
-
-    emulate_parser = verbs.add_parser(
-        "emulate",
-        help="run an assembly's members from the bundle, wait for their "
-        "probes, prove coexistence, tear down, and record the verdicts",
-    )
-    emulate_parser.add_argument(
-        "--record",
-        metavar="PATH",
-        help="the assembly record to emulate "
-        "(default: the newest assemble record under Artifacts/records/)",
-    )
-    emulate_parser.add_argument(
-        "--stack",
-        default=str(DEFAULT_STACK),
-        help="path to the Stack tree of integration contracts "
-        "(default: Stack/)",
-    )
-    emulate_parser.add_argument(
-        "--profiles",
-        default=str(REPO_ROOT / "Profiles"),
-        help="directory of profile documents (default: Profiles/)",
-    )
-    emulate_parser.add_argument(
-        "--artifacts",
-        default=str(REPO_ROOT / "Artifacts"),
-        help="untracked root holding the bundle and receiving run "
-        "directories and records (default: Artifacts/)",
-    )
-    emulate_parser.add_argument(
-        "--ready-timeout",
-        type=_positive_seconds,
-        default=30.0,
-        help="seconds to wait for a member's probe to pass (default: 30)",
-    )
-    emulate_parser.add_argument(
-        "--terminate-grace",
-        type=_positive_seconds,
-        default=5.0,
-        help="seconds between SIGTERM and SIGKILL at teardown (default: 5)",
-    )
-
-    admit_parser = verbs.add_parser(
-        "admit",
-        help="promote a clean chain into Releases/ — the one writer of the "
-        "committed attestation tier, and the only step that refuses",
-    )
-    admit_parser.add_argument(
-        "--version",
-        required=True,
-        help="the release version, also the Releases/<version>/ directory",
-    )
-    admit_parser.add_argument(
-        "--record",
-        metavar="PATH",
-        help="the assembly record to admit "
-        "(default: the newest assemble record under Artifacts/records/)",
-    )
-    admit_parser.add_argument(
-        "--emulation",
-        metavar="PATH",
-        help="an emulation record whose health gates admission; omit to "
-        "admit un-emulated (the release attests emulation: absent)",
-    )
-    admit_parser.add_argument(
-        "--artifacts",
-        default=str(REPO_ROOT / "Artifacts"),
-        help="untracked root holding the chain records (default: Artifacts/)",
-    )
-    admit_parser.add_argument(
-        "--releases",
-        default=str(REPO_ROOT / "Releases"),
-        help="tracked release tier (default: Releases/)",
-    )
+    provisioner = verbs.add_parser(
+        "provision", help="place a build on a device or on infrastructure")
+    provisioner.add_argument(
+        "destination", choices=provision_verb.DESTINATIONS)
+    provisioner.add_argument(
+        "--root", help="the offline root to write into")
+    provisioner.add_argument(
+        "--identity", help="a device identity document to install")
+    provisioner.add_argument(
+        "--verify", action="store_true",
+        help="verify what is installed instead of installing")
     return parser
-
-
-def _newest_record(artifacts_root, pattern):
-    records = sorted(
-        Path(artifacts_root).glob(f"records/{pattern}"),
-        key=lambda path: path.name)
-    return records[-1] if records else None
 
 
 def _judge(loader, path):
@@ -308,119 +176,76 @@ def _judge(loader, path):
     return 0
 
 
+def _resolved_paths(arguments):
+    return {
+        "profile_path": arguments.profile_path or str(
+            Path(arguments.profiles) / f"{arguments.profile}.json"),
+        "revisions_path": arguments.revisions or str(
+            DEFAULT_REVISIONS / f"{arguments.line}.json"),
+    }
+
+
 def _main(argv=None):
     arguments = _build_parser().parse_args(argv)
-    if arguments.verb == "preflight":
-        return preflight.run(
+
+    if arguments.verb == "check":
+        for kind, loader in sorted(JUDGES.items()):
+            if loader is None:
+                continue
+            path = getattr(arguments, f"validate_{kind}")
+            if path is not None:
+                return _judge(loader, path)
+        return check.run(
             environment_path=arguments.environment,
             stack_root=arguments.stack,
-            validate_only=arguments.validate_only,
-            validate_integration=arguments.validate_integration,
-            validate_nonmembers=arguments.validate_nonmembers,
+            validate_only=(
+                arguments.validate_only
+                or arguments.validate_environment is not None),
+            validate_integration=None,
+            validate_nonmembers=None,
             as_json=arguments.json,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
-        )
-    if arguments.verb == "bootstrap":
-        revisions_path = arguments.revisions if arguments.revisions \
-            else str(REPO_ROOT / "Revisions" / f"{arguments.line}.json")
-        return bootstrap.run(
-            revisions_path=revisions_path,
+            stdout=sys.stdout, stderr=sys.stderr)
+
+    if arguments.verb == "env":
+        return env_verb.run(
+            **_resolved_paths(arguments),
             environment_path=arguments.environment,
-            stack_root=arguments.stack,
-            artifacts_root=arguments.artifacts,
-            repo_root=REPO_ROOT,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
-        )
-    if arguments.verb == "resolve":
-        if arguments.validate_revisions is not None:
-            return _judge(
-                revisions_contract.load_revisions,
-                arguments.validate_revisions)
-        if arguments.validate_record is not None:
-            return _judge(
-                record_contract.load_record, arguments.validate_record)
-        if arguments.validate_policy is not None:
-            return _judge(
-                policy_contract.load_policy, arguments.validate_policy)
-        revisions_path = arguments.revisions if arguments.revisions \
-            else str(REPO_ROOT / "Revisions" / f"{arguments.line}.json")
-        return resolve.run(
-            revisions_path=revisions_path,
-            environment_path=arguments.environment,
-            artifacts_root=arguments.artifacts,
-            repo_root=REPO_ROOT,
-            policy_root=arguments.policy,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
-        )
-    if arguments.verb == "assemble":
-        if arguments.validate_profile is not None:
-            return _judge(
-                profiles_contract.load_profile, arguments.validate_profile)
-        profile_path = arguments.profile_path if arguments.profile_path \
-            else str(REPO_ROOT / "Profiles" / f"{arguments.profile}.json")
-        record_path = arguments.record
-        if record_path is None:
-            newest = _newest_record(arguments.artifacts, "resolve-*.json")
-            if newest is None:
-                print(
-                    "no resolution record under Artifacts/records/ — "
-                    "run resolve first", file=sys.stderr)
-                return 2
-            record_path = str(newest)
-        return assemble.run(
-            profile_path=profile_path,
-            record_path=record_path,
-            environment_path=arguments.environment,
-            stack_root=arguments.stack,
-            artifacts_root=arguments.artifacts,
-            repo_root=REPO_ROOT,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
-        )
-    if arguments.verb == "emulate":
-        record_path = arguments.record
-        if record_path is None:
-            newest = _newest_record(arguments.artifacts, "assemble-*.json")
-            if newest is None:
-                print(
-                    "no assembly record under Artifacts/records/ — "
-                    "run assemble first", file=sys.stderr)
-                return 2
-            record_path = str(newest)
-        return emulate.run(
-            record_path=record_path,
             stack_root=arguments.stack,
             profiles_root=arguments.profiles,
             artifacts_root=arguments.artifacts,
+            policy_root=arguments.policy,
             repo_root=REPO_ROOT,
+            only=arguments.only,
+            pinned_record=arguments.record,
             ready_timeout=arguments.ready_timeout,
             terminate_grace=arguments.terminate_grace,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
-        )
-    if arguments.verb == "admit":
-        record_path = arguments.record
-        if record_path is None:
-            newest = _newest_record(arguments.artifacts, "assemble-*.json")
-            if newest is None:
-                print(
-                    "no assembly record under Artifacts/records/ — "
-                    "run assemble first", file=sys.stderr)
-                return 2
-            record_path = str(newest)
-        return admit.run(
-            version=arguments.version,
-            assembly_record_path=record_path,
-            emulation_record_path=arguments.emulation,
+            stdout=sys.stdout, stderr=sys.stderr)
+
+    if arguments.verb == "build":
+        return build_verb.run(
+            **_resolved_paths(arguments),
+            environment_path=arguments.environment,
+            stack_root=arguments.stack,
+            profiles_root=arguments.profiles,
             artifacts_root=arguments.artifacts,
+            policy_root=arguments.policy,
             releases_root=arguments.releases,
             repo_root=REPO_ROOT,
-            stdout=sys.stdout,
-            stderr=sys.stderr,
-        )
+            version=arguments.version,
+            only=arguments.only,
+            pinned_record=arguments.record,
+            pinned_emulation=arguments.emulation,
+            ready_timeout=arguments.ready_timeout,
+            terminate_grace=arguments.terminate_grace,
+            stdout=sys.stdout, stderr=sys.stderr)
+
+    if arguments.verb == "provision":
+        return provision_verb.run(
+            destination=arguments.destination,
+            identity_input=arguments.identity,
+            root=arguments.root,
+            verify=arguments.verify,
+            stdout=sys.stdout, stderr=sys.stderr)
     raise AssertionError(f"unreachable verb: {arguments.verb}")
 
 
@@ -428,9 +253,8 @@ def main(argv=None):
     try:
         return _main(argv)
     except (OSError, filesystem.FilesystemContractError) as error:
-        print(f"filesystem operation refused: {error}", file=sys.stderr)
+        print(f"{type(error).__name__}: {error}", file=sys.stderr)
         return 2
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+    except KeyboardInterrupt:
+        print("interrupted", file=sys.stderr)
+        return 130

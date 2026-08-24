@@ -12,12 +12,12 @@ import tempfile
 import unittest
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
-SHIM = REPO_ROOT / "Assembler" / "holobike-assemble"
+SHIM = REPO_ROOT / "Assembler" / "holobike"
 
 
 def run_preflight(*arguments):
     return subprocess.run(
-        [sys.executable, str(SHIM), "preflight", *arguments],
+        [sys.executable, str(SHIM), "check", *arguments],
         capture_output=True,
         text=True,
         check=False,

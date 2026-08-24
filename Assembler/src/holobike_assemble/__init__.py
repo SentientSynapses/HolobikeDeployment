@@ -1,1 +1,1 @@
-"""holobike_assemble: the HoloBike Deployment Assembler."""
+"""holobike: compose the declared HoloBike stack."""

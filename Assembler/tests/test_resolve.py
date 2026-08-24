@@ -12,7 +12,7 @@ import tempfile
 import unittest
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
-SHIM = REPO_ROOT / "Assembler" / "holobike-assemble"
+SHIM = REPO_ROOT / "Assembler" / "holobike"
 
 
 def run_cli(*arguments):
@@ -68,7 +68,7 @@ class ResolveBehaviour(unittest.TestCase):
         # An absent policy directory means no gates — these tests exercise
         # resolution alone; gate behaviour has its own suite.
         result = run_cli(
-            "resolve",
+            "build", "--only", "resolve",
             "--revisions", str(revisions_path),
             "--environment", str(environment_path),
             "--artifacts", str(self.artifacts),
@@ -82,7 +82,7 @@ class ResolveBehaviour(unittest.TestCase):
         self.assertEqual(len(lines), 1, result.stdout)
         record_path = pathlib.Path(lines[0][len(prefix):])
         self.assertTrue(record_path.is_file())
-        judged = run_cli("resolve", "--validate-record", str(record_path))
+        judged = run_cli("check", "--validate-record", str(record_path))
         self.assertEqual(judged.returncode, 0, judged.stderr)
         return json.loads(record_path.read_text(encoding="utf-8"))
 

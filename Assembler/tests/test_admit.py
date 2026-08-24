@@ -101,7 +101,7 @@ class AdmitBehaviour(unittest.TestCase):
         subprocess.run(
             ["git", "commit", "--quiet", "-m", "test deployment"],
             cwd=cls.deployment, check=True)
-        cls.shim = cls.deployment / "Assembler" / "holobike-assemble"
+        cls.shim = cls.deployment / "Assembler" / "holobike"
         cls.deployment_revision = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             cwd=cls.deployment,
@@ -155,7 +155,7 @@ class AdmitBehaviour(unittest.TestCase):
     def admit(self, version, assembly_path, *extra, shim=None):
         return run_cli(
             shim or self.shim,
-            "admit", "--version", version,
+            "build", "--only", "admit", "--version", version,
             "--record", str(assembly_path),
             "--artifacts", str(self.artifacts),
             "--releases", str(self.releases), *extra)
@@ -184,7 +184,7 @@ class AdmitBehaviour(unittest.TestCase):
         # The release record validates as a release.
         judged = run_cli(
             self.shim,
-            "resolve", "--validate-record", str(release_dir / "release.json"))
+            "check", "--validate-record", str(release_dir / "release.json"))
         self.assertEqual(judged.returncode, 0, judged.stderr)
 
     def test_a_failing_gate_refuses_admission(self):
@@ -332,7 +332,7 @@ class AdmitBehaviour(unittest.TestCase):
         result = self.admit(
             "0.8.0",
             assembly,
-            shim=drifted / "Assembler" / "holobike-assemble",
+            shim=drifted / "Assembler" / "holobike",
         )
 
         self.assertEqual(result.returncode, 1, result.stderr)

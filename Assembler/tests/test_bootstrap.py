@@ -13,7 +13,7 @@ import tempfile
 import unittest
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
-SHIM = REPO_ROOT / "Assembler" / "holobike-assemble"
+SHIM = REPO_ROOT / "Assembler" / "holobike"
 
 
 def run_cli(*arguments):
@@ -95,7 +95,7 @@ class BootstrapBehaviour(unittest.TestCase):
 
     def bootstrap(self, environment, revisions, stack):
         return run_cli(
-            "bootstrap",
+            "env", "--only", "bootstrap",
             "--revisions", str(revisions),
             "--environment", str(environment),
             "--stack", str(stack),
@@ -106,7 +106,7 @@ class BootstrapBehaviour(unittest.TestCase):
         line = next(line for line in result.stdout.splitlines()
                     if line.startswith(prefix))
         record_path = pathlib.Path(line[len(prefix):])
-        judged = run_cli("resolve", "--validate-record", str(record_path))
+        judged = run_cli("check", "--validate-record", str(record_path))
         self.assertEqual(judged.returncode, 0, judged.stderr)
         record = json.loads(record_path.read_text(encoding="utf-8"))
         return record["actions"]["HexAtlas"], record

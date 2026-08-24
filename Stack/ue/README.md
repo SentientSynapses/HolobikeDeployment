@@ -8,7 +8,7 @@ differently: `plugins/` are libraries synchronized against a project, and
 `project/` is the packaged product.
 
 The engine itself is not here. Unreal is third-party software, not a HoloBike
-integration: environment preflight locates and validates it from the path
+integration: environment checking locates and validates it from the path
 declared in `.local/environment.json`, and a release records the engine version
 that produced the build.
 

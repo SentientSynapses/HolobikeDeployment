@@ -1,3 +1,10 @@
+> **The code moved.** Device identity provisioning is now
+> `holobike provision device`, implemented under
+> `Assembler/src/holobike_assemble/provision/`. Provisioning is a verb of the
+> one tool rather than a second executable beside it; this document keeps the
+> workflow it always described. `Provisioning/` retires as a tier when Phase 4
+> moves the tree (D-14).
+
 # Provisioning
 
 Provisioning turns an admitted HoloBike release into a configured physical
