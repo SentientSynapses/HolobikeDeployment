@@ -11,6 +11,7 @@ whose tree is missing a checkout wants it materialized, not diagnosed.
 
 from __future__ import annotations
 
+import pathlib
 from pathlib import Path
 
 from . import assemble, bootstrap, check, emulate, resolve
@@ -18,12 +19,19 @@ from . import assemble, bootstrap, check, emulate, resolve
 STAGES = ("check", "bootstrap", "resolve", "assemble", "serve")
 
 
-def _newest(artifacts_root, pattern):
+def _newest(artifacts_root, kind, scope):
+    """The most recent record of `kind` for `scope`, or None.
+
+    Scoped deliberately. Record names are `<kind>-<scope>-<stamp>.json`, so a
+    sort over an unscoped glob orders by profile or line name first and only
+    then by time — which quietly hands `device` the newest `server` record,
+    or a retired profile's leftovers. The scope is the point: a build composes
+    one profile on one line, and it must not inherit another's evidence.
+    """
     records = sorted(
-        Path(artifacts_root).glob(f"records/{pattern}"),
+        pathlib.Path(artifacts_root).glob(f"records/{kind}-{scope}-*.json"),
         key=lambda path: path.name)
     return records[-1] if records else None
-
 
 def run(*, profile_path, revisions_path, environment_path, stack_root,
         profiles_root, artifacts_root, repo_root, only,
@@ -36,6 +44,10 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
     stage returned is the run's code, so `env` never reports success over a
     stage that did not have it.
     """
+    # A profile's name is its file name under Profiles/, and a line's is its
+    # manifest's — both stated by their schemas — so the stem is the scope.
+    profile = Path(profile_path).stem
+    line = Path(revisions_path).stem
     wanted = STAGES if only is None else (only,)
     worst = 0
 
@@ -82,7 +94,7 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
 
     if "assemble" in wanted:
         resolution = (Path(pinned_record) if pinned_record
-                      else _newest(artifacts_root, "resolve-*.json"))
+                      else _newest(artifacts_root, "resolve", line))
         if resolution is None:
             print("no resolution record — run the resolve stage first",
                   file=stderr)
@@ -100,7 +112,7 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
 
     if "serve" in wanted:
         assembly = (Path(pinned_record) if pinned_record
-                    else _newest(artifacts_root, "assemble-*.json"))
+                    else _newest(artifacts_root, "assemble", profile))
         if assembly is None:
             print("no assembly record — run the assemble stage first",
                   file=stderr)

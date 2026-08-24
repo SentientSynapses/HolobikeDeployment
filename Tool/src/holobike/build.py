@@ -12,6 +12,7 @@ after emulation and reports what it would admit; with one, it admits.
 
 from __future__ import annotations
 
+import pathlib
 from pathlib import Path
 
 from . import admit, assemble, emulate, resolve
@@ -23,12 +24,19 @@ from . import admit, assemble, emulate, resolve
 STAGES = ("resolve", "assemble", "emulate", "admit")
 
 
-def _newest(artifacts_root, pattern):
+def _newest(artifacts_root, kind, scope):
+    """The most recent record of `kind` for `scope`, or None.
+
+    Scoped deliberately. Record names are `<kind>-<scope>-<stamp>.json`, so a
+    sort over an unscoped glob orders by profile or line name first and only
+    then by time — which quietly hands `device` the newest `server` record,
+    or a retired profile's leftovers. The scope is the point: a build composes
+    one profile on one line, and it must not inherit another's evidence.
+    """
     records = sorted(
-        Path(artifacts_root).glob(f"records/{pattern}"),
+        pathlib.Path(artifacts_root).glob(f"records/{kind}-{scope}-*.json"),
         key=lambda path: path.name)
     return records[-1] if records else None
-
 
 def run(*, profile_path, revisions_path, environment_path, stack_root,
         profiles_root, artifacts_root, releases_root, repo_root,
@@ -40,6 +48,10 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
     resolution that was refused, and every later stage binds the earlier one
     by digest anyway.
     """
+    # A profile's name is its file name under Profiles/, and a line's is its
+    # manifest's — both stated by their schemas — so the stem is the scope.
+    profile = Path(profile_path).stem
+    line = Path(revisions_path).stem
     wanted = STAGES if only is None else (only,)
 
     if "resolve" in wanted:
@@ -54,7 +66,7 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
 
     if "assemble" in wanted:
         resolution = (Path(pinned_record) if pinned_record
-                      else _newest(artifacts_root, "resolve-*.json"))
+                      else _newest(artifacts_root, "resolve", line))
         if resolution is None:
             print("no resolution record — run the resolve stage first",
                   file=stderr)
@@ -73,7 +85,7 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
     emulation_record = None
     if "emulate" in wanted:
         assembly = (Path(pinned_record) if pinned_record
-                    else _newest(artifacts_root, "assemble-*.json"))
+                    else _newest(artifacts_root, "assemble", profile))
         if assembly is None:
             print("no assembly record — run the assemble stage first",
                   file=stderr)
@@ -90,7 +102,7 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
             stdout=stdout, stderr=stderr)
         if code:
             return code
-        newest = _newest(artifacts_root, "emulate-*.json")
+        newest = _newest(artifacts_root, "emulate", profile)
         emulation_record = str(newest) if newest else None
     if pinned_emulation:
         emulation_record = pinned_emulation
@@ -98,7 +110,7 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
     if "admit" in wanted:
         if version is None:
             assembly = (Path(pinned_record) if pinned_record
-                    else _newest(artifacts_root, "assemble-*.json"))
+                    else _newest(artifacts_root, "assemble", profile))
             if assembly is None:
                 print("nothing built", file=stderr)
                 return 2
@@ -106,7 +118,7 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
             print("pass --version to admit it as a release", file=stdout)
             return 0
         assembly = (Path(pinned_record) if pinned_record
-                    else _newest(artifacts_root, "assemble-*.json"))
+                    else _newest(artifacts_root, "assemble", profile))
         if assembly is None:
             print("no assembly record — run the assemble stage first",
                   file=stderr)
