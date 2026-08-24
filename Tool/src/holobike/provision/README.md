@@ -1,6 +1,6 @@
 > **The code moved.** Device identity provisioning is now
 > `holobike provision device`, implemented under
-> `Tool/src/holobike_assemble/provision/`. Provisioning is a verb of the
+> `Tool/src/holobike/provision/`. Provisioning is a verb of the
 > one tool rather than a second executable beside it; this document keeps the
 > workflow it always described. `Provisioning/` retires as a tier when Phase 4
 > moves the tree (D-14).
@@ -37,10 +37,10 @@ The first executable primitive is deliberately narrower than production
 provisioning:
 
 ```bash
-./Provisioning/provision-device-identity install \
+./a separate executable install \
   --root /path/to/offline-target-root \
   --input /path/to/device-identity.json
-./Provisioning/provision-device-identity verify \
+./a separate executable verify \
   --root /path/to/offline-target-root
 ```
 

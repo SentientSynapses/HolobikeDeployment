@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/environment.schema.json",
+  "$id": "https://schemas.holobike.local/HolobikeDeployment/Tool/src/holobike/schemas/environment.schema.json",
   "title": "Development Environment Mapping",
   "description": "One workstation's local checkout and toolchain locations. This document is machine-specific and is never committed: it lives at .local/environment.json, and the committed artifacts are this schema and the example beside it. Paths are development defaults, not deployment contracts \u2014 production provisioning derives nothing from them. Secrets never appear here; they come from an external secret facility.",
   "type": "object",

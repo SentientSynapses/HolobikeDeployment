@@ -1,25 +1,36 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/nonmembers.schema.json",
+  "$id": "https://schemas.holobike.local/HolobikeDeployment/Tool/src/holobike/schemas/nonmembers.schema.json",
   "title": "Non-members",
   "description": "Repositories adjacent to the stack that are deliberately not members, each with a reason. Keys are checkout directory names, because that is what the stray scan sees. Recording a repository here is a stronger statement than silence: it says someone looked. A repository in neither this file nor the roster is a named problem rather than a discovery.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "nonmembers"],
+  "required": [
+    "schema_version",
+    "nonmembers"
+  ],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": {
+      "const": 1
+    },
     "nonmembers": {
       "type": "object",
       "minProperties": 1,
-      "propertyNames": { "pattern": "^[A-Za-z0-9._-]+$" },
-      "additionalProperties": { "$ref": "#/$defs/nonmember" }
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9._-]+$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/nonmember"
+      }
     }
   },
   "$defs": {
     "nonmember": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["reason"],
+      "required": [
+        "reason"
+      ],
       "properties": {
         "reason": {
           "type": "string",

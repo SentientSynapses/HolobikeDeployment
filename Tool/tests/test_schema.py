@@ -181,6 +181,54 @@ class TheRosterAgreesWithItself(unittest.TestCase):
         self.assertEqual(sites, 7, "a roster site appeared or vanished")
 
 
+class NamedPathsExist(unittest.TestCase):
+    """Nothing tracked may name a repository path that is not there.
+
+    Moving files broke three things silently in this refactor: thirteen
+    markdown links, the daily cadence's systemd unit, and thirteen stale
+    citations across .gitignore, a schema $id, a non-member's reason and two
+    READMEs. Each was a string naming a location, and no test looked at
+    strings. This one does.
+
+    PLAN.md and DECISIONS.md are exempt: a record of finished work cites the
+    paths that existed when the work was done, and correcting them would make
+    the record false. .gitignore is held to a weaker rule — an ignore pattern
+    is a prediction about output that may not exist yet, so only the tier it
+    names has to be real. That still catches the actual failure, which was a
+    pattern left pointing at a directory the refactor deleted.
+    """
+
+    TIERS = ("Tool", "Stack", "Profiles", "Revisions", "Releases", "Artifacts",
+             "Schemas", "Conformance", "Assembler", "Policy", "Provisioning")
+    HISTORICAL = {"PLAN.md", "DECISIONS.md"}
+
+    def test_no_tracked_file_names_a_path_that_is_gone(self):
+        import re
+        import subprocess
+        pattern = re.compile(
+            r"\b((?:" + "|".join(self.TIERS) + r")/[A-Za-z0-9_./@-]+)")
+        tracked = subprocess.run(
+            ["git", "ls-files"], cwd=REPO_ROOT, capture_output=True,
+            text=True, check=True).stdout.split()
+        missing = []
+        for name in tracked:
+            if name in self.HISTORICAL:
+                continue
+            try:
+                body = (REPO_ROOT / name).read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+            for hit in set(pattern.findall(body)):
+                target = hit.rstrip(".,;:)")
+                if "*" in target or "<" in target:
+                    continue
+                probe = (target.split("/", 1)[0] if name == ".gitignore"
+                         else target)
+                if not (REPO_ROOT / probe).exists():
+                    missing.append(f"{name} names {target}")
+        self.assertEqual(sorted(missing), [])
+
+
 class DeclaredUnitsPointAtRealThings(unittest.TestCase):
     """The cadence runs from a tracked template, installed per host.
 

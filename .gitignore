@@ -1,5 +1,4 @@
 /.local/
 /Artifacts/
-/Assembler/Generated/
-/Provisioning/Generated/
+/Tool/Generated/
 __pycache__/

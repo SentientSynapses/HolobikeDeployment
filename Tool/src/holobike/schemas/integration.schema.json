@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/integration.schema.json",
+  "$id": "https://schemas.holobike.local/HolobikeDeployment/Tool/src/holobike/schemas/integration.schema.json",
   "title": "Per-repository integration contract",
   "description": "One repository's deployment-facing contract: what it is, where its checkout comes from, how to prove it, and the named deployables it produces. A deployable is the unit profiles select and provision delivers; a repository may produce more than one, and several here produce both a device half and a server half of the same contract.",
   "type": "object",

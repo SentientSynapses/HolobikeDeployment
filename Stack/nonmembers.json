@@ -34,7 +34,7 @@
       "reason": "An interaction-design instrument — a UE-imitating editor shell in Three.js used to design the RidePaths surface. A design tool, not product code: nothing it produces reaches a device or a server."
     },
     "drAIs-Lab": {
-      "reason": "A transitional Lab repository: specification, ledger and experiments for drAIs. Lab repositories are never composition dependencies, which Assembler/README.md already states; the member repository is where anything they settle lands."
+      "reason": "A transitional Lab repository: specification, ledger and experiments for drAIs. Lab repositories are never composition dependencies, which Tool/README.md already states; the member repository is where anything they settle lands."
     },
     "HolobikeCore-Lab": {
       "reason": "A transitional Lab repository for HolobikeCore. Lab repositories are never composition dependencies; what they settle lands in the member repository."

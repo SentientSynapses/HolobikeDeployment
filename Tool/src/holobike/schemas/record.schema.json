@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/record.schema.json",
+  "$id": "https://schemas.holobike.local/HolobikeDeployment/Tool/src/holobike/schemas/record.schema.json",
   "title": "Run record",
   "description": "What one Assembler run resolved and attested. The shape follows the run-record idiom this ecosystem already proved (a run block with timing, a source-identity block, per-subject facts) hardened with provenance vocabulary: 'revision' is a full git commit id and corresponds to SLSA's digest.gitCommit; the deployment block is the record's self-identity, because a resolution that cannot identify itself is not provenance. Records are written by runs into the untracked Artifacts/ directory and are never edited; admission copies a record into Releases/, it does not rewrite one.",
   "type": "object",

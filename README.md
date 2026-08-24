@@ -149,7 +149,7 @@ The lifecycle is ordered and evidence-carrying:
    immutable, self-contained release record.
 7. **Provisioning** consumes admitted releases for physical-device delivery;
    its current executable scope is the bounded public device-identity
-   primitive described in `Provisioning/README.md`.
+   primitive described in `Tool/src/holobike/provision/README.md`.
 
 `bootstrap` through `emulate` write immutable run records under `Artifacts/`.
 Admission copies the complete record chain into `Releases/`; check is a

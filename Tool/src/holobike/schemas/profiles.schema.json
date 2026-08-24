@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/profiles.schema.json",
+  "$id": "https://schemas.holobike.local/HolobikeDeployment/Tool/src/holobike/schemas/profiles.schema.json",
   "title": "Profile",
   "description": "A named composition: which deployables a build carries, and where they are going. One profile per destination \u2014 the verb chooses the posture, so a development run and a release run of the same product are the same profile rather than two documents that must agree (D-16).",
   "type": "object",

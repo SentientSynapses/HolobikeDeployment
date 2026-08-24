@@ -1,13 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/revisions.schema.json",
+  "$id": "https://schemas.holobike.local/HolobikeDeployment/Tool/src/holobike/schemas/revisions.schema.json",
   "title": "Revision manifest",
-  "description": "The declared composition of one line: which integrations it selects and what each selection is. A development line may select by branch; a release line resolves to exact commits — a mutable branch name is never a release identity. Selections are exclusive: exactly one of branch or commit per integration.",
+  "description": "The declared composition of one line: which integrations it selects and what each selection is. A development line may select by branch; a release line resolves to exact commits \u2014 a mutable branch name is never a release identity. Selections are exclusive: exactly one of branch or commit per integration.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "line", "selections"],
+  "required": [
+    "schema_version",
+    "line",
+    "selections"
+  ],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": {
+      "const": 1
+    },
     "line": {
       "type": "string",
       "minLength": 1,
@@ -19,19 +25,45 @@
       "minProperties": 1,
       "additionalProperties": false,
       "properties": {
-        "uroborOS": { "$ref": "#/$defs/selection" },
-        "HexAtlas": { "$ref": "#/$defs/selection" },
-        "Assetscape": { "$ref": "#/$defs/selection" },
-        "HolobikeCore": { "$ref": "#/$defs/selection" },
-        "AthleteIdentity": { "$ref": "#/$defs/selection" },
-        "AthleteInsights": { "$ref": "#/$defs/selection" },
-        "drAIs": { "$ref": "#/$defs/selection" },
-        "HolobikeExperience": { "$ref": "#/$defs/selection" },
-        "HolobikeDevice": { "$ref": "#/$defs/selection" },
-        "HolobikeRider": { "$ref": "#/$defs/selection" },
-        "HolobikeWorlds": { "$ref": "#/$defs/selection" },
-        "HoloviewDisplay": { "$ref": "#/$defs/selection" },
-        "OrielUI": { "$ref": "#/$defs/selection" }
+        "uroborOS": {
+          "$ref": "#/$defs/selection"
+        },
+        "HexAtlas": {
+          "$ref": "#/$defs/selection"
+        },
+        "Assetscape": {
+          "$ref": "#/$defs/selection"
+        },
+        "HolobikeCore": {
+          "$ref": "#/$defs/selection"
+        },
+        "AthleteIdentity": {
+          "$ref": "#/$defs/selection"
+        },
+        "AthleteInsights": {
+          "$ref": "#/$defs/selection"
+        },
+        "drAIs": {
+          "$ref": "#/$defs/selection"
+        },
+        "HolobikeExperience": {
+          "$ref": "#/$defs/selection"
+        },
+        "HolobikeDevice": {
+          "$ref": "#/$defs/selection"
+        },
+        "HolobikeRider": {
+          "$ref": "#/$defs/selection"
+        },
+        "HolobikeWorlds": {
+          "$ref": "#/$defs/selection"
+        },
+        "HoloviewDisplay": {
+          "$ref": "#/$defs/selection"
+        },
+        "OrielUI": {
+          "$ref": "#/$defs/selection"
+        }
       }
     }
   },

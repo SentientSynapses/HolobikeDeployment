@@ -36,7 +36,7 @@ from . import provision as provision_verb
 from . import record as record_contract
 from . import revisions as revisions_contract
 
-# .../Assembler/src/holobike/cli.py -> the repository root.
+# .../Tool/src/holobike/cli.py -> the repository root.
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ENVIRONMENT = REPO_ROOT / ".local" / "environment.json"
 DEFAULT_STACK = REPO_ROOT / "Stack"
