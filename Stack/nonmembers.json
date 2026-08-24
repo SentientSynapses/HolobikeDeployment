@@ -2,14 +2,14 @@
   "schema_version": 1,
   "nonmembers": {
     "HolobikeDeployment": {
-      "reason": "This repository. It is the specification of the deployed stack, the machine that realizes it, and the record of what it realized — none of which is deployed software. It reaches no device and no server, so it fails the membership rule on its own terms, which is the correct result: a tool that composed itself would be counting its own bytes as product. Recorded rather than skipped implicitly, because the scan should not need to know where it is running from."
+      "reason": "This repository. It is the specification of the deployed stack, the machine that realizes it, and the record of what it realized \u2014 none of which is deployed software. It reaches no device and no server, so it fails the membership rule on its own terms, which is the correct result: a tool that composed itself would be counting its own bytes as product. Recorded rather than skipped implicitly, because the scan should not need to know where it is running from."
     },
     "HolobikeMigration_uplugin": {
-      "reason": "Every module in it exists to be deleted. It holds the substitutes and tooling that keep HolobikeExperience content working mid-migration; its own README says none of it is product code and none of it ships. What remains is one UncookedOnly module, which cannot enter a cooked package, so it reaches no deployment destination and fails the membership rule outright. HolobikeExperience.uproject still enables it, which makes it a required development checkout — and a required checkout is not thereby a member.",
-      "retires_when": "HolobikeExperience.uproject no longer enables it. By the plugin's own written condition the remaining editor module is deleted once the last substitute module is, and both substitutes are already retired: IdentityMock in c6a28e9 (2026-08-13) and SimulatedRealityMock in 62ad2f8 (2026-08-19)."
+      "reason": "Every module in it exists to be deleted. It held the substitutes and tooling that kept HolobikeExperience content working mid-migration; its own README says none of it is product code and none of it ships. What remains is one UncookedOnly module, which cannot enter a cooked package, so it reaches no deployment destination and fails the membership rule outright. HolobikeExperience no longer enables it as of dee018c, so it is not even a required development checkout any more.",
+      "retires_when": "MET 2026-08-24. HolobikeExperience.uproject dropped the plugin and its mounted copy in dee018c, after the D-08 conversion moved HolobikeRider's IdentityIO out from under Migration's RPATH and the editor refused to start. Both substitute modules were already retired \u2014 IdentityMock in c6a28e9 and SimulatedRealityMock in 62ad2f8 \u2014 so its own condition was satisfied before this. Whether the repository itself is deleted is that repository's decision; it is recorded here either way."
     },
     "HolobikeIntelligence_uplugin": {
-      "reason": "The Unreal Engine client for the local drAIs service. It would pass the membership rule — it is HoloBike-owned software that ships inside HolobikeExperience's package exactly as the other five plugins do — and it is simply not enrolled yet, with the drAIs integration still in flight. Recorded as a candidate rather than an exclusion so the gap is a decision someone owes rather than an oversight.",
+      "reason": "The Unreal Engine client for the local drAIs service. It would pass the membership rule \u2014 it is HoloBike-owned software that ships inside HolobikeExperience's package exactly as the other five plugins do \u2014 and it is simply not enrolled yet, with the drAIs integration still in flight. Recorded as a candidate rather than an exclusion so the gap is a decision someone owes rather than an oversight.",
       "candidate": true
     },
     "HoloBikeCore-LFS": {
@@ -31,7 +31,7 @@
       "reason": "The local operations workspace for the Helgafell workstation and its attached peripherals. Machine-local operator tooling that ships to no device and no server, and is therefore not part of the deployed stack by the membership rule."
     },
     "RidePathsProto": {
-      "reason": "An interaction-design instrument — a UE-imitating editor shell in Three.js used to design the RidePaths surface. A design tool, not product code: nothing it produces reaches a device or a server."
+      "reason": "An interaction-design instrument \u2014 a UE-imitating editor shell in Three.js used to design the RidePaths surface. A design tool, not product code: nothing it produces reaches a device or a server."
     },
     "drAIs-Lab": {
       "reason": "A transitional Lab repository: specification, ledger and experiments for drAIs. Lab repositories are never composition dependencies, which Tool/README.md already states; the member repository is where anything they settle lands."
