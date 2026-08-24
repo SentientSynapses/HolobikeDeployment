@@ -3,7 +3,7 @@
 The device service that takes durable custody of completed sessions and serves
 an athlete's history back. It is the second half of the identity pair: rides
 arrive carrying the qualified `(issuer, subject_id)` identity that
-[AthleteIdentity](../AthleteIdentity/README.md) resolved, and this service is
+[AthleteIdentity](AthleteIdentity.md) resolved, and this service is
 what a device holds the only copy of a ride *until*.
 
 ## Why it is enrolled

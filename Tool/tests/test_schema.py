@@ -19,7 +19,7 @@ sys.path.insert(0, str(REPO_ROOT / "Tool" / "src"))
 
 from holobike import schema as vendored  # noqa: E402
 
-CONTRACTS = ("environment", "integration", "policy", "profiles", "record",
+CONTRACTS = ("environment", "integration", "profiles", "record",
              "revisions")
 
 
@@ -92,8 +92,7 @@ class LiveDeclarationsValidate(unittest.TestCase):
     def test_the_declared_compositions_validate(self):
         for name, relative in (
                 ("revisions", "Revisions/dev.json"),
-                ("profiles", "Profiles/device.json"),
-                ("policy", "Policy/parity.json")):
+                ("profiles", "Profiles/device.json")):
             with self.subTest(document=relative):
                 contract = vendored.load(_schema_path(name))
                 document = json.loads(
@@ -113,10 +112,10 @@ class VersionConstantsAgree(unittest.TestCase):
 
     def test_every_binding_matches_its_schema(self):
         sys.path.insert(0, str(REPO_ROOT / "Tool" / "src"))
-        from holobike import (environment, integration, policy,
-                                       profiles, record, revisions)
+        from holobike import (environment, integration, profiles,
+                                       record, revisions)
         bindings = {"environment": environment, "integration": integration,
-                    "policy": policy, "profiles": profiles, "record": record,
+                    "profiles": profiles, "record": record,
                     "revisions": revisions}
         for name, binding in bindings.items():
             with self.subTest(contract=name):
@@ -127,9 +126,9 @@ class VersionConstantsAgree(unittest.TestCase):
 
 
 class TheRosterAgreesWithItself(unittest.TestCase):
-    """The roster is spelled out at eight sites across six schemas.
+    """The roster is spelled out at seven sites across five schemas.
 
-    Adding a member means editing all eight; a member enrolled in seven is
+    Adding a member means editing all seven; a member enrolled in six is
     live in some mechanisms and invisible to others, which is a failure that
     passes every other test in this suite. This makes it fail here instead.
     """
@@ -179,7 +178,7 @@ class TheRosterAgreesWithItself(unittest.TestCase):
                         declared, roster,
                         f"missing {sorted(roster - declared)}, "
                         f"unexpected {sorted(declared - roster)}")
-        self.assertEqual(sites, 8, "a roster site appeared or vanished")
+        self.assertEqual(sites, 7, "a roster site appeared or vanished")
 
 
 class AgreesWithJsonschema(unittest.TestCase):

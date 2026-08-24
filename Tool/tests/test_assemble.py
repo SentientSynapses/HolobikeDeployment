@@ -89,7 +89,7 @@ class AssembleBehaviour(unittest.TestCase):
         record = self.artifacts / "records" / "resolve-dev-fixture.json"
         record.parent.mkdir(parents=True, exist_ok=True)
         record.write_text(json.dumps({
-            "schema_version": 2,
+            "schema_version": 3,
             "kind": "resolution",
             "run": {"verb": "resolve",
                     "started_at_utc": "2026-08-04T12:00:00Z",
@@ -100,7 +100,6 @@ class AssembleBehaviour(unittest.TestCase):
             "resolved": {"HexAtlas": {
                 "selected": {"branch": "main"}, "status": "resolved",
                 "revision": self.revision, "branch": "main", "dirty": False}},
-            "gates": {},
             "problems": [],
         }), encoding="utf-8")
         return profile, record, environment, self.root / "Stack"
@@ -190,7 +189,7 @@ class AssembleBehaviour(unittest.TestCase):
         profile, record, environment, stack = self.write_inputs(
             [[sys.executable, "-c", "pass"]], ["out.bin"])
         record.write_text(json.dumps({
-            "schema_version": 2,
+            "schema_version": 3,
             "kind": "bootstrap",
             "run": {"verb": "bootstrap",
                     "started_at_utc": "2026-08-04T12:00:00Z",

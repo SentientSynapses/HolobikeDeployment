@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "kind": "resolution",
   "run": {
     "verb": "resolve",
@@ -19,6 +19,5 @@
       "status": "resolved"
     }
   },
-  "problems": [],
-  "gates": {}
+  "problems": []
 }

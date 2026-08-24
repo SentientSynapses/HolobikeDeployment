@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "kind": "release",
   "run": {
     "verb": "admit",
@@ -28,7 +28,6 @@
     }
   },
   "attestation": {
-    "gates": "pass",
     "builds": "pass",
     "selections": "pass",
     "emulation": "healthy"

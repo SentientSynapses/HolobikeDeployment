@@ -3,8 +3,8 @@
 This integration connects the engine-neutral sources used to construct the
 rideable world:
 
-- [`HexAtlas/`](HexAtlas/README.md) owns geographic facts and atlas delivery.
-- [`Assetscape/`](Assetscape/README.md) owns the classified asset palette and
+- [`HexAtlas/`](HexAtlas.md) owns geographic facts and atlas delivery.
+- [`Assetscape/`](Assetscape.md) owns the classified asset palette and
   verified asset resolution.
 
 HexAtlas remains authoritative for geographic ingestion, SourceAtlas and

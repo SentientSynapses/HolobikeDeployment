@@ -32,12 +32,12 @@ to the contract it implements here.
 
 | Domain | Repository integrations |
 |---|---|
-| `os` | [`uroborOS`](os/uroborOS/README.md) |
-| `geo` | [`HexAtlas`](geo/HexAtlas/README.md), [`Assetscape`](geo/Assetscape/README.md) |
-| `id` | [`AthleteIdentity`](id/AthleteIdentity/README.md), [`AthleteInsights`](id/AthleteInsights/README.md) |
-| `ue` | [`HolobikeExperience`](ue/project/HolobikeExperience/README.md), [`HolobikeDevice`](ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](ue/plugins/HolobikeWorlds/README.md), [`HoloviewDisplay`](ue/plugins/HoloviewDisplay/README.md), [`OrielUI`](ue/plugins/OrielUI/README.md) |
-| `ai` | [`drAIs`](ai/drAIs/README.md) |
-| `bike` | [`HolobikeCore`](bike/HolobikeCore/README.md) |
+| `os` | [`uroborOS`](os/uroborOS.md) |
+| `geo` | [`HexAtlas`](geo/HexAtlas.md), [`Assetscape`](geo/Assetscape.md) |
+| `id` | [`AthleteIdentity`](id/AthleteIdentity.md), [`AthleteInsights`](id/AthleteInsights.md) |
+| `ue` | [`HolobikeExperience`](ue/project/HolobikeExperience.md), [`HolobikeDevice`](ue/plugins/HolobikeDevice.md), [`HolobikeRider`](ue/plugins/HolobikeRider.md), [`HolobikeWorlds`](ue/plugins/HolobikeWorlds.md), [`HoloviewDisplay`](ue/plugins/HoloviewDisplay.md), [`OrielUI`](ue/plugins/OrielUI.md) |
+| `ai` | [`drAIs`](ai/drAIs.md) |
+| `bike` | [`HolobikeCore`](bike/HolobikeCore.md) |
 
 If a document names more than one repository — which revisions compose, which
 versions are compatible, which gates admit a release — it lives beside

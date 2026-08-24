@@ -24,11 +24,10 @@ def run_cli(shim, *arguments):
         capture_output=True, text=True, check=False)
 
 
-def _resolution(deployment_revision, *, gate_status="pass",
-                selection_status="resolved",
+def _resolution(deployment_revision, *, selection_status="resolved",
                 source_dirty=False, deployment_dirty=False):
     return {
-        "schema_version": 2, "kind": "resolution",
+        "schema_version": 3, "kind": "resolution",
         "run": {"verb": "resolve",
                 "started_at_utc": "2026-08-04T12:00:00Z",
                 "finished_at_utc": "2026-08-04T12:00:01Z"},
@@ -39,11 +38,6 @@ def _resolution(deployment_revision, *, gate_status="pass",
             "selected": {"branch": "main"}, "status": selection_status,
             "revision": "1" * 40, "branch": "main",
             "dirty": source_dirty}},
-        "gates": {"rider-dual-copy": {
-            "kind": "tree_parity", "status": gate_status,
-            "counts": {"compared": 1, "only_left": 0, "only_right": 0,
-                       "differing": 0},
-            "mismatches": [], "truncated": 0}},
         "problems": [],
     }
 
@@ -59,7 +53,7 @@ def _assembly(deployment_revision, resolution_name, resolution_digest,
     if build_status == "skipped":
         build["detail"] = "fixture skip"
     return {
-        "schema_version": 2, "kind": "assembly",
+        "schema_version": 3, "kind": "assembly",
         "run": {"verb": "assemble",
                 "started_at_utc": "2026-08-04T12:01:00Z",
                 "finished_at_utc": "2026-08-04T12:01:01Z"},
@@ -187,11 +181,13 @@ class AdmitBehaviour(unittest.TestCase):
             "check", "--validate-record", str(release_dir / "release.json"))
         self.assertEqual(judged.returncode, 0, judged.stderr)
 
-    def test_a_failing_gate_refuses_admission(self):
-        result = self.admit("0.1.0", self._chain(gate_status="fail"))
+    def test_a_dirty_source_checkout_refuses_admission(self):
+        # D-08 retired the parity gates, so what a release still refuses is a
+        # resolution that was not clean at its source.
+        result = self.admit("0.1.0", self._chain(source_dirty=True))
         self.assertEqual(result.returncode, 1)
         self.assertFalse((self.releases / "0.1.0").exists())
-        self.assertTrue(any("gate" in line
+        self.assertTrue(any("dirty" in line
                             for line in result.stdout.splitlines()))
         # The refusal is still recorded as a decision.
         decisions = list(self.records.glob("admit-0.1.0-*.json"))
@@ -227,7 +223,7 @@ class AdmitBehaviour(unittest.TestCase):
         assembly_path = self._chain()
         assembly_digest = self._digest(assembly_path)
         emulation = {
-            "schema_version": 2, "kind": "emulation",
+            "schema_version": 3, "kind": "emulation",
             "run": {"verb": "emulate",
                     "started_at_utc": "2026-08-04T12:02:00Z",
                     "finished_at_utc": "2026-08-04T12:02:01Z"},
@@ -257,7 +253,7 @@ class AdmitBehaviour(unittest.TestCase):
     def test_an_emulation_of_a_different_bundle_is_refused(self):
         assembly_path = self._chain()
         emulation = {
-            "schema_version": 2, "kind": "emulation",
+            "schema_version": 3, "kind": "emulation",
             "run": {"verb": "emulate",
                     "started_at_utc": "2026-08-04T12:02:00Z",
                     "finished_at_utc": "2026-08-04T12:02:01Z"},

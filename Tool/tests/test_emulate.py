@@ -93,7 +93,7 @@ class EmulateBehaviour(unittest.TestCase):
         record = self.artifacts / "records" / "assemble-bundle-fixture.json"
         record.parent.mkdir(parents=True, exist_ok=True)
         record.write_text(json.dumps({
-            "schema_version": 2,
+            "schema_version": 3,
             "kind": "assembly",
             "run": {"verb": "assemble",
                     "started_at_utc": "2026-08-04T12:00:00Z",
@@ -205,7 +205,7 @@ class EmulateBehaviour(unittest.TestCase):
     def test_emulate_refuses_a_record_that_is_not_an_assembly(self):
         record = self.write_inputs()
         record.write_text(json.dumps({
-            "schema_version": 2,
+            "schema_version": 3,
             "kind": "bootstrap",
             "run": {"verb": "bootstrap",
                     "started_at_utc": "2026-08-04T12:00:00Z",

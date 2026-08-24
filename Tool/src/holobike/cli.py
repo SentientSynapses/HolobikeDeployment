@@ -31,7 +31,6 @@ from . import env as env_verb
 from . import filesystem
 from . import integration as integration_contract
 from . import nonmembers as nonmembers_contract
-from . import policy as policy_contract
 from . import profiles as profiles_contract
 from . import provision as provision_verb
 from . import record as record_contract
@@ -43,7 +42,6 @@ DEFAULT_ENVIRONMENT = REPO_ROOT / ".local" / "environment.json"
 DEFAULT_STACK = REPO_ROOT / "Stack"
 DEFAULT_PROFILES = REPO_ROOT / "Profiles"
 DEFAULT_REVISIONS = REPO_ROOT / "Revisions"
-DEFAULT_POLICY = REPO_ROOT / "Policy"
 DEFAULT_RELEASES = REPO_ROOT / "Releases"
 DEFAULT_ARTIFACTS = REPO_ROOT / "Artifacts"
 
@@ -52,7 +50,6 @@ JUDGES = {
     "environment": None,  # handled inside check.run, which also reports
     "integration": integration_contract.load_integration,
     "nonmembers": nonmembers_contract.load_nonmembers,
-    "policy": policy_contract.load_policy,
     "profile": profiles_contract.load_profile,
     "record": record_contract.load_record,
     "revisions": revisions_contract.load_revisions,
@@ -96,7 +93,6 @@ def _composition(parser):
     parser.add_argument("--profile-path", help="an explicit profile document")
     parser.add_argument("--revisions", help="an explicit revision manifest")
     parser.add_argument("--profiles", default=str(DEFAULT_PROFILES))
-    parser.add_argument("--policy", default=str(DEFAULT_POLICY))
     parser.add_argument(
         "--ready-timeout", type=_positive_seconds, default=30.0,
         help="seconds to wait for a member to probe healthy")
@@ -213,7 +209,6 @@ def _main(argv=None):
             stack_root=arguments.stack,
             profiles_root=arguments.profiles,
             artifacts_root=arguments.artifacts,
-            policy_root=arguments.policy,
             repo_root=REPO_ROOT,
             only=arguments.only,
             pinned_record=arguments.record,
@@ -228,7 +223,6 @@ def _main(argv=None):
             stack_root=arguments.stack,
             profiles_root=arguments.profiles,
             artifacts_root=arguments.artifacts,
-            policy_root=arguments.policy,
             releases_root=arguments.releases,
             repo_root=REPO_ROOT,
             version=arguments.version,

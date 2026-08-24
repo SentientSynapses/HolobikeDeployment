@@ -26,7 +26,7 @@ def _newest(artifacts_root, pattern):
 
 
 def run(*, profile_path, revisions_path, environment_path, stack_root,
-        profiles_root, artifacts_root, policy_root, repo_root, only,
+        profiles_root, artifacts_root, repo_root, only,
         pinned_record, ready_timeout, terminate_grace, stdout, stderr):
     """Bring a development environment up and hold it; returns an exit code.
 
@@ -76,7 +76,6 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
             environment_path=environment_path,
             artifacts_root=artifacts_root,
             repo_root=repo_root,
-            policy_root=policy_root,
             stdout=stdout, stderr=stderr)
         if note(code):
             return worst

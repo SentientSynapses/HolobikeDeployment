@@ -5,8 +5,8 @@ a pair, because a ride is attributed by one and kept by the other.
 
 Repository adapters:
 
-- [`AthleteIdentity/`](AthleteIdentity/README.md)
-- [`AthleteInsights/`](AthleteInsights/README.md)
+- [`AthleteIdentity/`](AthleteIdentity.md)
+- [`AthleteInsights/`](AthleteInsights.md)
 
 AthleteIdentity remains authoritative for identity schemas, provider-neutral
 client behavior, authentication flows, local identity storage, cryptography,

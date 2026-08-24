@@ -24,8 +24,7 @@
       },
       "then": {
         "required": [
-          "resolved",
-          "gates"
+          "resolved"
         ],
         "properties": {
           "run": {
@@ -68,7 +67,6 @@
             }
           },
           "resolved": false,
-          "gates": false,
           "profile": false,
           "builds": false,
           "artifacts": false,
@@ -106,7 +104,6 @@
             }
           },
           "resolved": false,
-          "gates": false,
           "actions": false,
           "assembly": false,
           "members": false
@@ -137,7 +134,6 @@
             }
           },
           "resolved": false,
-          "gates": false,
           "actions": false,
           "resolution": false,
           "builds": false,
@@ -174,7 +170,6 @@
             }
           },
           "resolved": false,
-          "gates": false,
           "actions": false,
           "resolution": false,
           "builds": false,
@@ -188,7 +183,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": 2
+      "const": 3
     },
     "kind": {
       "enum": [
@@ -294,16 +289,6 @@
         "OrielUI": {
           "$ref": "#/$defs/resolution"
         }
-      }
-    },
-    "gates": {
-      "type": "object",
-      "description": "Verdicts from the Policy/ gates evaluated during this run, keyed by gate name. Empty when no policy is declared. A skip is a problem: a gate that silently cannot run reads as coverage that does not exist.",
-      "propertyNames": {
-        "pattern": "^[a-z0-9][a-z0-9-]*$"
-      },
-      "additionalProperties": {
-        "$ref": "#/$defs/gate_verdict"
       }
     },
     "actions": {
@@ -475,16 +460,12 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "gates",
         "builds",
         "selections",
         "emulation"
       ],
       "description": "release records only: what admission verified. An admitted release attests pass on gates, builds, and selections; emulation is healthy or honestly absent.",
       "properties": {
-        "gates": {
-          "const": "pass"
-        },
         "builds": {
           "const": "pass"
         },
@@ -712,55 +693,6 @@
         },
         "revision_after": {
           "type": "string"
-        }
-      }
-    },
-    "gate_verdict": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "kind",
-        "status"
-      ],
-      "properties": {
-        "kind": {
-          "enum": [
-            "tree_parity"
-          ]
-        },
-        "status": {
-          "enum": [
-            "pass",
-            "fail",
-            "skipped",
-            "linked"
-          ]
-        },
-        "counts": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "integer",
-            "minimum": 0
-          }
-        },
-        "mismatches": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "truncated": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "detail": {
-          "type": "string",
-          "minLength": 1
-        },
-        "target": {
-          "type": "string",
-          "minLength": 1
         }
       }
     },

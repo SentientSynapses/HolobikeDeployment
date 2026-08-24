@@ -68,20 +68,20 @@ def validate_revisions(document_path):
     )
 
 
-def validate_record(document_path):
+def validate_profile(document_path):
     return subprocess.run(
         [sys.executable, str(SHIM), "check",
-         "--validate-record", str(document_path)],
+         "--validate-profile", str(document_path)],
         capture_output=True,
         text=True,
         check=False,
     )
 
 
-def validate_policy(document_path):
+def validate_record(document_path):
     return subprocess.run(
         [sys.executable, str(SHIM), "check",
-         "--validate-policy", str(document_path)],
+         "--validate-record", str(document_path)],
         capture_output=True,
         text=True,
         check=False,
@@ -119,6 +119,21 @@ class EnvironmentConformance(unittest.TestCase):
 class IntegrationConformance(unittest.TestCase):
     def test_every_fixture_is_classified_and_holds(self):
         run_fixture_corpus(self, INTEGRATION_FIXTURES, validate_integration)
+
+    def test_no_markdown_link_is_broken(self):
+        # Flattening the leaves turned thirteen directories into files and
+        # left every link to them pointing at nothing. A tree that moves
+        # should not be able to leave its own prose behind.
+        import re
+        broken = []
+        for document in sorted(REPO_ROOT.rglob("*.md")):
+            if "Artifacts" in document.parts:
+                continue
+            body = document.read_text(encoding="utf-8")
+            for target in re.findall(r"\]\(([^)#:]+\.md)\)", body):
+                if not (document.parent / target).resolve().exists():
+                    broken.append(f"{document.relative_to(REPO_ROOT)} -> {target}")
+        self.assertEqual(broken, [])
 
     def test_every_leaf_has_a_README(self):
         # OrielUI was a member in every mechanism — selected, in twelve roster
@@ -220,46 +235,6 @@ class RevisionsConformance(unittest.TestCase):
         self.assertEqual(
             schema["properties"]["schema_version"]["const"],
             revisions.SCHEMA_VERSION)
-
-
-class PolicyConformance(unittest.TestCase):
-    def test_every_fixture_is_classified_and_holds(self):
-        run_fixture_corpus(
-            self, FIXTURES_ROOT / "policy", validate_policy)
-
-    def test_every_committed_policy_is_an_accepted_fixture(self):
-        policies = sorted((REPO_ROOT / "Policy").glob("*.json"))
-        self.assertTrue(policies, "Policy/ must declare at least one policy")
-        for path in policies:
-            with self.subTest(policy=path.name):
-                result = validate_policy(path)
-                self.assertEqual(result.returncode, 0, result.stderr)
-                document = json.loads(path.read_text(encoding="utf-8"))
-                self.assertEqual(document["policy"], path.stem)
-
-    def test_the_binding_matches_the_schema(self):
-        sys.path.insert(0, str(REPO_ROOT / "Tool" / "src"))
-        from holobike import environment, policy
-
-        schema = json.loads(
-            (SCHEMAS / "policy.schema.json")
-            .read_text(encoding="utf-8"))
-        self.assertEqual(
-            set(schema["$defs"]["site"]["properties"]["integration"]["enum"]),
-            set(environment.INTEGRATIONS))
-        self.assertEqual(
-            schema["properties"]["schema_version"]["const"],
-            policy.SCHEMA_VERSION)
-
-
-def validate_profile(document_path):
-    return subprocess.run(
-        [sys.executable, str(SHIM), "check",
-         "--validate-profile", str(document_path)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
 
 
 class ProfilesConformance(unittest.TestCase):

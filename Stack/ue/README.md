@@ -16,11 +16,11 @@ Current source checkouts:
 
 | Role | Repository |
 |---|---|
-| Product project | [`HolobikeExperience/`](project/HolobikeExperience/README.md) |
-| Device transport | [`HolobikeDevice/`](plugins/HolobikeDevice/README.md) |
-| Rider systems | [`HolobikeRider/`](plugins/HolobikeRider/README.md) |
-| World composition | [`HolobikeWorlds/`](plugins/HolobikeWorlds/README.md) |
-| Stereoscopic display | [`HoloviewDisplay/`](plugins/HoloviewDisplay/README.md) |
+| Product project | [`HolobikeExperience/`](project/HolobikeExperience.md) |
+| Device transport | [`HolobikeDevice/`](plugins/HolobikeDevice.md) |
+| Rider systems | [`HolobikeRider/`](plugins/HolobikeRider.md) |
+| World composition | [`HolobikeWorlds/`](plugins/HolobikeWorlds.md) |
+| Stereoscopic display | [`HoloviewDisplay/`](plugins/HoloviewDisplay.md) |
 
 The corresponding project locations are:
 

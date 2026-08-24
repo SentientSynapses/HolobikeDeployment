@@ -9,14 +9,12 @@ The schema carries the shape, including the five kinds: it is one `allOf` of
 `if kind == … then …`, so a resolution with actions or a bootstrap with gates
 is refused there, as a category error rather than a tolerance.
 
-Three rules remain here because no schema can state them. Two are cross-field
+Two rules remain here because no schema can state them. Both are cross-field
 set equalities — an assembly's `builds` and an emulation's `members` must key
 exactly the deployables the same record claims, so a record cannot describe
 work on something it did not say it composed. Those are keyed by deployable
 while `resolved` and `actions` stay keyed by integration, because a checkout
-is per repository however many deployables it produces. The third is conditional on a
-sibling's value: a `linked` gate verdict must name the shared target, since a
-bare "linked" attests sameness without naming the same what.
+is per repository however many deployables it produces.
 """
 
 from __future__ import annotations
@@ -26,7 +24,7 @@ from pathlib import Path
 
 from . import document, filesystem, schema
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 MAX_RECORD_BYTES = 4 * 1024 * 1024
 
 # Which key must agree with `integrations`, per kind.
@@ -44,11 +42,6 @@ def _bind(root):
             errors.append(
                 f"{holder}: keys must exactly match the recorded "
                 "deployables")
-
-    for name, verdict in sorted((root.get("gates") or {}).items()):
-        if verdict.get("status") == "linked" and "target" not in verdict:
-            # Parity by construction must say what the one canonical tree is.
-            errors.append(f"gates.{name}.target: required for a linked verdict")
 
     if errors:
         return None, errors

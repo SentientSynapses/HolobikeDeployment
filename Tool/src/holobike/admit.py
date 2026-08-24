@@ -2,7 +2,7 @@
 
 Admission is the one writer of Releases/ — the tracked, committed
 attestation tier — and the only step that refuses. It follows an assembly
-record back to the resolution whose gates guarded it, optionally forward to
+record back to the resolution it was built from, optionally forward to
 an emulation that ran the bundle, and promotes only a clean chain: every
 gate passed, every selection resolved, every member built, and any
 emulation healthy. A release is made self-contained — the chain records are
@@ -52,8 +52,6 @@ def _judge_resolution(resolution, expected_integrations):
     problems = []
     if resolution["deployment"]["dirty"]:
         problems.append("resolution: deployment repository was dirty")
-    if not resolution["gates"]:
-        problems.append("resolution: no policy gates were evaluated")
     for name in expected_integrations:
         if name not in resolution["resolved"]:
             problems.append(f"selection {name}: absent from the resolution")
@@ -63,11 +61,6 @@ def _judge_resolution(resolution, expected_integrations):
                 f"selection {name}: {facts['status']} — not release-clean")
         elif facts.get("dirty"):
             problems.append(f"selection {name}: source checkout was dirty")
-    for name, verdict in sorted(resolution["gates"].items()):
-        # "linked" is parity by construction — one canonical tree behind
-        # both sites — so it admits exactly as a pass does.
-        if verdict["status"] not in ("pass", "linked"):
-            problems.append(f"gate {name}: {verdict['status']}")
     problems.extend(f"resolution: {item}" for item in resolution["problems"])
     return problems
 
@@ -285,7 +278,6 @@ def run(version, assembly_record_path, emulation_record_path, artifacts_root,
             } if emulation is not None else None),
         },
         "attestation": {
-            "gates": "pass",
             "builds": "pass",
             "selections": "pass",
             "emulation": "healthy" if emulation is not None else "absent",

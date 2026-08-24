@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "kind": "resolution",
   "run": {
     "verb": "resolve",
@@ -22,6 +22,5 @@
       "dirty": false
     }
   },
-  "problems": [],
-  "gates": {}
+  "problems": []
 }

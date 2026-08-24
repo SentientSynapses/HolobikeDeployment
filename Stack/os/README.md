@@ -4,7 +4,7 @@ This integration connects `os_kit/uroborOS`.
 
 Repository adapter:
 
-- [`uroborOS/`](uroborOS/README.md)
+- [`uroborOS/`](uroborOS.md)
 
 uroborOS remains authoritative for operating modes, system images, boot and
 encrypted-root policy, the shell, graphics integration, system services, and

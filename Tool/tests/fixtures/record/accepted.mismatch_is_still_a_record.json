@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "kind": "resolution",
   "run": {
     "verb": "resolve",
@@ -33,6 +33,5 @@
   "problems": [
     "HexAtlas: selection_mismatch \u2014 selected branch main, checkout is on feature",
     "AthleteIdentity: unresolvable \u2014 no checkout declared in the environment mapping"
-  ],
-  "gates": {}
+  ]
 }

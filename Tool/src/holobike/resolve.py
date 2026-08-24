@@ -17,9 +17,7 @@ from pathlib import Path
 
 from . import environment
 from . import filesystem
-from . import gates as gate_evaluation
 from . import gitfacts
-from . import policy as policy_contract
 from . import record as record_contract
 from . import revisions as revisions_contract
 
@@ -81,35 +79,11 @@ def _deployment_identity(repo_root):
     return {"revision": revision, "dirty": bool(porcelain)}, ""
 
 
-def _load_policies(policy_root, stderr):
-    """Load every policy document; returns (gates tuple or None on refusal)."""
-    root = Path(policy_root)
-    if not root.is_dir():
-        return ()
-    collected = []
-    names = set()
-    for path in sorted(root.glob("*.json")):
-        document, errors = policy_contract.load_policy(path)
-        if errors:
-            for error in errors:
-                print(f"{path.name}: {error}", file=stderr)
-            return None
-        for gate in document.gates:
-            if gate.name in names:
-                print(
-                    f"{path.name}: gate {gate.name} declared twice across "
-                    "the policy set", file=stderr)
-                return None
-            names.add(gate.name)
-            collected.append(gate)
-    return tuple(collected)
-
-
 def run(revisions_path, environment_path, artifacts_root, repo_root,
-        policy_root, stdout, stderr):
+        stdout, stderr, policy_root=None):
     """Execute resolve; returns the process exit code.
 
-    0: record written, every selection resolved, every gate passed.
+    0: record written, every selection resolved.
     1: record written, problems inside it.
     2: an input was refused (or the record could not be written).
     """
@@ -124,9 +98,6 @@ def run(revisions_path, environment_path, artifacts_root, repo_root,
     if errors:
         for error in errors:
             print(error, file=stderr)
-        return 2
-    all_gates = _load_policies(policy_root, stderr)
-    if all_gates is None:
         return 2
     deployment, error = _deployment_identity(repo_root)
     if deployment is None:
@@ -143,21 +114,6 @@ def run(revisions_path, environment_path, artifacts_root, repo_root,
         if facts["status"] != "resolved"
     ]
 
-    gate_verdicts = {
-        gate.name: gate_evaluation.evaluate_tree_parity(
-            gate, document.checkouts)
-        for gate in all_gates
-    }
-    for name, verdict in sorted(gate_verdicts.items()):
-        if verdict["status"] == "fail":
-            counts = verdict["counts"]
-            total = (counts["only_left"] + counts["only_right"]
-                     + counts["differing"])
-            problems.append(f"gate {name}: fail ({total} mismatches)")
-        elif verdict["status"] == "skipped":
-            problems.append(
-                f"gate {name}: skipped — {verdict.get('detail', '')}")
-
     body = {
         "schema_version": record_contract.SCHEMA_VERSION,
         "kind": "resolution",
@@ -169,7 +125,6 @@ def run(revisions_path, environment_path, artifacts_root, repo_root,
         "deployment": deployment,
         "line": manifest.line,
         "resolved": resolved,
-        "gates": gate_verdicts,
         "problems": problems,
     }
 
@@ -192,8 +147,6 @@ def run(revisions_path, environment_path, artifacts_root, repo_root,
     filesystem.publish_text(record_path, text)
 
     print(f"record: {record_path}", file=stdout)
-    for name, verdict in sorted(gate_verdicts.items()):
-        print(f"gate {name}: {verdict['status']}", file=stdout)
     for problem in problems:
         print(f"problem: {problem}", file=stdout)
     print(

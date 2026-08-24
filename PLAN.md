@@ -394,64 +394,65 @@ So the exit gate is what the phase should have measured in the first place —
 four verbs, stages reachable in isolation, the drift record standing alone —
 and not a line count that assumed a change the work disproved.
 
-### Phase 4 — One tree — HALF DONE 2026-08-24
+### Phase 4 — One tree — COMPLETE 2026-08-24
 
-The half that touches only this repository is done. The rest was mis-filed:
-most of it is HolobikeExperience's work, not this phase's (D-22), and what
-remains here is sequenced behind it rather than blocked by anyone's working
-tree.
+`bdad274` → here, plus `20304b5` in HolobikeExperience — two repositories,
+two commits, which is D-22 in practice.
 
-**Done — the tool tier and its contract.** `Assembler/` → `Tool/`, the package
-`holobike_assemble` → `holobike`, and the launcher is `Tool/holobike`.
-`Schemas/` → `Tool/src/holobike/schemas/` and `Conformance/` →
-`Tool/tests/fixtures/`, because a tool's own contract lives beside the tool —
-the scope test in `README.md`, applied to the thing that enforces it. The
-schema loader now resolves its directory as a sibling rather than by climbing
-to the repository root, so the tool no longer needs to know where it is
-installed. `Provisioning/` is gone as a tier; its README moved beside the verb
-that replaced it.
+**The tool tier.** `Assembler/` → `Tool/`, the package `holobike_assemble` →
+`holobike`, launcher `Tool/holobike`. `Schemas/` → `Tool/src/holobike/schemas/`
+and `Conformance/` → `Tool/tests/fixtures/`, because a tool's own contract
+lives beside the tool. The schema loader resolves its directory as a sibling
+rather than by climbing to the repository root, so the tool no longer needs to
+know where it is installed. `Provisioning/` is gone as a tier; its README moved
+beside the verb that replaced it.
 
-**Done — flat leaves.** Thirteen leaf directories holding one or two files
-each became `Stack/<domain>/<Integration>.json` and `.md`. The file name is
-the integration's identity, and `load_stack` holds the two together: a leaf
-whose document names something other than its own file is a refusal. `ls
-Stack/id/` now shows the roster.
+**Flat leaves.** Thirteen directories holding one or two files each became
+`Stack/<domain>/<Integration>.json` and `.md`. The file name is the identity,
+and `load_stack` refuses a leaf whose document names something else.
 
-Five top-level directories: `Stack/`, `Revisions/`, `Profiles/`, `Policy/`,
-`Tool/`, plus `Releases/` — three declare, one executes, one records, and
-`Policy/` is the one waiting to go.
+**The dual copies, in HolobikeExperience's own commit.** Four plugins reached
+through `AdditionalPluginDirectories` instead of being carried twice: 602
+files and 230,920 lines removed, including committed `Binaries/Win64` DLLs
+that had no business in a project tree. Verified before deletion rather than
+after — all four gates passed at the moment of the change, and each mounted
+copy was diffed against its upstream; the only differences were empty
+`Content/` directories the gates exclude by design. RidePaths work was in
+flight, the same `WaypathsResolve.h` edit hand-synchronised into both copies,
+and it survives untouched in the repository that owns it. Not verified here: a
+full editor build. The pattern is HoloviewDisplay's, which M10 proved by build
+and launch, and every `.uplugin` resolves at its declared path — but the first
+editor launch is the real test.
 
-109 tests green from the new location; `check` exit 0.
+**`Policy/` retired, and with it more than expected.** `parity.json` and
+`gates.py` were the plan's whole expectation. What actually went: the policy
+contract, its schema, its fixture corpus, its conformance suite, gate
+evaluation in `resolve`, the `gates` field in every record, and the release
+attestation's `gates` line — because a tier with no content does not get to
+keep a binding, a schema and a record field. Records are at **v3**.
 
-**Owed by HolobikeExperience, not by this phase (D-22).** The earlier draft
-of this phase listed "convert each remaining dual copy to
-`AdditionalPluginDirectories`" as work to do here. It is not: it means editing
-`HolobikeExperience.uproject` and deleting four directories inside that
-project. That is HolobikeExperience's change, in its own commit, coordinated
-with whoever is working there — and this repository's rule already said so.
+That forced one rule to change. `admit` refused any resolution with no gates
+evaluated, which after D-08 would have made every future release
+unadmittable. A release now attests what it actually has, and the absence of
+gates is visible in the record rather than fatal — the same shape emulation
+already had with `healthy` / `absent`.
 
-What this repository owes, once each conversion lands: **delete that plugin's
-parity gate**, per plugin, which D-08 already specifies. When the fourth goes,
-`Policy/parity.json` is deleted rather than emptied — `gates.minItems` is 1,
-proven by `rejected.no_gates.json` — and `gates.py` goes with it, since
-`evaluate_tree_parity` is its only function. Roughly ninety lines, mechanical,
-and it is a dependency rather than a blockage.
+**The roster is spelled out in seven places, down from twelve** at the start
+of Phase 2.
 
-The dual copies are visibly live meanwhile: the same
-`RidePaths/Public/Net/WaypathsResolve.h` edit sits uncommitted in the project
-and in `HolobikeWorlds_uplugin`, hand-synchronised. That is the work D-08
-ends, and the parity gates are what make it visible until then.
+**Found by doing it:** flattening the leaves broke thirteen markdown links,
+silently. A test now walks every link in the repository, so a tree that moves
+cannot leave its own prose behind.
 
-**Also owed here, and genuinely sequenced:** the canonical workstation tree
-(D-09) and the `checkouts` → `root` change to the environment schema. These
-are this repository's own, but they cannot land before the checkouts are in
-the tree they describe — writing the schema first would leave a contract no
-live document satisfies. That is a real ordering constraint, not another
-repository's business.
+100 tests green; `check` exit 0; `build --only resolve` resolves 13/13.
 
-**Exit, when the conversions land:** no plugin exists in two places; `Policy/` and
-`gates.py` are deleted rather than emptied; a host document is a root plus an
-identity; `env` can build the tree from nothing but the Stack and a root.
+**Deferred to Phase 5, on a real dependency:** the canonical workstation tree
+(D-09) and `checkouts` → `root`. These are this repository's own work, but
+deriving `<root>/<domain>/<repository>` requires the checkouts to be in the
+tree it describes, and today they are at `ue_kit/HolobikeExperience`. The move
+is an announced operation — absolute paths live in scripts, IDE configuration
+and every host document — and it belongs with the phase that first writes a
+host document on a second machine.
 
 ### Phase 5 — Device production
 

@@ -12,7 +12,7 @@ machine that realizes it, and the record of what it realized.** There is no
 wrapper directory holding "the spec" — the declarations are the repository,
 organized by role.
 
-**Where a new thing goes:** selects → `Revisions/`; constrains → `Policy/`;
+**Where a new thing goes:** selects a version → `Revisions/`;
 drives one repository → its `Stack/` leaf; shapes documents → `schemas/`;
 executes → `Tool/`; written by a run → `Releases/`. Two tests keep the
 boundary honest. The **nature test**: declared content is reviewable without
@@ -41,13 +41,13 @@ keys, athlete credentials, provider secrets, or device-specific secret values.
 
 | Domain | Authoritative repository | Deployment concern |
 |---|---|---|
-| Operating system | [`uroborOS`](Stack/os/uroborOS/README.md) | Images, modes, services, boot policy, hardware integration |
-| Geography | [`HexAtlas`](Stack/geo/HexAtlas/README.md), [`Assetscape`](Stack/geo/Assetscape/README.md) | World facts, asset palette, serving, and engine compatibility |
-| Bike runtime | [`HolobikeCore`](Stack/bike/HolobikeCore/README.md) | Device services, firmware, health, and hardware-facing configuration |
-| Athlete identity | [`AthleteIdentity`](Stack/id/AthleteIdentity/README.md), [`AthleteInsights`](Stack/id/AthleteInsights/README.md) | On-device identity client, provider selection, identity contracts, and durable custody of completed sessions |
-| Intelligence | [`drAIs`](Stack/ai/drAIs/README.md) | Local assistant runtime, skills, models, and sandbox policy |
-| Experience | [`HolobikeExperience`](Stack/ue/project/HolobikeExperience/README.md) | Packaged Unreal Engine product and project configuration |
-| Unreal integrations | [`HolobikeDevice`](Stack/ue/plugins/HolobikeDevice/README.md), [`HolobikeRider`](Stack/ue/plugins/HolobikeRider/README.md), [`HolobikeWorlds`](Stack/ue/plugins/HolobikeWorlds/README.md), [`HoloviewDisplay`](Stack/ue/plugins/HoloviewDisplay/README.md), [`OrielUI`](Stack/ue/plugins/OrielUI/README.md) | Reusable engine plugins and compatibility with the experience |
+| Operating system | [`uroborOS`](Stack/os/uroborOS.md) | Images, modes, services, boot policy, hardware integration |
+| Geography | [`HexAtlas`](Stack/geo/HexAtlas.md), [`Assetscape`](Stack/geo/Assetscape.md) | World facts, asset palette, serving, and engine compatibility |
+| Bike runtime | [`HolobikeCore`](Stack/bike/HolobikeCore.md) | Device services, firmware, health, and hardware-facing configuration |
+| Athlete identity | [`AthleteIdentity`](Stack/id/AthleteIdentity.md), [`AthleteInsights`](Stack/id/AthleteInsights.md) | On-device identity client, provider selection, identity contracts, and durable custody of completed sessions |
+| Intelligence | [`drAIs`](Stack/ai/drAIs.md) | Local assistant runtime, skills, models, and sandbox policy |
+| Experience | [`HolobikeExperience`](Stack/ue/project/HolobikeExperience.md) | Packaged Unreal Engine product and project configuration |
+| Unreal integrations | [`HolobikeDevice`](Stack/ue/plugins/HolobikeDevice.md), [`HolobikeRider`](Stack/ue/plugins/HolobikeRider.md), [`HolobikeWorlds`](Stack/ue/plugins/HolobikeWorlds.md), [`HoloviewDisplay`](Stack/ue/plugins/HoloviewDisplay.md), [`OrielUI`](Stack/ue/plugins/OrielUI.md) | Reusable engine plugins and compatibility with the experience |
 
 ## Repository Shape
 
@@ -59,12 +59,15 @@ directories:
 Stack/            declare the members: roster, non-members, one file per repository
 Revisions/        declare the versions: selected revisions per line
 Profiles/         declare the slice: which deployables, and where they are going
-Policy/           declare the constraints: parity gates, retiring under D-08
 Tool/             realize: check | env | build | provision
 Releases/         attest: admitted records, written by runs, never edited
 ```
 
-Three tiers declare, one executes, one records. `Tool/` carries its own
+Two tiers declare the composition, one declares the members, one executes,
+one records. `Policy/` retired with the parity gates it existed to hold: D-08
+made dual-copy drift impossible rather than detectable, so there was nothing
+left to gate. A constraint tier returns when a constraint exists that
+revision selection cannot express. `Tool/` carries its own
 contract — `src/holobike/schemas/` — and its own fixtures, because a tool's
 contract lives beside the tool; that is the scope test applied to the thing
 that enforces it. Provisioning is a verb of that tool rather than a tier
@@ -76,7 +79,7 @@ will earn a separate `Compatibility/` declaration only when a concrete
 constraint cannot be expressed by revision selection or policy.
 
 **The filing rule:** if it selects a version, it is a revision manifest under
-`Revisions/`; if it constrains, it is policy; if it drives one repository, it
+`Revisions/`; if it drives one repository, it
 is that repository's leaf under `Stack/`; if it shapes other documents, it is
 a schema and lives with the tool that enforces it; if it selects a runnable
 product slice, it is a

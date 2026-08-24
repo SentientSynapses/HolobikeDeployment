@@ -31,7 +31,7 @@ def _newest(artifacts_root, pattern):
 
 
 def run(*, profile_path, revisions_path, environment_path, stack_root,
-        profiles_root, artifacts_root, policy_root, releases_root, repo_root,
+        profiles_root, artifacts_root, releases_root, repo_root,
         version, only, pinned_record, pinned_emulation, ready_timeout,
         terminate_grace, stdout, stderr):
     """Execute the build pipeline; returns the process exit code.
@@ -48,7 +48,6 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
             environment_path=environment_path,
             artifacts_root=artifacts_root,
             repo_root=repo_root,
-            policy_root=policy_root,
             stdout=stdout, stderr=stderr)
         if code:
             return code

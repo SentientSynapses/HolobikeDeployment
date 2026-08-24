@@ -4,7 +4,7 @@ This integration connects `ai_kit/drAIs`.
 
 Repository adapter:
 
-- [`drAIs/`](drAIs/README.md)
+- [`drAIs/`](drAIs.md)
 
 drAIs remains authoritative for the local assistant runtime, coordination,
 context construction, skills, model-provider adapters, sandbox policy,
