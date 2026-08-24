@@ -5,8 +5,7 @@
   "repository": "HexAtlas",
   "deployables": {
     "AtlasClient": {
-      "destination": "device",
-      "build": {}
+      "destination": "workstation"
     }
   }
 }

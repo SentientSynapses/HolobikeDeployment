@@ -3,7 +3,6 @@
   "integration": "HexAtlas",
   "domain": "geo",
   "repository": "HexAtlas",
-  "origin": "git@github.com:Saga-Holographic/HexAtlas.git",
   "deployables": {
     "AtlasClient": {
       "destination": "device"

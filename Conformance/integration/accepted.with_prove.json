@@ -1,11 +1,17 @@
 {
-  "schema_version": 1,
-  "integration": "drAIs",
-  "kit": "ai_kit",
-  "repository": "drAIs",
-  "entry_points": {
-    "prove": {
-      "argv": ["bash", "drais.sh", "eval", "all"]
+  "schema_version": 2,
+  "integration": "HexAtlas",
+  "domain": "geo",
+  "repository": "HexAtlas",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device"
     }
+  },
+  "prove": {
+    "argv": [
+      "./hexatlas.sh",
+      "prove"
+    ]
   }
 }

@@ -61,20 +61,19 @@ class EmulateBehaviour(unittest.TestCase):
     def write_inputs(self, mode="healthy", declare_serve=True):
         leaf = self.root / "Stack" / "HexAtlas"
         leaf.mkdir(parents=True, exist_ok=True)
-        document = {
-            "schema_version": 1,
-            "integration": "HexAtlas",
-            "kit": "geo_kit",
-            "repository": "HexAtlas",
-        }
+        produced = {"destination": "device"}
         if declare_serve:
-            document["entry_points"] = {
-                "serve": {"argv": [
-                    sys.executable, "${BUNDLE}/member.py", "${STATE}",
-                    mode]},
-                "probe": {"argv": [
-                    sys.executable, "${BUNDLE}/probe.py", "${STATE}"]},
-            }
+            produced["serve"] = {"argv": [
+                sys.executable, "${BUNDLE}/member.py", "${STATE}", mode]}
+            produced["probe"] = {"argv": [
+                sys.executable, "${BUNDLE}/probe.py", "${STATE}"]}
+        document = {
+            "schema_version": 2,
+            "integration": "HexAtlas",
+            "domain": "geo",
+            "repository": "HexAtlas",
+            "deployables": {"AtlasClient": produced},
+        }
         (leaf / "integration.json").write_text(
             json.dumps(document), encoding="utf-8")
 

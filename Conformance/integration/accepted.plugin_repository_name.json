@@ -1,6 +1,0 @@
-{
-  "schema_version": 1,
-  "integration": "HolobikeDevice",
-  "kit": "ue_kit",
-  "repository": "HolobikeDevice_uplugin"
-}

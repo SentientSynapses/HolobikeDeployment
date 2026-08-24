@@ -1,7 +1,25 @@
 {
-  "schema_version": 1,
-  "integration": "AthleteIdentity",
-  "kit": "id_kit",
-  "repository": "AthleteIdentity",
-  "artifacts": ["/etc/passwd"]
+  "schema_version": 2,
+  "integration": "HexAtlas",
+  "domain": "geo",
+  "repository": "HexAtlas",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device",
+      "build": {
+        "steps": [
+          {
+            "argv": [
+              "cmake",
+              "--build",
+              "Builds"
+            ]
+          }
+        ]
+      },
+      "artifacts": [
+        "/srv/atlas_service"
+      ]
+    }
+  }
 }

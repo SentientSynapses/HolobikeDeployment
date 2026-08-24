@@ -18,7 +18,24 @@
         ]
       },
       "artifacts": [
-        "Builds/bin/atlas_service"
+        "Builds/bin/atlas_client"
+      ]
+    },
+    "AtlasServer": {
+      "destination": "server",
+      "build": {
+        "steps": [
+          {
+            "argv": [
+              "cmake",
+              "--build",
+              "Builds"
+            ]
+          }
+        ]
+      },
+      "artifacts": [
+        "Builds/bin/atlas_server"
       ]
     }
   }

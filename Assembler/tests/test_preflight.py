@@ -52,10 +52,11 @@ ROSTER = (
 
 def minimal_leaf(name, repository=None):
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "integration": name,
-        "kit": "geo_kit",
+        "domain": "geo",
         "repository": repository or name,
+        "deployables": {"AtlasClient": {"destination": "device"}},
     }
 
 

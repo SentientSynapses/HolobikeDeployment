@@ -1,12 +1,19 @@
 {
-  "schema_version": 1,
-  "integration": "AthleteIdentity",
-  "kit": "id_kit",
-  "repository": "AthleteIdentity",
-  "entry_points": {
-    "serve": {
-      "argv": ["daemon"],
-      "env": { "PORT": 8080 }
+  "schema_version": 2,
+  "integration": "HexAtlas",
+  "domain": "geo",
+  "repository": "HexAtlas",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device",
+      "serve": {
+        "argv": [
+          "./serve"
+        ],
+        "env": {
+          "PORT": 8080
+        }
+      }
     }
   }
 }

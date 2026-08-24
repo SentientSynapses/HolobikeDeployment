@@ -1,9 +1,21 @@
 {
-  "schema_version": 1,
-  "integration": "drAIs",
-  "kit": "ai_kit",
-  "repository": "drAIs",
-  "entry_points": {
-    "prove": { "argv": ["bash", 7] }
+  "schema_version": 2,
+  "integration": "HexAtlas",
+  "domain": "geo",
+  "repository": "HexAtlas",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device",
+      "build": {
+        "steps": [
+          {
+            "argv": [
+              "cmake",
+              7
+            ]
+          }
+        ]
+      }
+    }
   }
 }

@@ -2,12 +2,20 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/integration.schema.json",
   "title": "Per-repository integration contract",
-  "description": "One Stack leaf's drive contract as data. The integration name is the closed roster's; the repository is the checkout directory name under its kit; entry points are repository-owned, documented commands — argv executed with the checkout as working directory, no shell. A missing entry point is a recorded absence, never a license for the Assembler to improvise one.",
+  "description": "One repository's deployment-facing contract: what it is, where its checkout comes from, how to prove it, and the named deployables it produces. A deployable is the unit profiles select and provision delivers; a repository may produce more than one, and several here produce both a device half and a server half of the same contract.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "integration", "kit", "repository"],
+  "required": [
+    "schema_version",
+    "integration",
+    "domain",
+    "repository",
+    "deployables"
+  ],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": {
+      "const": 2
+    },
     "integration": {
       "enum": [
         "uroborOS",
@@ -24,9 +32,6 @@
         "HoloviewDisplay",
         "OrielUI"
       ]
-    },
-    "kit": {
-      "enum": ["ai_kit", "bike_kit", "geo_kit", "id_kit", "os_kit", "ue_kit"]
     },
     "repository": {
       "type": "string",
@@ -46,49 +51,39 @@
       "pattern": "^(?!-)(?!.*\\u0000)\\S+$",
       "description": "The canonical clone source. bootstrap clones a missing checkout from it; an integration without one cannot be materialized, only reported."
     },
-    "entry_points": {
+    "domain": {
+      "enum": [
+        "ai",
+        "bike",
+        "geo",
+        "id",
+        "os",
+        "ue"
+      ],
+      "description": "The Stack level this leaf sits under, and the level of the canonical workstation tree its checkout sits under."
+    },
+    "prove": {
       "type": "object",
       "additionalProperties": false,
+      "required": [
+        "argv"
+      ],
+      "description": "The repository's own test entry point, run by check. It proves the repository, not any one deployable, which is why it sits here.",
       "properties": {
-        "prove": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["argv"],
-          "properties": {
-            "argv": { "$ref": "#/$defs/argv" }
-          }
-        },
-        "build": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["steps"],
-          "properties": {
-            "steps": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["argv"],
-                "properties": {
-                  "argv": { "$ref": "#/$defs/argv" }
-                }
-              }
-            }
-          }
-        },
-        "serve": { "$ref": "#/$defs/command" },
-        "probe": { "$ref": "#/$defs/command" }
+        "argv": {
+          "$ref": "#/$defs/argv"
+        }
       }
     },
-    "artifacts": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "description": "Checkout-relative paths of the outputs assemble stages into a bundle after a successful build. Never absolute, never escaping.",
-      "items": {
-        "type": "string",
-        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)(?!.*(?:^|/)\\.(?:/|$))(?!.*\\u0000)(?!.*/$).+$"
+    "deployables": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9]*$"
+      },
+      "description": "Named deployables, keyed by the name the owning repository uses. A deployable with no build and no artifacts is a recorded absence: named, visibly unbuildable here, and honest about it.",
+      "additionalProperties": {
+        "$ref": "#/$defs/deployable"
       }
     }
   },
@@ -105,17 +100,96 @@
     "command": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["argv"],
-      "description": "A long-running serve or a health probe. argv may reference ${BUNDLE} (the member's staged artifact directory) and ${STATE} (a per-run writable root); the working directory is always ${STATE}. env is a non-secret overlay — the no-secrets rule applies to it in full.",
+      "required": [
+        "argv"
+      ],
+      "description": "A long-running serve or a health probe. argv may reference ${BUNDLE} (the member's staged artifact directory) and ${STATE} (a per-run writable root); the working directory is always ${STATE}. env is a non-secret overlay \u2014 the no-secrets rule applies to it in full.",
       "properties": {
-        "argv": { "$ref": "#/$defs/argv" },
+        "argv": {
+          "$ref": "#/$defs/argv"
+        },
         "env": {
           "type": "object",
-          "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+          "propertyNames": {
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          },
           "additionalProperties": {
             "type": "string",
             "pattern": "^[^\\u0000]*$"
           }
+        }
+      }
+    },
+    "destination": {
+      "enum": [
+        "device",
+        "server",
+        "uroborOS",
+        "HexAtlas",
+        "Assetscape",
+        "HolobikeCore",
+        "AthleteIdentity",
+        "AthleteInsights",
+        "drAIs",
+        "HolobikeExperience",
+        "HolobikeDevice",
+        "HolobikeRider",
+        "HolobikeWorlds",
+        "HoloviewDisplay",
+        "OrielUI"
+      ],
+      "description": "Where this deployable ends up. device and server are the reserved terminals; any other value names the member whose artifact carries it, and the chain is resolved to a terminal by the binding (D-19)."
+    },
+    "deployable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "destination"
+      ],
+      "properties": {
+        "destination": {
+          "$ref": "#/$defs/destination"
+        },
+        "build": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "steps"
+          ],
+          "properties": {
+            "steps": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "argv"
+                ],
+                "properties": {
+                  "argv": {
+                    "$ref": "#/$defs/argv"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Checkout-relative paths of the outputs build stages into a bundle. Never absolute, never escaping.",
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)(?!.*(?:^|/)\\.(?:/|$))(?!.*\\u0000)(?!.*/$).+$"
+          }
+        },
+        "serve": {
+          "$ref": "#/$defs/command"
+        },
+        "probe": {
+          "$ref": "#/$defs/command"
         }
       }
     }

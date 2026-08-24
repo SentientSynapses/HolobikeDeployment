@@ -1,7 +1,12 @@
 {
-  "schema_version": 1,
-  "integration": "HolobikeExperience",
-  "kit": "ue_kit",
-  "repository": "HolobikeExperience",
+  "schema_version": 2,
+  "integration": "HexAtlas",
+  "domain": "geo",
+  "repository": "HexAtlas",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device"
+    }
+  },
   "unreal_project": "Unreal/HolobikeExperience.uplugin"
 }

@@ -1,6 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "integration": "HexAtlas",
-  "kit": "geo_kit",
-  "repository": "geo_kit/HexAtlas"
+  "domain": "geo",
+  "repository": "geo_kit/HexAtlas",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device"
+    }
+  }
 }

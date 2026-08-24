@@ -1,12 +1,17 @@
 {
-  "schema_version": 1,
-  "integration": "AthleteIdentity",
-  "kit": "id_kit",
-  "repository": "AthleteIdentity",
-  "entry_points": {
-    "probe": {
-      "argv": ["check"],
-      "retries": 3
+  "schema_version": 2,
+  "integration": "HexAtlas",
+  "domain": "geo",
+  "repository": "HexAtlas",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device",
+      "probe": {
+        "argv": [
+          "./probe"
+        ],
+        "timeout": 30
+      }
     }
   }
 }

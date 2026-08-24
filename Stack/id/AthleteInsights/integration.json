@@ -1,51 +1,57 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "integration": "AthleteInsights",
-  "kit": "id_kit",
+  "domain": "id",
   "repository": "AthleteInsights",
   "origin": "git@github.com:Saga-Holographic/AthleteInsights.git",
-  "entry_points": {
-    "build": {
-      "steps": [
-        {
-          "argv": [
-            "cmake",
-            "-S",
-            ".",
-            "-B",
-            "Builds/deployment",
-            "-DATHLETEINSIGHTS_BUILD_TESTS=OFF"
-          ]
-        },
-        {
-          "argv": [
-            "cmake",
-            "--build",
-            "Builds/deployment",
-            "--target",
-            "athleteinsights_service",
-            "-j"
-          ]
-        }
-      ]
+  "deployables": {
+    "InsightsClient": {
+      "destination": "device",
+      "build": {
+        "steps": [
+          {
+            "argv": [
+              "cmake",
+              "-S",
+              ".",
+              "-B",
+              "Builds/deployment",
+              "-DATHLETEINSIGHTS_BUILD_TESTS=OFF"
+            ]
+          },
+          {
+            "argv": [
+              "cmake",
+              "--build",
+              "Builds/deployment",
+              "--target",
+              "athleteinsights_service",
+              "-j"
+            ]
+          }
+        ]
+      },
+      "artifacts": [
+        "Builds/deployment/InsightsClient/ClientService/athleteinsights_service"
+      ],
+      "serve": {
+        "argv": [
+          "${BUNDLE}/athleteinsights_service",
+          "--endpoint",
+          "./athleteinsights.sock",
+          "--root",
+          "${STATE}/insights",
+          "--credential",
+          "${STATE}/insights/credential",
+          "--device-identity",
+          "${STATE}/insights/device-identity.json",
+          "--identity-endpoint",
+          "./athleteidentity.sock"
+        ]
+      }
     },
-    "serve": {
-      "argv": [
-        "${BUNDLE}/athleteinsights_service",
-        "--endpoint",
-        "./athleteinsights.sock",
-        "--root",
-        "${STATE}/insights",
-        "--credential",
-        "${STATE}/insights/credential",
-        "--device-identity",
-        "${STATE}/insights/device-identity.json",
-        "--identity-endpoint",
-        "./athleteidentity.sock"
-      ]
+    "InsightsServer": {
+      "destination": "server"
     }
-  },
-  "artifacts": [
-    "Builds/deployment/InsightsClient/ClientService/athleteinsights_service"
-  ]
+  }
 }

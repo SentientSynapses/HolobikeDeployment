@@ -3,10 +3,5 @@
   "integration": "HexAtlas",
   "domain": "geo",
   "repository": "HexAtlas",
-  "deployables": {
-    "AtlasClient": {
-      "destination": "device",
-      "build": {}
-    }
-  }
+  "deployables": {}
 }

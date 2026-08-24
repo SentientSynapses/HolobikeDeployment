@@ -1,1 +1,8 @@
-{"schema_version": 1, "integration": "uroborOS", "integration": "uroborOS", "kit": "os_kit", "repository": "uroborOS"}
+{
+  "schema_version": 2,
+  "integration": "HexAtlas",
+  "integration": "Assetscape",
+  "domain": "geo",
+  "repository": "HexAtlas",
+  "deployables": { "AtlasClient": { "destination": "device" } }
+}

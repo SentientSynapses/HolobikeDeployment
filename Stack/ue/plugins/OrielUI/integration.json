@@ -1,7 +1,12 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "integration": "OrielUI",
-  "kit": "ue_kit",
+  "domain": "ue",
   "repository": "OrielUI_uplugin",
-  "origin": "git@github.com:Saga-Holographic/OrielUI_uplugin.git"
+  "origin": "git@github.com:Saga-Holographic/OrielUI_uplugin.git",
+  "deployables": {
+    "OrielUI": {
+      "destination": "HolobikeExperience"
+    }
+  }
 }

@@ -1,46 +1,52 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "integration": "AthleteIdentity",
-  "kit": "id_kit",
+  "domain": "id",
   "repository": "AthleteIdentity",
   "origin": "git@github.com:Saga-Holographic/AthleteIdentity.git",
-  "entry_points": {
-    "build": {
-      "steps": [
-        {
-          "argv": [
-            "./IdentityClient/identityclient.sh",
-            "build"
-          ]
-        }
-      ]
-    },
-    "serve": {
-      "argv": [
-        "${BUNDLE}/athleteidentity_service",
-        "--profiles-root",
-        "${STATE}/profiles",
-        "--provider-root",
-        "${STATE}/provider",
-        "--endpoint",
-        "./athleteidentity.sock"
+  "deployables": {
+    "IdentityClient": {
+      "destination": "device",
+      "build": {
+        "steps": [
+          {
+            "argv": [
+              "./IdentityClient/identityclient.sh",
+              "build"
+            ]
+          }
+        ]
+      },
+      "artifacts": [
+        "Builds/AthleteIdentityClient_linux/bin/athleteidentity_service",
+        "Builds/AthleteIdentityClient_linux/bin/athleteidentity_cli"
       ],
-      "env": {
-        "ATHLETE_IDENTITY_KEY_PROVIDER": "filesystem"
+      "serve": {
+        "argv": [
+          "${BUNDLE}/athleteidentity_service",
+          "--profiles-root",
+          "${STATE}/profiles",
+          "--provider-root",
+          "${STATE}/provider",
+          "--endpoint",
+          "./athleteidentity.sock"
+        ],
+        "env": {
+          "ATHLETE_IDENTITY_KEY_PROVIDER": "filesystem"
+        }
+      },
+      "probe": {
+        "argv": [
+          "${BUNDLE}/athleteidentity_cli",
+          "service",
+          "probe",
+          "--endpoint",
+          "./athleteidentity.sock"
+        ]
       }
     },
-    "probe": {
-      "argv": [
-        "${BUNDLE}/athleteidentity_cli",
-        "service",
-        "probe",
-        "--endpoint",
-        "./athleteidentity.sock"
-      ]
+    "IdentityServer": {
+      "destination": "server"
     }
-  },
-  "artifacts": [
-    "Builds/AthleteIdentityClient_linux/bin/athleteidentity_service",
-    "Builds/AthleteIdentityClient_linux/bin/athleteidentity_cli"
-  ]
+  }
 }

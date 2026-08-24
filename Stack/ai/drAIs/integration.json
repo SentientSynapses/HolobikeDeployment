@@ -1,17 +1,23 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "integration": "drAIs",
-  "kit": "ai_kit",
+  "domain": "ai",
   "repository": "drAIs",
   "origin": "git@github.com:Saga-Holographic/drAIs.git",
-  "entry_points": {
-    "prove": {
-      "argv": [
-        "bash",
-        "drais.sh",
-        "eval",
-        "all"
-      ]
+  "prove": {
+    "argv": [
+      "bash",
+      "drais.sh",
+      "eval",
+      "all"
+    ]
+  },
+  "deployables": {
+    "DraisClient": {
+      "destination": "device"
+    },
+    "DraisServer": {
+      "destination": "server"
     }
   }
 }

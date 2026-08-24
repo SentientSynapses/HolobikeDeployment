@@ -1,12 +1,11 @@
 {
   "schema_version": 2,
   "integration": "HexAtlas",
-  "domain": "geo",
+  "domain": "geo_kit",
   "repository": "HexAtlas",
   "deployables": {
     "AtlasClient": {
-      "destination": "device",
-      "build": {}
+      "destination": "device"
     }
   }
 }

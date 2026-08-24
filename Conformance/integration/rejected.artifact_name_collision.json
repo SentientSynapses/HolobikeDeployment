@@ -1,13 +1,26 @@
 {
-  "schema_version": 1,
-  "integration": "HolobikeCore",
-  "kit": "bike_kit",
-  "repository": "HolobikeCore",
-  "entry_points": {
-    "build": { "steps": [ { "argv": ["./build.sh"] } ] }
-  },
-  "artifacts": [
-    "Builds/linux/bin/holobiked",
-    "Builds/windows/bin/holobiked"
-  ]
+  "schema_version": 2,
+  "integration": "HexAtlas",
+  "domain": "geo",
+  "repository": "HexAtlas",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device",
+      "build": {
+        "steps": [
+          {
+            "argv": [
+              "cmake",
+              "--build",
+              "Builds"
+            ]
+          }
+        ]
+      },
+      "artifacts": [
+        "Builds/linux/atlas_service",
+        "Builds/windows/atlas_service"
+      ]
+    }
+  }
 }

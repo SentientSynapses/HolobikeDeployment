@@ -1,7 +1,12 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "integration": "HolobikeRider",
-  "kit": "ue_kit",
+  "domain": "ue",
   "repository": "HolobikeRider_uplugin",
-  "origin": "git@github.com:Saga-Holographic/HolobikeRider_uplugin.git"
+  "origin": "git@github.com:Saga-Holographic/HolobikeRider_uplugin.git",
+  "deployables": {
+    "HolobikeRider": {
+      "destination": "HolobikeExperience"
+    }
+  }
 }

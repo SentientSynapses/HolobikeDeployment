@@ -1,5 +1,10 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "integration": "HexAtlas",
-  "kit": "geo_kit"
+  "domain": "geo",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device"
+    }
+  }
 }

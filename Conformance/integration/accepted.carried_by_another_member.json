@@ -3,7 +3,6 @@
   "integration": "HolobikeWorlds",
   "domain": "ue",
   "repository": "HolobikeWorlds_uplugin",
-  "origin": "git@github.com:Saga-Holographic/HolobikeWorlds_uplugin.git",
   "deployables": {
     "HolobikeWorlds": {
       "destination": "HolobikeExperience"

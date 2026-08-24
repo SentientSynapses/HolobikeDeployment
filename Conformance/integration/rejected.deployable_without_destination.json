@@ -5,7 +5,6 @@
   "repository": "HexAtlas",
   "deployables": {
     "AtlasClient": {
-      "destination": "device",
       "build": {
         "steps": [
           {
@@ -16,10 +15,7 @@
             ]
           }
         ]
-      },
-      "artifacts": [
-        "Builds/bin/atlas_service"
-      ]
+      }
     }
   }
 }

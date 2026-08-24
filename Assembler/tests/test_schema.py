@@ -127,6 +127,10 @@ class TheRosterAgreesWithItself(unittest.TestCase):
     passes every other test in this suite. This makes it fail here instead.
     """
 
+    #: destination admits these alongside the roster; they end a chain
+    #: rather than naming a member (D-19).
+    RESERVED = frozenset({"device", "server"})
+
     def _roster(self):
         document = json.loads(_schema_path("environment").read_text("utf-8"))
         return frozenset(document["properties"]["checkouts"]["properties"])
@@ -162,12 +166,13 @@ class TheRosterAgreesWithItself(unittest.TestCase):
             document = json.loads(_schema_path(name).read_text("utf-8"))
             for where, names in self._sites(document, roster):
                 sites += 1
+                declared = names - self.RESERVED
                 with self.subTest(site=f"{name}{where}"):
                     self.assertEqual(
-                        names, roster,
-                        f"missing {sorted(roster - names)}, "
-                        f"unexpected {sorted(names - roster)}")
-        self.assertEqual(sites, 12, "a roster site appeared or vanished")
+                        declared, roster,
+                        f"missing {sorted(roster - declared)}, "
+                        f"unexpected {sorted(declared - roster)}")
+        self.assertEqual(sites, 13, "a roster site appeared or vanished")
 
 
 class AgreesWithJsonschema(unittest.TestCase):

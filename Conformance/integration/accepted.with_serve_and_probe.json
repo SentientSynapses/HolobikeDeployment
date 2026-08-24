@@ -1,15 +1,27 @@
 {
-  "schema_version": 1,
-  "integration": "AthleteIdentity",
-  "kit": "id_kit",
-  "repository": "AthleteIdentity",
-  "entry_points": {
-    "serve": {
-      "argv": ["${BUNDLE}/athleteidentity_service", "--profiles-root", "${STATE}/profiles"],
-      "env": { "ATHLETE_IDENTITY_KEY_PROVIDER": "filesystem" }
-    },
-    "probe": {
-      "argv": ["${BUNDLE}/athleteidentity_cli", "auth", "health"]
+  "schema_version": 2,
+  "integration": "HexAtlas",
+  "domain": "geo",
+  "repository": "HexAtlas",
+  "deployables": {
+    "AtlasClient": {
+      "destination": "device",
+      "serve": {
+        "argv": [
+          "${BUNDLE}/atlas_service",
+          "--endpoint",
+          "./atlas.sock"
+        ],
+        "env": {
+          "ATLAS_MODE": "emulated"
+        }
+      },
+      "probe": {
+        "argv": [
+          "${BUNDLE}/atlas_cli",
+          "probe"
+        ]
+      }
     }
   }
 }

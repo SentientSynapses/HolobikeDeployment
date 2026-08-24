@@ -1,16 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "integration": "uroborOS",
-  "kit": "os_kit",
+  "domain": "os",
   "repository": "uroborOS",
   "origin": "git@github.com:Saga-Holographic/uroborOS.git",
-  "entry_points": {
-    "prove": {
-      "argv": [
-        "./uroboros.sh",
-        "prove",
-        "static"
-      ]
+  "prove": {
+    "argv": [
+      "./uroboros.sh",
+      "prove",
+      "static"
+    ]
+  },
+  "deployables": {
+    "uroborOS": {
+      "destination": "device"
     }
   }
 }

@@ -66,10 +66,11 @@ class BootstrapBehaviour(unittest.TestCase):
         leaf = self.root / "Stack" / "HexAtlas"
         leaf.mkdir(parents=True, exist_ok=True)
         document = {
-            "schema_version": 1,
+            "schema_version": 2,
             "integration": "HexAtlas",
-            "kit": "geo_kit",
+            "domain": "geo",
             "repository": "HexAtlas",
+            "deployables": {"AtlasClient": {"destination": "device"}},
         }
         if origin is not None:
             document["origin"] = origin

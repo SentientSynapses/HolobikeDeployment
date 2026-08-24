@@ -61,17 +61,19 @@ class AssembleBehaviour(unittest.TestCase):
 
         leaf = self.root / "Stack" / "HexAtlas"
         leaf.mkdir(parents=True, exist_ok=True)
-        document = {
-            "schema_version": 1,
-            "integration": "HexAtlas",
-            "kit": "geo_kit",
-            "repository": "HexAtlas",
-        }
+        produced = {"destination": "device"}
         if build_steps is not None:
-            document["entry_points"] = {
-                "build": {"steps": [{"argv": step} for step in build_steps]}}
+            produced["build"] = {
+                "steps": [{"argv": step} for step in build_steps]}
         if artifacts is not None:
-            document["artifacts"] = artifacts
+            produced["artifacts"] = artifacts
+        document = {
+            "schema_version": 2,
+            "integration": "HexAtlas",
+            "domain": "geo",
+            "repository": "HexAtlas",
+            "deployables": {"AtlasClient": produced},
+        }
         (leaf / "integration.json").write_text(
             json.dumps(document), encoding="utf-8")
 
