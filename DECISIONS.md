@@ -146,3 +146,20 @@ replaced it, because the commits that cite it do not move.
   before any of this was built. **Revisit if** the chain's shape proves wrong
   when a record first travels between two machines in Phase 5, which is the
   event that would actually test it.
+- **D-22 A phase contains only this repository's changes** *(ruled
+  2026-08-24)*. Work owed by a member repository is a named dependency, not a
+  bullet to execute. Phase 4 got this wrong: "convert each remaining dual copy
+  to `AdditionalPluginDirectories`" means editing `HolobikeExperience.uproject`
+  and deleting four directories inside that project, which is
+  HolobikeExperience's change in HolobikeExperience's commit. `Stack/README.md`
+  already forbids the shape — an integration contract "must not silently edit
+  a source checkout" — and the plan reached across the boundary anyway, the
+  same error as very nearly enrolling HolobikeMigration: this repository
+  claiming a domain repository's business as its own. This is D-12 applied to
+  the plan rather than to the software. **The practical consequence:** a
+  member's dirty tree never inhibits this repository. The tool already treats
+  dirty as a recorded fact — `bootstrap` refuses to reset and records
+  `dirty_skipped`, a resolution records `dirty` — so nothing here waits on
+  anyone's working tree. Only a phase that mis-files another repository's work
+  as its own can appear to be blocked by one, and the fix is the filing, not
+  the schedule.

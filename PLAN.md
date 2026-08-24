@@ -396,9 +396,10 @@ and not a line count that assumed a change the work disproved.
 
 ### Phase 4 — One tree — HALF DONE 2026-08-24
 
-The half that touches only this repository is done. The half that moves
-checkouts on the workstation is **blocked on a live conflict**, described
-below, and is not a scheduling preference.
+The half that touches only this repository is done. The rest was mis-filed:
+most of it is HolobikeExperience's work, not this phase's (D-22), and what
+remains here is sequenced behind it rather than blocked by anyone's working
+tree.
 
 **Done — the tool tier and its contract.** `Assembler/` → `Tool/`, the package
 `holobike_assemble` → `holobike`, and the launcher is `Tool/holobike`.
@@ -422,27 +423,33 @@ Five top-level directories: `Stack/`, `Revisions/`, `Profiles/`, `Policy/`,
 
 109 tests green from the new location; `check` exit 0.
 
-**Blocked — the plugin conversions, and everything that depends on them.**
-D-08 converts the four dual copies to `AdditionalPluginDirectories`, which
-retires the four parity gates, which is what lets `Policy/` be deleted rather
-than emptied. Converting means deleting
-`HolobikeExperience/Unreal/Plugins/{HolobikeDevice,HolobikeRider,HolobikeWorlds,OrielUI}`.
+**Owed by HolobikeExperience, not by this phase (D-22).** The earlier draft
+of this phase listed "convert each remaining dual copy to
+`AdditionalPluginDirectories`" as work to do here. It is not: it means editing
+`HolobikeExperience.uproject` and deleting four directories inside that
+project. That is HolobikeExperience's change, in its own commit, coordinated
+with whoever is working there — and this repository's rule already said so.
 
-At the time of writing, another agent holds uncommitted work in exactly one of
-them: `Unreal/Plugins/HolobikeWorlds/Source/RidePaths/Public/Net/WaypathsResolve.h`
-is modified in HolobikeExperience *and* in HolobikeWorlds_uplugin — the
-dual-copy workflow in mid-edit. Deleting the mounted copy would destroy it.
-This is the exact hazard D-08 exists to end, caught by the mechanism that will
-outlive it.
+What this repository owes, once each conversion lands: **delete that plugin's
+parity gate**, per plugin, which D-08 already specifies. When the fourth goes,
+`Policy/parity.json` is deleted rather than emptied — `gates.minItems` is 1,
+proven by `rejected.no_gates.json` — and `gates.py` goes with it, since
+`evaluate_tree_parity` is its only function. Roughly ninety lines, mechanical,
+and it is a dependency rather than a blockage.
 
-**Also blocked, on the same event:** the canonical workstation tree (D-09) and
-the `checkouts` → `root` change to the environment schema. The two are
-coupled, because deriving `<root>/<domain>/<repository>` only works once the
-checkouts are actually there — and today they are at `ue_kit/HolobikeExperience`,
-not `<root>/ue/projects/HolobikeExperience`. Writing the schema change before
-the move would leave a contract no live document satisfies.
+The dual copies are visibly live meanwhile: the same
+`RidePaths/Public/Net/WaypathsResolve.h` edit sits uncommitted in the project
+and in `HolobikeWorlds_uplugin`, hand-synchronised. That is the work D-08
+ends, and the parity gates are what make it visible until then.
 
-**Exit, when unblocked:** no plugin exists in two places; `Policy/` and
+**Also owed here, and genuinely sequenced:** the canonical workstation tree
+(D-09) and the `checkouts` → `root` change to the environment schema. These
+are this repository's own, but they cannot land before the checkouts are in
+the tree they describe — writing the schema first would leave a contract no
+live document satisfies. That is a real ordering constraint, not another
+repository's business.
+
+**Exit, when the conversions land:** no plugin exists in two places; `Policy/` and
 `gates.py` are deleted rather than emptied; a host document is a root plus an
 identity; `env` can build the tree from nothing but the Stack and a root.
 
