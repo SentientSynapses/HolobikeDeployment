@@ -81,7 +81,9 @@ class BootstrapBehaviour(unittest.TestCase):
     def write_inputs(self, checkout, origin=None):
         environment = self.root / "environment.json"
         environment.write_text(json.dumps({
-            "schema_version": 1,
+            "schema_version": 2,
+            "host": "workstation",
+            "os": "linux",
             "checkouts": {"HexAtlas": str(checkout)},
         }), encoding="utf-8")
         revisions = self.root / "dev.json"

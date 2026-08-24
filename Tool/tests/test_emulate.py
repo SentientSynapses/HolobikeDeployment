@@ -93,9 +93,9 @@ class EmulateBehaviour(unittest.TestCase):
         record = self.artifacts / "records" / "assemble-bundle-fixture.json"
         record.parent.mkdir(parents=True, exist_ok=True)
         record.write_text(json.dumps({
-            "schema_version": 3,
+            "schema_version": 4,
             "kind": "assembly",
-            "run": {"verb": "assemble",
+            "run": {"verb": "assemble", "host": "workstation", "os": "linux",
                     "started_at_utc": "2026-08-04T12:00:00Z",
                     "finished_at_utc": "2026-08-04T12:00:01Z"},
             "deployment": {"revision": "0" * 40, "dirty": False},
@@ -205,9 +205,9 @@ class EmulateBehaviour(unittest.TestCase):
     def test_emulate_refuses_a_record_that_is_not_an_assembly(self):
         record = self.write_inputs()
         record.write_text(json.dumps({
-            "schema_version": 3,
+            "schema_version": 4,
             "kind": "bootstrap",
-            "run": {"verb": "bootstrap",
+            "run": {"verb": "bootstrap", "host": "workstation", "os": "linux",
                     "started_at_utc": "2026-08-04T12:00:00Z",
                     "finished_at_utc": "2026-08-04T12:00:01Z"},
             "deployment": {"revision": "0" * 40, "dirty": False},

@@ -49,7 +49,7 @@ class ResolveBehaviour(unittest.TestCase):
     def write_environment(self, checkouts):
         path = self.root / "environment.json"
         path.write_text(
-            json.dumps({"schema_version": 1, "checkouts": checkouts}),
+            json.dumps({"schema_version": 2, "host": "workstation", "os": "linux", "checkouts": checkouts}),
             encoding="utf-8")
         return path
 

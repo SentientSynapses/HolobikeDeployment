@@ -228,6 +228,7 @@ def build_report(document, stack_root):
     }
     return {
         "generated_by": "holobike check",
+        "host": {"host": document.host, "os": document.os},
         "integrations": {
             name: _inspect_integration(name, document)
             for name in environment.INTEGRATIONS
@@ -278,6 +279,9 @@ def _problems(report):
 
 
 def _print_table(report, stdout):
+    identity = report.get("host") or {}
+    if identity.get("host"):
+        print(f"host: {identity['host']} ({identity['os']})", file=stdout)
     rows = [("INTEGRATION", "STATUS", "LEAF", "REVISION", "BRANCH")]
     for name, facts in report["integrations"].items():
         rows.append((
@@ -307,6 +311,9 @@ def _print_table(report, stdout):
             detail = (f"{facts['status']} — project {facts['engine_association']}, "
                       f"toolchain {facts['engine_version']}")
         print(f"engine {name}: {detail}", file=stdout)
+    identity = report.get("host", {})
+    if identity:
+        print(f"host: {identity['host']} ({identity['os']})", file=stdout)
     closure = report.get("roster_closure", {})
     if closure.get("status") == "clean":
         line = f"roster: closed — {closure['declared']} declared non-members"

@@ -191,6 +191,7 @@ def run(revisions_path, environment_path, stack_root, artifacts_root,
         "kind": "bootstrap",
         "run": {
             "verb": "bootstrap",
+            **environment.producer(document),
             "started_at_utc": started,
             "finished_at_utc": _utc_now(),
         },

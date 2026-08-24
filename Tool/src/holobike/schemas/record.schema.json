@@ -183,7 +183,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": 3
+      "const": 4
     },
     "kind": {
       "enum": [
@@ -199,6 +199,8 @@
       "additionalProperties": false,
       "required": [
         "verb",
+        "host",
+        "os",
         "started_at_utc",
         "finished_at_utc"
       ],
@@ -212,6 +214,17 @@
             "admit"
           ]
         },
+        "host": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "os": {
+          "enum": [
+            "linux",
+            "windows"
+          ]
+        },
         "started_at_utc": {
           "type": "string",
           "minLength": 1,
@@ -222,7 +235,8 @@
           "minLength": 1,
           "pattern": "Z$"
         }
-      }
+      },
+      "description": "Which verb ran, on which machine, and when. A record that does not name its producer cannot be told apart from one made elsewhere \u2014 and the panel host produces the records only it can."
     },
     "deployment": {
       "type": "object",

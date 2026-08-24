@@ -2,33 +2,63 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.holobike.local/HolobikeDeployment/Schemas/environment.schema.json",
   "title": "Development Environment Mapping",
-  "description": "One workstation's local checkout and toolchain locations. This document is machine-specific and is never committed: it lives at .local/environment.json, and the committed artifacts are this schema and the example beside it. Paths are development defaults, not deployment contracts — production provisioning derives nothing from them. Secrets never appear here; they come from an external secret facility.",
+  "description": "One workstation's local checkout and toolchain locations. This document is machine-specific and is never committed: it lives at .local/environment.json, and the committed artifacts are this schema and the example beside it. Paths are development defaults, not deployment contracts \u2014 production provisioning derives nothing from them. Secrets never appear here; they come from an external secret facility.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "checkouts"],
+  "required": [
+    "schema_version",
+    "host",
+    "os",
+    "checkouts"
+  ],
   "properties": {
     "schema_version": {
-      "type": "integer",
-      "const": 1
+      "const": 2
     },
     "checkouts": {
       "type": "object",
       "description": "Absolute path to each integration's local checkout. Every property is optional because a given workflow needs only the integrations it drives, but the roster is closed so a misspelled integration fails validation instead of silently going missing.",
       "additionalProperties": false,
       "properties": {
-        "uroborOS": { "$ref": "#/$defs/absolutePath" },
-        "HexAtlas": { "$ref": "#/$defs/absolutePath" },
-        "Assetscape": { "$ref": "#/$defs/absolutePath" },
-        "HolobikeCore": { "$ref": "#/$defs/absolutePath" },
-        "AthleteIdentity": { "$ref": "#/$defs/absolutePath" },
-        "AthleteInsights": { "$ref": "#/$defs/absolutePath" },
-        "drAIs": { "$ref": "#/$defs/absolutePath" },
-        "HolobikeExperience": { "$ref": "#/$defs/absolutePath" },
-        "HolobikeDevice": { "$ref": "#/$defs/absolutePath" },
-        "HolobikeRider": { "$ref": "#/$defs/absolutePath" },
-        "HolobikeWorlds": { "$ref": "#/$defs/absolutePath" },
-        "HoloviewDisplay": { "$ref": "#/$defs/absolutePath" },
-        "OrielUI": { "$ref": "#/$defs/absolutePath" }
+        "uroborOS": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "HexAtlas": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "Assetscape": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "HolobikeCore": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "AthleteIdentity": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "AthleteInsights": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "drAIs": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "HolobikeExperience": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "HolobikeDevice": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "HolobikeRider": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "HolobikeWorlds": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "HoloviewDisplay": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "OrielUI": {
+          "$ref": "#/$defs/absolutePath"
+        }
       }
     },
     "toolchains": {
@@ -36,17 +66,34 @@
       "description": "Absolute paths to third-party toolchains that are not HoloBike software and therefore have no integration directory under Stack. Only toolchains that must be located by path appear here; tools resolved from PATH (compilers, CMake, Ninja) are validated by preflight rather than declared.",
       "additionalProperties": false,
       "properties": {
-        "unreal_engine": { "$ref": "#/$defs/absolutePath" },
-        "vcpkg": { "$ref": "#/$defs/absolutePath" }
+        "unreal_engine": {
+          "$ref": "#/$defs/absolutePath"
+        },
+        "vcpkg": {
+          "$ref": "#/$defs/absolutePath"
+        }
       }
+    },
+    "host": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "description": "This workstation's name. Records name their producer, so a release admitted on the panel host can be told from one admitted here."
+    },
+    "os": {
+      "enum": [
+        "linux",
+        "windows"
+      ],
+      "description": "Which platform posture this host runs. Product truth lives in Profiles/ and the Stack leaves; this says only what this machine is."
     }
   },
   "$defs": {
     "absolutePath": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^/",
-      "description": "An absolute path. Preflight normalizes and validates it before any build is invoked."
+      "pattern": "^(?:/|[A-Za-z]:[\\\\/])",
+      "description": "An absolute path, POSIX (/srv/...) or Windows (C:\\... or C:/...). check normalizes and validates it before any build is invoked."
     }
   }
 }

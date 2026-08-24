@@ -84,6 +84,7 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
             profiles_root=profiles_root,
             artifacts_root=artifacts_root,
             repo_root=repo_root,
+            environment_path=environment_path,
             ready_timeout=ready_timeout,
             terminate_grace=terminate_grace,
             stdout=stdout, stderr=stderr)
@@ -117,5 +118,6 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
             artifacts_root=artifacts_root,
             releases_root=releases_root,
             repo_root=repo_root,
+            environment_path=environment_path,
             stdout=stdout, stderr=stderr)
     return 0

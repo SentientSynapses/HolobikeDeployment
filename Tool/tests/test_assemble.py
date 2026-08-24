@@ -55,7 +55,9 @@ class AssembleBehaviour(unittest.TestCase):
     def write_inputs(self, build_steps, artifacts):
         environment = self.root / "environment.json"
         environment.write_text(json.dumps({
-            "schema_version": 1,
+            "schema_version": 2,
+            "host": "workstation",
+            "os": "linux",
             "checkouts": {"HexAtlas": str(self.checkout)},
         }), encoding="utf-8")
 
@@ -89,9 +91,9 @@ class AssembleBehaviour(unittest.TestCase):
         record = self.artifacts / "records" / "resolve-dev-fixture.json"
         record.parent.mkdir(parents=True, exist_ok=True)
         record.write_text(json.dumps({
-            "schema_version": 3,
+            "schema_version": 4,
             "kind": "resolution",
-            "run": {"verb": "resolve",
+            "run": {"verb": "resolve", "host": "workstation", "os": "linux",
                     "started_at_utc": "2026-08-04T12:00:00Z",
                     "finished_at_utc": "2026-08-04T12:00:01Z"},
             "deployment": {
@@ -189,9 +191,9 @@ class AssembleBehaviour(unittest.TestCase):
         profile, record, environment, stack = self.write_inputs(
             [[sys.executable, "-c", "pass"]], ["out.bin"])
         record.write_text(json.dumps({
-            "schema_version": 3,
+            "schema_version": 4,
             "kind": "bootstrap",
-            "run": {"verb": "bootstrap",
+            "run": {"verb": "bootstrap", "host": "workstation", "os": "linux",
                     "started_at_utc": "2026-08-04T12:00:00Z",
                     "finished_at_utc": "2026-08-04T12:00:01Z"},
             "deployment": {"revision": "0" * 40, "dirty": False},

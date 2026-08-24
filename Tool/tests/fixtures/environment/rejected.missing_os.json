@@ -1,6 +1,5 @@
 {
   "schema_version": 2,
   "host": "workstation",
-  "os": "linux",
   "checkouts": {}
 }

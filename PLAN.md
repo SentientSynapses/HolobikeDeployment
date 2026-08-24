@@ -454,25 +454,47 @@ is an announced operation — absolute paths live in scripts, IDE configuration
 and every host document — and it belongs with the phase that first writes a
 host document on a second machine.
 
-### Phase 5 — Device production
+### Phase 5 — Device production — STARTED 2026-08-24
 
-First work executed on Windows, where the packaged product is actually built.
+The prerequisite is in; the rest needs machines this workstation is not.
 
-- Clone on the panel host; write its host document — subset checkouts, both
-  engines, `os: windows`. `check` gains host identity and Windows paths.
-- HolobikeExperience gains `Tools/Package-Win64.ps1`, the packaging recipe
-  the HoloView port validated, made repository-owned; its leaf declares the
-  build entry and the packaged artifact.
-- `build device` runs where the bundle bytes are; the record travels by push
-  through this repository. Partial resolution on a subset host records
-  "unresolvable here" as fact, never refusal.
-- `provision device` carries software onto a bike, alongside the identity
-  document it already installs.
+**Done — host identity.** A host document now says which machine it describes:
+`host` and `os` are required, `$defs.absolutePath` admits Windows paths
+(`C:\...` and `C:/...`) beside POSIX ones, and every record's `run` block names
+its producer. Environment documents are at **v2**, records at **v4**. `check`
+prints the host first, because on a second machine that is the first thing a
+person needs to know.
 
-**Cell closed: production × device**, end to end.
+That last piece has a shape worth keeping: the identity stamp is one shared
+`environment.producer()`, so no verb invents its own idea of who ran
+something. `emulate` and `admit` gained the host document they did not
+previously read — `admit` especially, since admission runs where the artifact
+bytes are, and a release record that cannot say where that was describes half
+of what happened.
 
-**Exit:** a bike runs a build this repository produced, from a release record
-admitted where the product runs.
+A live resolution now records `"host": "mjolnir", "os": "linux"`.
+
+**Needs the panel host** — a Windows machine this session cannot reach: the
+clone, its host document (subset checkouts, both engines, `os: windows`), and
+`build device` running where the bundle bytes are. The contracts are ready for
+all three; nothing else here can be honestly written until a real Windows
+`check` has run.
+
+**Owed by HolobikeExperience (D-22):** `Tools/Package-Win64.ps1`, the packaging
+recipe the HoloView port validated, made repository-owned. That is its commit,
+and it cannot be validated from Linux — a PowerShell packaging script written
+here and never run would be scaffolding with a plausible shape.
+
+**Needs a bike:** `provision device` carrying software rather than only the
+identity document.
+
+**Still to decide, and now the blocker for the canonical tree:** moving the
+workstation checkouts to `<root>/<domain>/<repository>` (D-09) is an announced
+operation — it breaks absolute paths in scripts, IDE configuration, other
+agents' sessions, and the `AdditionalPluginDirectories` relative paths that
+20304b5 just wrote. It is this repository's own work and it is ready to write,
+but it reorganises the whole workspace and wants a deliberate moment rather
+than being folded into a phase.
 
 ### Phase 6 — The server side
 

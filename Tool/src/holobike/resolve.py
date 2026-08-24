@@ -119,6 +119,7 @@ def run(revisions_path, environment_path, artifacts_root, repo_root,
         "kind": "resolution",
         "run": {
             "verb": "resolve",
+            **environment.producer(document),
             "started_at_utc": started,
             "finished_at_utc": _utc_now(),
         },

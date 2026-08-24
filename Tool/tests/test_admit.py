@@ -27,8 +27,8 @@ def run_cli(shim, *arguments):
 def _resolution(deployment_revision, *, selection_status="resolved",
                 source_dirty=False, deployment_dirty=False):
     return {
-        "schema_version": 3, "kind": "resolution",
-        "run": {"verb": "resolve",
+        "schema_version": 4, "kind": "resolution",
+        "run": {"verb": "resolve", "host": "workstation", "os": "linux",
                 "started_at_utc": "2026-08-04T12:00:00Z",
                 "finished_at_utc": "2026-08-04T12:00:01Z"},
         "deployment": {
@@ -53,8 +53,8 @@ def _assembly(deployment_revision, resolution_name, resolution_digest,
     if build_status == "skipped":
         build["detail"] = "fixture skip"
     return {
-        "schema_version": 3, "kind": "assembly",
-        "run": {"verb": "assemble",
+        "schema_version": 4, "kind": "assembly",
+        "run": {"verb": "assemble", "host": "workstation", "os": "linux",
                 "started_at_utc": "2026-08-04T12:01:00Z",
                 "finished_at_utc": "2026-08-04T12:01:01Z"},
         "deployment": {"revision": deployment_revision, "dirty": False},
@@ -82,6 +82,17 @@ class AdmitBehaviour(unittest.TestCase):
             ignore=shutil.ignore_patterns(
                 ".git", ".local", "Artifacts", "__pycache__"),
         )
+        # Admission runs where the artifact bytes are, and that machine is an
+        # enrolled workstation: it has a host document, and the release record
+        # names it as the producer.
+        host = cls.deployment / ".local"
+        host.mkdir(parents=True, exist_ok=True)
+        (host / "environment.json").write_text(json.dumps({
+            "schema_version": 2,
+            "host": "workstation",
+            "os": "linux",
+            "checkouts": {},
+        }), encoding="utf-8")
         subprocess.run(
             ["git", "init", "--quiet"], cwd=cls.deployment, check=True)
         subprocess.run(
@@ -223,8 +234,8 @@ class AdmitBehaviour(unittest.TestCase):
         assembly_path = self._chain()
         assembly_digest = self._digest(assembly_path)
         emulation = {
-            "schema_version": 3, "kind": "emulation",
-            "run": {"verb": "emulate",
+            "schema_version": 4, "kind": "emulation",
+            "run": {"verb": "emulate", "host": "workstation", "os": "linux",
                     "started_at_utc": "2026-08-04T12:02:00Z",
                     "finished_at_utc": "2026-08-04T12:02:01Z"},
             "deployment": {
@@ -253,8 +264,8 @@ class AdmitBehaviour(unittest.TestCase):
     def test_an_emulation_of_a_different_bundle_is_refused(self):
         assembly_path = self._chain()
         emulation = {
-            "schema_version": 3, "kind": "emulation",
-            "run": {"verb": "emulate",
+            "schema_version": 4, "kind": "emulation",
+            "run": {"verb": "emulate", "host": "workstation", "os": "linux",
                     "started_at_utc": "2026-08-04T12:02:00Z",
                     "finished_at_utc": "2026-08-04T12:02:01Z"},
             "deployment": {

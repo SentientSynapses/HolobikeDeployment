@@ -70,7 +70,7 @@ class PreflightFixtures(unittest.TestCase):
         self.addCleanup(self.scratch.cleanup)
 
     def write_environment(self, checkouts, toolchains=None):
-        document = {"schema_version": 1, "checkouts": checkouts}
+        document = {"schema_version": 2, "host": "workstation", "os": "linux", "checkouts": checkouts}
         if toolchains is not None:
             document["toolchains"] = toolchains
         path = self.root / "environment.json"
@@ -183,7 +183,7 @@ class PreflightBehaviour(PreflightFixtures):
     def test_a_refused_document_reports_why_and_touches_nothing(self):
         path = self.root / "environment.json"
         path.write_text(
-            json.dumps({"schema_version": 1, "checkouts": {},
+            json.dumps({"schema_version": 2, "host": "workstation", "os": "linux", "checkouts": {},
                         "surprise": True}),
             encoding="utf-8")
         result = run_preflight("--environment", str(path))

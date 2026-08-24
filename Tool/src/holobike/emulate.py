@@ -20,6 +20,7 @@ import time
 from pathlib import Path
 
 from . import artifacts as artifact_contract
+from . import environment
 from . import filesystem
 from . import gitfacts
 from . import profiles as profiles_contract
@@ -223,13 +224,19 @@ def _teardown(member, grace):
 
 
 def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
-        ready_timeout, terminate_grace, stdout, stderr, hold=False):
+        environment_path, ready_timeout, terminate_grace, stdout, stderr,
+        hold=False):
     """Execute emulate; returns the process exit code.
 
     0: every member healthy — ready, settled, cleanly shut down.
     1: record written, problems inside it.
     2: an input was refused (or the record could not be written).
     """
+    host_document, errors = environment.load_environment(environment_path)
+    if errors:
+        for error in errors:
+            print(error, file=stderr)
+        return 2
     started = _utc_now()
 
     if os.geteuid() == 0:
@@ -370,6 +377,7 @@ def run(record_path, stack_root, profiles_root, artifacts_root, repo_root,
         "kind": "emulation",
         "run": {
             "verb": "emulate",
+            **environment.producer(host_document),
             "started_at_utc": started,
             "finished_at_utc": _utc_now(),
         },

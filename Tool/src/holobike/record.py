@@ -24,7 +24,7 @@ from pathlib import Path
 
 from . import document, filesystem, schema
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 MAX_RECORD_BYTES = 4 * 1024 * 1024
 
 # Which key must agree with `integrations`, per kind.

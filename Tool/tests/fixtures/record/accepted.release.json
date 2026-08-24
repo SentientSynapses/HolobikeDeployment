@@ -1,10 +1,12 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "kind": "release",
   "run": {
     "verb": "admit",
     "started_at_utc": "2026-08-04T13:00:00Z",
-    "finished_at_utc": "2026-08-04T13:00:02Z"
+    "finished_at_utc": "2026-08-04T13:00:02Z",
+    "host": "workstation",
+    "os": "linux"
   },
   "deployment": {
     "revision": "a652f43a652f43a652f43a652f43a652f43a6520",

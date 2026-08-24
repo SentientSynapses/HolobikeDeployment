@@ -249,6 +249,7 @@ def run(profile_path, record_path, environment_path, stack_root,
         "kind": "assembly",
         "run": {
             "verb": "assemble",
+            **environment.producer(document),
             "started_at_utc": started,
             "finished_at_utc": _utc_now(),
         },

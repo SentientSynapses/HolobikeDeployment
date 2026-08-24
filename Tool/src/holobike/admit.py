@@ -23,6 +23,7 @@ import shutil
 from pathlib import Path
 
 from . import artifacts as artifact_contract
+from . import environment
 from . import filesystem
 from . import gitfacts
 from . import record as record_contract
@@ -93,13 +94,18 @@ def _judge_emulation(emulation):
 
 
 def run(version, assembly_record_path, emulation_record_path, artifacts_root,
-        releases_root, repo_root, stdout, stderr):
+        releases_root, repo_root, environment_path, stdout, stderr):
     """Execute admit; returns the process exit code.
 
     0: admitted — Releases/<version>/ written, decision recorded.
     1: refused — the chain was not clean; Releases/ untouched.
     2: an input was refused, or the version already exists.
     """
+    host_document, errors = environment.load_environment(environment_path)
+    if errors:
+        for error in errors:
+            print(error, file=stderr)
+        return 2
     started = _utc_now()
 
     if not re.fullmatch(r"[a-z0-9][a-z0-9.-]*", version or ""):
@@ -252,6 +258,7 @@ def run(version, assembly_record_path, emulation_record_path, artifacts_root,
         "kind": "release",
         "run": {
             "verb": "admit",
+            **environment.producer(host_document),
             "started_at_utc": started,
             "finished_at_utc": _utc_now(),
         },
