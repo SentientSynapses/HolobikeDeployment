@@ -55,7 +55,7 @@ class AssembleBehaviour(unittest.TestCase):
     def write_inputs(self, build_steps, artifacts):
         environment = self.root / "environment.json"
         environment.write_text(json.dumps({
-            "schema_version": 2,
+            "schema_version": 3,
             "host": "workstation",
             "os": "linux",
             "checkouts": {"HexAtlas": str(self.checkout)},

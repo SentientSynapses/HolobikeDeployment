@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 
 from . import document, schema
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def _declared_names(holder):

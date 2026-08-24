@@ -1,11 +1,13 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "host": "panel",
   "os": "windows",
   "checkouts": {
     "HolobikeExperience": "C:\\git_projects\\ue\\HolobikeExperience"
   },
   "toolchains": {
-    "unreal_engine": "C:/UnrealEngine-5.3.2-release"
+    "unreal_engine": {
+      "5.3": "C:/UnrealEngine-5.3.2-release"
+    }
   }
 }

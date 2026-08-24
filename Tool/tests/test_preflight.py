@@ -70,7 +70,7 @@ class PreflightFixtures(unittest.TestCase):
         self.addCleanup(self.scratch.cleanup)
 
     def write_environment(self, checkouts, toolchains=None):
-        document = {"schema_version": 2, "host": "workstation", "os": "linux", "checkouts": checkouts}
+        document = {"schema_version": 3, "host": "workstation", "os": "linux", "checkouts": checkouts}
         if toolchains is not None:
             document["toolchains"] = toolchains
         path = self.root / "environment.json"
@@ -183,7 +183,7 @@ class PreflightBehaviour(PreflightFixtures):
     def test_a_refused_document_reports_why_and_touches_nothing(self):
         path = self.root / "environment.json"
         path.write_text(
-            json.dumps({"schema_version": 2, "host": "workstation", "os": "linux", "checkouts": {},
+            json.dumps({"schema_version": 3, "host": "workstation", "os": "linux", "checkouts": {},
                         "surprise": True}),
             encoding="utf-8")
         result = run_preflight("--environment", str(path))
@@ -276,7 +276,7 @@ class EngineAssociation(PreflightFixtures):
         engine = self.make_engine(f"UE-5.{engine_minor}", 5, engine_minor)
         environment = self.write_environment(
             {"HolobikeExperience": str(checkout)},
-            {"unreal_engine": str(engine)})
+            {"unreal_engine": {"5.3": str(engine)}})
         leaf = minimal_leaf("HolobikeExperience")
         leaf["unreal_project"] = self.PROJECT
         return self.report_for(
@@ -290,13 +290,27 @@ class EngineAssociation(PreflightFixtures):
         self.assertEqual(facts["engine_version"], "5.3")
         self.assertEqual(result.returncode, 0)
 
-    def test_the_wrong_engine_is_a_problem_not_a_presence(self):
+    def test_an_engine_entry_that_lies_about_its_version_is_caught(self):
+        # The map is keyed by version, so a 5.3 entry pointing at a 5.7 tree
+        # is a misdeclaration — and saying WHICH declaration is wrong beats
+        # the old "project wants 5.3, toolchain is 5.7", which left the reader
+        # to guess whether the project or the mapping needed changing.
         result, report = self.experience("5.3", 7)
         facts = report["engine_associations"]["HolobikeExperience"]
-        self.assertEqual(facts["status"], "engine_mismatch")
-        # Present, and still wrong: the old check stopped at the first half.
-        self.assertEqual(report["toolchains"]["unreal_engine"]["status"],
-                         "present")
+        self.assertEqual(facts["status"], "engine_misdeclared")
+        engine = report["toolchains"]["unreal_engine"]
+        self.assertEqual(engine["status"], "misdeclared")
+        self.assertEqual(engine["engines"]["5.3"]["found"], "5.7")
+        self.assertEqual(result.returncode, 1)
+
+    def test_an_engine_the_host_does_not_declare_is_named(self):
+        # A workstation may carry several engines and none of the demanded
+        # one. Presence of *an* engine was never the question.
+        result, report = self.experience("5.9", 3)
+        facts = report["engine_associations"]["HolobikeExperience"]
+        self.assertEqual(facts["status"], "engine_undeclared")
+        self.assertIn("5.9", facts["detail"])
+        self.assertIn("5.3", facts["detail"])
         self.assertEqual(result.returncode, 1)
 
     def test_an_undeclared_project_is_not_judged(self):
@@ -304,7 +318,7 @@ class EngineAssociation(PreflightFixtures):
         make_git_checkout(checkout)
         engine = self.make_engine("UE-5.3", 5, 3)
         environment = self.write_environment(
-            {"HexAtlas": str(checkout)}, {"unreal_engine": str(engine)})
+            {"HexAtlas": str(checkout)}, {"unreal_engine": {"5.3": str(engine)}})
         result, report = self.report_for(environment)
         # No leaf declares a project, so there is nothing to hold to anything.
         self.assertEqual(report["engine_associations"], {})
@@ -316,7 +330,7 @@ class EngineAssociation(PreflightFixtures):
         engine = self.make_engine("UE-5.3", 5, 3)
         environment = self.write_environment(
             {"HolobikeExperience": str(checkout)},
-            {"unreal_engine": str(engine)})
+            {"unreal_engine": {"5.3": str(engine)}})
         leaf = minimal_leaf("HolobikeExperience")
         leaf["unreal_project"] = self.PROJECT
         result, report = self.report_for(
@@ -334,7 +348,7 @@ class EngineAssociation(PreflightFixtures):
         engine.mkdir()
         environment = self.write_environment(
             {"HolobikeExperience": str(checkout)},
-            {"unreal_engine": str(engine)})
+            {"unreal_engine": {"5.3": str(engine)}})
         leaf = minimal_leaf("HolobikeExperience")
         leaf["unreal_project"] = self.PROJECT
         result, report = self.report_for(

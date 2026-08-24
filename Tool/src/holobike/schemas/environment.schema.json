@@ -13,7 +13,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": 2
+      "const": 3
     },
     "checkouts": {
       "type": "object",
@@ -67,7 +67,15 @@
       "additionalProperties": false,
       "properties": {
         "unreal_engine": {
-          "$ref": "#/$defs/absolutePath"
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[0-9]+\\.[0-9]+$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/absolutePath"
+          },
+          "description": "Installed engines, keyed by Major.Minor (D-02). A workstation may carry more than one, and which is correct is decided by the project's own EngineAssociation rather than by which directory happens to exist \u2014 that presence check called a 5.7 mapping healthy while main asked for 5.3."
         },
         "vcpkg": {
           "$ref": "#/$defs/absolutePath"

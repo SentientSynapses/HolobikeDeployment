@@ -1,0 +1,13 @@
+{
+  "schema_version": 3,
+  "host": "workstation",
+  "os": "linux",
+  "checkouts": {
+    "HolobikeExperience": "/srv/ue/HolobikeExperience"
+  },
+  "toolchains": {
+    "unreal_engine": {
+      "latest": "/srv/third_party/UE"
+    }
+  }
+}

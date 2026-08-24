@@ -81,12 +81,45 @@ def _inspect_toolchain(name, document):
     if not facts["declared"]:
         facts["status"] = "undeclared"
         return facts
-    path = Path(document.toolchains[name])
+    declared = document.toolchains[name]
+    if name == "unreal_engine":
+        return _inspect_engines(declared)
+    path = Path(declared)
     facts["path"] = str(path)
     facts["status"] = "present" if path.is_dir() else "missing"
-    if name == "unreal_engine" and facts["status"] == "present":
-        facts["version"] = _engine_version(path)
     return facts
+
+
+def _inspect_engines(declared):
+    """Every declared engine, held to the version it claims to be.
+
+    A workstation may carry several. Each entry is checked against its own
+    `Build.version` rather than its directory name, so an entry keyed 5.3 that
+    points at a 5.7 tree is a named mismatch instead of a present directory
+    (D-02).
+    """
+    engines = {}
+    for version, location in sorted(declared.items()):
+        path = Path(location)
+        entry = {"path": str(path)}
+        if not path.is_dir():
+            entry["status"] = "missing"
+        else:
+            found = _engine_version(path)
+            if found is None:
+                entry["status"] = "unversioned"
+            elif found != version:
+                entry["status"] = "misdeclared"
+                entry["found"] = found
+            else:
+                entry["status"] = "present"
+        engines[version] = entry
+    worst = "present"
+    if any(e["status"] == "misdeclared" for e in engines.values()):
+        worst = "misdeclared"
+    elif any(e["status"] != "present" for e in engines.values()):
+        worst = "incomplete"
+    return {"declared": True, "status": worst, "engines": engines}
 
 
 def _inspect_engine_association(document, leaves, toolchains):
@@ -117,16 +150,22 @@ def _inspect_engine_association(document, leaves, toolchains):
         except (OSError, ValueError, KeyError, TypeError):
             facts["status"] = "project_unreadable"
             continue
-        if engine.get("status") != "present":
-            facts["status"] = "engine_unavailable"
+        # The project decides which engine it needs; the host says whether it
+        # has that one. Presence of *an* engine was never the question.
+        demanded = facts["engine_association"]
+        entry = (engine.get("engines") or {}).get(demanded)
+        if entry is None:
+            facts["status"] = "engine_undeclared"
+            facts["detail"] = (
+                f"the project asks for {demanded}; this host declares "
+                + (", ".join(sorted(engine.get("engines") or {})) or "none"))
             continue
-        facts["engine_version"] = engine.get("version")
-        if facts["engine_version"] is None:
-            facts["status"] = "engine_unversioned"
-        elif facts["engine_version"] == facts["engine_association"]:
+        facts["engine_version"] = demanded
+        facts["engine_path"] = entry["path"]
+        if entry["status"] == "present":
             facts["status"] = "agrees"
         else:
-            facts["status"] = "engine_mismatch"
+            facts["status"] = f"engine_{entry['status']}"
     return associations
 
 
@@ -266,8 +305,16 @@ def _problems(report):
         # is the whole reason the declaration exists.
         problems.append(f"unenrolled_repository: {stray['path']}")
     for name, facts in report["toolchains"].items():
-        if facts["status"] == "missing":
-            problems.append(f"toolchain {name}: missing")
+        if facts["status"] in ("missing", "misdeclared"):
+            problems.append(f"toolchain {name}: {facts['status']}")
+        for version, entry in sorted((facts.get("engines") or {}).items()):
+            if entry["status"] == "misdeclared":
+                problems.append(
+                    f"toolchain {name} {version}: points at "
+                    f"{entry['found']} — the key and the tree disagree")
+            elif entry["status"] != "present":
+                problems.append(
+                    f"toolchain {name} {version}: {entry['status']}")
     for name, facts in report["engine_associations"].items():
         if facts["status"] == "engine_mismatch":
             problems.append(
@@ -303,9 +350,15 @@ def _print_table(report, stdout):
     for stray in report["stack_strays"]:
         print(f"stack stray: {stray['path']}", file=stdout)
     for name, facts in report["toolchains"].items():
-        version = facts.get("version")
-        suffix = f" ({version})" if version else ""
-        print(f"toolchain {name}: {facts['status']}{suffix}", file=stdout)
+        engines = facts.get("engines")
+        if engines:
+            spelled = ", ".join(
+                f"{version} {entry['status']}"
+                for version, entry in sorted(engines.items()))
+            print(f"toolchain {name}: {facts['status']} — {spelled}",
+                  file=stdout)
+        else:
+            print(f"toolchain {name}: {facts['status']}", file=stdout)
     for name, facts in report["engine_associations"].items():
         detail = facts["status"]
         if facts["status"] in ("agrees", "engine_mismatch"):

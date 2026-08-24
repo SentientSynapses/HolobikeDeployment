@@ -88,7 +88,7 @@ class AdmitBehaviour(unittest.TestCase):
         host = cls.deployment / ".local"
         host.mkdir(parents=True, exist_ok=True)
         (host / "environment.json").write_text(json.dumps({
-            "schema_version": 2,
+            "schema_version": 3,
             "host": "workstation",
             "os": "linux",
             "checkouts": {},

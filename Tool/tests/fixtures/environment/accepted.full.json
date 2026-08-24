@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "host": "workstation",
   "os": "linux",
   "checkouts": {
@@ -18,7 +18,9 @@
     "OrielUI": "/home/example/git_projects/ue_kit/OrielUI_uplugin"
   },
   "toolchains": {
-    "unreal_engine": "/home/example/third_party/UnrealEngine-5.3.2-release",
+    "unreal_engine": {
+      "5.3": "/home/example/third_party/UnrealEngine-5.3.2-release"
+    },
     "vcpkg": "/home/example/third_party/vcpkg"
   }
 }
