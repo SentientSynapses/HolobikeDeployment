@@ -206,3 +206,21 @@ replaced it, because the commits that cite it do not move.
   **Revisit if** a member's own deployment surface names a shared host for
   two of those groups — the test would then group them, and the profiles
   would merge on that evidence rather than on a preference.
+  **Landed 2026-08-25, the same day.** The trigger was met on evidence rather
+  than waited for: `drais_gateway` builds by drAIs's own documented command
+  (`drais.sh build`) and drAIs scheduled Phase 10 — the operated tier leaves
+  the machine, Cloud Run first, the container as its packaging — so a `drais`
+  profile had a named consumer arriving with a known shape, and D-22 says
+  this repository's shape should be in place before the member's change
+  lands, so that the change is one leaf edit. `AtlasServer` qualified the
+  same way (`atlasserver.sh build hexatlasserver`). `identity`, `atlas` and
+  `drais` replaced `server.json`; `provision` takes a profile; `InsightsServer`
+  is the one server deployable still a recorded absence.
+  Landing it exposed one more consequence: `build` stopped on any problem in
+  the line-wide resolution and `admit` judged every member in the line, so
+  one member's branch drift (`uroborOS`, that day) blocked every server
+  profile — a profile-shaped release judged by line-shaped evidence. Both now
+  judge the profile's members; the resolution record stays line-wide and is
+  carried unchanged, so the drift is still a recorded fact in every release
+  built beside it, and `--only resolve` keeps the line-wide exit code the
+  daily cadence relies on.

@@ -50,19 +50,26 @@ def _integrations_of(refs):
 
 
 def _judge_resolution(resolution, expected_integrations):
+    """Judge the resolution over the members this release composes.
+
+    The resolution is line-wide and stays so — it is the daily cadence's
+    product. A release is one profile (D-23), so a member the profile does
+    not select cannot make it unclean; its drift is recorded in the
+    resolution the release carries, and is judged by that member's own
+    release. The deployment repository's state is every release's business.
+    """
     problems = []
     if resolution["deployment"]["dirty"]:
         problems.append("resolution: deployment repository was dirty")
     for name in expected_integrations:
-        if name not in resolution["resolved"]:
+        facts = resolution["resolved"].get(name)
+        if facts is None:
             problems.append(f"selection {name}: absent from the resolution")
-    for name, facts in sorted(resolution["resolved"].items()):
-        if facts["status"] != "resolved":
+        elif facts["status"] != "resolved":
             problems.append(
                 f"selection {name}: {facts['status']} — not release-clean")
         elif facts.get("dirty"):
             problems.append(f"selection {name}: source checkout was dirty")
-    problems.extend(f"resolution: {item}" for item in resolution["problems"])
     return problems
 
 

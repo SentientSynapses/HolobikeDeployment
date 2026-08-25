@@ -17,7 +17,21 @@
       "destination": "device"
     },
     "DraisServer": {
-      "destination": "server"
+      "destination": "server",
+      "build": {
+        "steps": [
+          {
+            "argv": [
+              "bash",
+              "drais.sh",
+              "build"
+            ]
+          }
+        ]
+      },
+      "artifacts": [
+        "Builds/drAIs_ninja/drais_gateway"
+      ]
     }
   }
 }

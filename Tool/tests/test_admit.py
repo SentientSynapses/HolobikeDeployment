@@ -25,7 +25,21 @@ def run_cli(shim, *arguments):
 
 
 def _resolution(deployment_revision, *, selection_status="resolved",
-                source_dirty=False, deployment_dirty=False):
+                source_dirty=False, deployment_dirty=False,
+                elsewhere_status=None):
+    """`elsewhere_status` adds a member the profile does not select, in the
+    given state, with the line-wide problem resolve would have written."""
+    resolved = {"AthleteIdentity": {
+        "selected": {"branch": "main"}, "status": selection_status,
+        "revision": "1" * 40, "branch": "main",
+        "dirty": source_dirty}}
+    problems = []
+    if elsewhere_status is not None:
+        resolved["uroborOS"] = {
+            "selected": {"branch": "main"}, "status": elsewhere_status,
+            "revision": "2" * 40, "branch": "elsewhere", "dirty": False}
+        problems.append(f"uroborOS: {elsewhere_status} — selected branch "
+                        "main, checkout is on elsewhere")
     return {
         "schema_version": 4, "kind": "resolution",
         "run": {"verb": "resolve", "host": "workstation", "os": "linux",
@@ -34,11 +48,8 @@ def _resolution(deployment_revision, *, selection_status="resolved",
         "deployment": {
             "revision": deployment_revision, "dirty": deployment_dirty},
         "line": "dev",
-        "resolved": {"AthleteIdentity": {
-            "selected": {"branch": "main"}, "status": selection_status,
-            "revision": "1" * 40, "branch": "main",
-            "dirty": source_dirty}},
-        "problems": [],
+        "resolved": resolved,
+        "problems": problems,
     }
 
 
@@ -211,6 +222,17 @@ class AdmitBehaviour(unittest.TestCase):
             "0.1.0", self._chain(selection_status="selection_mismatch"))
         self.assertEqual(result.returncode, 1)
         self.assertFalse((self.releases / "0.1.0").exists())
+
+    def test_drift_outside_the_profile_does_not_refuse(self):
+        # The resolution is line-wide; the release is one profile (D-23).
+        # A member it does not select is carried as a recorded fact.
+        result = self.admit(
+            "0.1.0", self._chain(elsewhere_status="selection_mismatch"))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        carried = json.loads(
+            (self.releases / "0.1.0" / "resolution.json").read_text("utf-8"))
+        self.assertEqual(
+            carried["resolved"]["uroborOS"]["status"], "selection_mismatch")
 
     def test_a_version_is_immutable(self):
         self.admit("0.1.0", self._chain())

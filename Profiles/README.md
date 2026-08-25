@@ -23,6 +23,10 @@ Today:
 
 - `device` — everything that reaches the bike, the five plugins compiled into
   `HolobikeExperience` included.
-- `server` — the deployables that reach the estate. It splits into `identity`,
-  `atlas`, and `drais` when a second of them has bytes to deploy; until then it
-  is one document, not a claim that they share a host.
+- `identity` — `IdentityServer` and `InsightsServer`: one runtime, one
+  cloud, one Terraform module.
+- `atlas` — `AtlasServer`, the corpus streamer.
+- `drais` — `DraisServer`, the intelligence gateway.
+
+The three server profiles share a destination and nothing else — not a host,
+not a runtime, not a cadence — which is why they are three documents.

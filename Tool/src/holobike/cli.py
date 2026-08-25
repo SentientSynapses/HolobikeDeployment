@@ -7,7 +7,7 @@ release, and put a build somewhere.
     holobike check                 toolchains, checkouts, engine, roster
     holobike env <profile>         bring the product up and hold it
     holobike build <profile>       stage a bundle, gate it, admit a release
-    holobike provision <device|server>   place a build on a thing
+    holobike provision <profile>   place a build on a thing
 
 `resolve`, `bootstrap`, `assemble`, `emulate` and `admit` are stages of those
 verbs rather than verbs themselves — reachable with `--only` when something
@@ -150,8 +150,13 @@ def _build_parser():
 
     provisioner = verbs.add_parser(
         "provision", help="place a build on a device or on infrastructure")
+    _common(provisioner, artifacts=False)
     provisioner.add_argument(
-        "destination", choices=provision_verb.DESTINATIONS)
+        "profile",
+        help="the profile to place, named as under Profiles/ — what is "
+             "deployed together, by one operation, to one place")
+    provisioner.add_argument("--profile-path", help="an explicit profile document")
+    provisioner.add_argument("--profiles", default=str(DEFAULT_PROFILES))
     provisioner.add_argument(
         "--root", help="the offline root to write into")
     provisioner.add_argument(
@@ -235,7 +240,9 @@ def _main(argv=None):
 
     if arguments.verb == "provision":
         return provision_verb.run(
-            destination=arguments.destination,
+            profile_path=arguments.profile_path or str(
+                Path(arguments.profiles) / f"{arguments.profile}.json"),
+            stack_root=arguments.stack,
             identity_input=arguments.identity,
             root=arguments.root,
             verify=arguments.verify,

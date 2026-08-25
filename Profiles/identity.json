@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "profile": "server",
+  "profile": "identity",
   "destination": "server",
   "deployables": [
     {
@@ -10,14 +10,6 @@
     {
       "integration": "AthleteInsights",
       "deployable": "InsightsServer"
-    },
-    {
-      "integration": "HexAtlas",
-      "deployable": "AtlasServer"
-    },
-    {
-      "integration": "drAIs",
-      "deployable": "DraisServer"
     }
   ]
 }

@@ -12,10 +12,13 @@ after emulation and reports what it would admit; with one, it admits.
 
 from __future__ import annotations
 
+import json
 import pathlib
 from pathlib import Path
 
 from . import admit, assemble, emulate, resolve
+from . import profiles as profiles_contract
+from . import stack as stack_contract
 
 #: In order. `emulate` is skipped when nothing in the profile can be probed,
 #: which is a recorded fact rather than a silent omission (D-10's shape: the
@@ -38,6 +41,49 @@ def _newest(artifacts_root, kind, scope):
         key=lambda path: path.name)
     return records[-1] if records else None
 
+def _problems_within(resolution_path, profile_path, stdout, stderr):
+    """0 when every resolution problem lies outside the profile's members;
+    1 when one of them is a member the profile composes."""
+    profile, errors = profiles_contract.load_profile(profile_path)
+    if errors:
+        for error in errors:
+            print(error, file=stderr)
+        return 2
+    resolution = json.loads(Path(resolution_path).read_text("utf-8"))
+    inside = sorted(
+        name for name in profile.integrations
+        if resolution["resolved"].get(name, {}).get("status") != "resolved")
+    if inside:
+        print(f"unresolved in profile {profile.profile}: "
+              + ", ".join(inside), file=stderr)
+        return 1
+    print(f"the resolution's problems lie outside profile {profile.profile}; "
+          "continuing", file=stdout)
+    return 0
+
+
+def _probeable(profile_path, stack_root, stderr):
+    """Whether anything the profile selects declares a service to probe.
+
+    Returns (probeable, code). `emulate` proves coexistence by running what
+    declares `serve`; a profile in which nothing does has nothing for it to
+    say, and the docstring at STAGES describes what happens then.
+    """
+    profile, errors = profiles_contract.load_profile(profile_path)
+    if not errors:
+        documents, errors = stack_contract.load_stack(stack_root)
+    if errors:
+        for error in errors:
+            print(error, file=stderr)
+        return False, 2
+    for selection in profile.selections:
+        leaf = documents.get(selection.integration)
+        deployable = leaf.deployable(selection.deployable) if leaf else None
+        if deployable is not None and deployable.serve.argv:
+            return True, 0
+    return False, 0
+
+
 def run(*, profile_path, revisions_path, environment_path, stack_root,
         profiles_root, artifacts_root, releases_root, repo_root,
         version, only, pinned_record, pinned_emulation, ready_timeout,
@@ -46,7 +92,12 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
 
     A stage that fails stops the run: there is no value in assembling a
     resolution that was refused, and every later stage binds the earlier one
-    by digest anyway.
+    by digest anyway. One refinement (D-23): the resolution is line-wide —
+    drift anywhere in the stack is its business — but a build composes one
+    profile, so a resolution whose only problems lie in members the profile
+    does not select is a recorded fact this build carries, not a reason to
+    stop. `--only resolve` keeps the line-wide exit code; that is the daily
+    cadence's contract.
     """
     # A profile's name is its file name under Profiles/, and a line's is its
     # manifest's — both stated by their schemas — so the stem is the scope.
@@ -61,6 +112,10 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
             artifacts_root=artifacts_root,
             repo_root=repo_root,
             stdout=stdout, stderr=stderr)
+        if code == 1 and wanted is STAGES:
+            code = _problems_within(
+                _newest(artifacts_root, "resolve", line), profile_path,
+                stdout, stderr)
         if code:
             return code
 
@@ -83,6 +138,16 @@ def run(*, profile_path, revisions_path, environment_path, stack_root,
             return code
 
     emulation_record = None
+    if "emulate" in wanted and wanted is STAGES:
+        # `--only emulate` is a person debugging that stage; it runs against
+        # the record it is given and is never skipped on their behalf.
+        probeable, code = _probeable(profile_path, stack_root, stderr)
+        if code:
+            return code
+        if not probeable:
+            print(f"emulate: skipped — nothing in profile {profile} declares "
+                  "a service to probe", file=stdout)
+            wanted = tuple(stage for stage in wanted if stage != "emulate")
     if "emulate" in wanted:
         assembly = (Path(pinned_record) if pinned_record
                     else _newest(artifacts_root, "assemble", profile))

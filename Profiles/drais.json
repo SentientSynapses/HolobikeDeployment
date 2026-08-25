@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "profile": "drais",
+  "destination": "server",
+  "deployables": [
+    {
+      "integration": "drAIs",
+      "deployable": "DraisServer"
+    }
+  ]
+}

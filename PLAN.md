@@ -10,8 +10,12 @@ That 2×2 is the whole product:
 
 |  | device | server |
 |---|---|---|
-| **development** | `holobike env device` | `holobike env server` |
-| **production** | `holobike build device` → `holobike provision device` | `holobike build server` → `holobike provision server` |
+| **development** | `holobike env device` | `holobike env identity` · `atlas` · `drais` |
+| **production** | `holobike build device` → `holobike provision device` | `holobike build <profile>` → `holobike provision <profile>` |
+
+The server column is three profiles rather than one because its deployables
+share a destination and nothing else (D-23): a profile groups what is
+deployed together, by one operation, to one place.
 
 The value delivered is subtraction: thirteen repositories, six domains, two
 operating systems, two engine versions and two deployment tiers, reduced to
@@ -91,7 +95,7 @@ HolobikeDeployment/
 │
 ├── Profiles/            WHICH parts, and how they wire — one per thing deployed together
 │   ├── device.json
-│   └── server.json
+│   └── identity.json  atlas.json  drais.json
 │
 ├── Revisions/           AT WHAT VERSION — one candidate composition per file
 │   ├── dev.json
@@ -578,7 +582,7 @@ tooling.
 - **AthleteIdentity — the seven project-owned readiness items** its
   `IdentityServer/Deployment/README.md` lists, none of which exists. The
   derived image carrying a device authenticator is the one that blocks
-  `provision server`; three of the seven are the same subject seen three ways
+  `provision identity`; three of the seven are the same subject seen three ways
   — device credential format, registry enrolment, and revocation — which is
   also what D-13 said the update feed must not duplicate. Decide credentials
   and both unblock together.
@@ -672,11 +676,6 @@ and **D-19** (destinations chain; the terminal is derived).
   named. Trigger: when HexAtlas publishes a corpus version this repository
   can name. If it lands, `Revisions/` stops being a revision manifest and
   earns a broader name — not before.
-- **Splitting `Profiles/server.json`** — into profiles that group what is
-  deployed together (D-23): `identity`, `atlas`, and `drais`. The single
-  document is not a claim that those share a host. Trigger: a second server
-  deployable with bytes; today only `IdentityServer` has any. `provision`
-  then takes a profile instead of a terminal.
 - **A `Compatibility/` tier** — when a cross-repository constraint cannot be
   expressed by revision selection.
 - **CI** — the timer (D-06) is the whole of it until an event a workstation

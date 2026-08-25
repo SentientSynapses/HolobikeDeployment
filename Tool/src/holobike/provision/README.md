@@ -1,9 +1,11 @@
-> **The code moved.** Device identity provisioning is now
-> `holobike provision device`, implemented under
-> `Tool/src/holobike/provision/`. Provisioning is a verb of the
-> one tool rather than a second executable beside it; this document keeps the
-> workflow it always described. `Provisioning/` retires as a tier when Phase 4
-> moves the tree (D-14).
+> **The code moved.** Provisioning is `holobike provision <profile>`,
+> implemented under `Tool/src/holobike/provision/` — a verb of the one tool
+> rather than a second executable beside it. `provision device` runs the
+> device-identity primitive this document describes. A server profile
+> (`identity`, `atlas`, `drais`) refuses today, naming for each of its
+> deployables whether it builds to bytes and why those bytes cannot yet be
+> placed; the reasons live in the leaves' own `.md` files. This document keeps
+> the device workflow it always described.
 
 # Provisioning
 

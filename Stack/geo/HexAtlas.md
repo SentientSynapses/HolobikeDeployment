@@ -11,11 +11,20 @@ implementation, HexAtlas source, or generated atlas data.
 
 ## Assembly Contract
 
-The adapter will invoke HexAtlas-owned build and validation commands and record
-the selected AtlasServer and AtlasClient artifacts. AtlasCartographer is not a
-deployable: it is the build machine that produces the corpus AtlasServer
-streams, and its product is named by the deferred content-selection axis, not
-by a profile (D-23). Atlas data inputs must identify their
+`AtlasClient` reaches the device; `AtlasServer` reaches the estate.
+AtlasCartographer is not a deployable: it is the build machine that produces
+the corpus AtlasServer streams, and its product is named by the deferred
+content-selection axis, not by a profile (D-23).
+
+`AtlasServer` declares the build HexAtlas's own README documents —
+`./AtlasServer/atlasserver.sh build hexatlasserver` — and its artifact is the
+`HexAtlasServer` executable in the Ninja build directory that script selects
+when `ninja` is on the PATH. It builds to bytes here and declares no way to
+be placed: no container, no unit, and no host named anywhere in HexAtlas.
+`provision atlas` refuses on exactly that. It also declares no `serve` or
+`probe`, deliberately: serving wants an atlas root, and the honest corpus for
+that is the deferred content axis rather than a local directory of provider
+data. Atlas data inputs must identify their
 `AtlasManifest.json`, layout version, content revision, and immutable artifact
 location independently of executable revisions.
 

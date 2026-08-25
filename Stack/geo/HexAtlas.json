@@ -9,7 +9,21 @@
       "destination": "device"
     },
     "AtlasServer": {
-      "destination": "server"
+      "destination": "server",
+      "build": {
+        "steps": [
+          {
+            "argv": [
+              "./AtlasServer/atlasserver.sh",
+              "build",
+              "hexatlasserver"
+            ]
+          }
+        ]
+      },
+      "artifacts": [
+        "Builds/HexAtlasServer_ninja/bin/HexAtlasServer"
+      ]
     }
   }
 }

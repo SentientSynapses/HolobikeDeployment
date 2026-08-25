@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "profile": "atlas",
+  "destination": "server",
+  "deployables": [
+    {
+      "integration": "HexAtlas",
+      "deployable": "AtlasServer"
+    }
+  ]
+}
