@@ -16,10 +16,6 @@
       "deployable": "AtlasServer"
     },
     {
-      "integration": "HexAtlas",
-      "deployable": "AtlasCartographer"
-    },
-    {
       "integration": "drAIs",
       "deployable": "DraisServer"
     }

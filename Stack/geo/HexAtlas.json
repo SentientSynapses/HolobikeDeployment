@@ -10,9 +10,6 @@
     },
     "AtlasServer": {
       "destination": "server"
-    },
-    "AtlasCartographer": {
-      "destination": "server"
     }
   }
 }

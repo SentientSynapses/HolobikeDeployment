@@ -163,3 +163,46 @@ replaced it, because the commits that cite it do not move.
   anyone's working tree. Only a phase that mis-files another repository's work
   as its own can appear to be blocked by one, and the fix is the filing, not
   the schedule.
+- **D-23 A profile groups what is deployed together; the terminals stay
+  two** *(ruled 2026-08-25)*. Sam asked whether the targets are really just
+  device and server — whether HexAtlas streaming geodata is a different
+  server-side deployment from drAIs — or whether to consolidate on one server
+  deployment. Read from each member's own deployment surface rather than from
+  the Stack's declaration: `IdentityServer` is TS/Node with a Dockerfile and a
+  Terraform module naming Cloud Run, Firestore and KMS; `InsightsServer` is
+  TS/Node with no surface declared; `AtlasServer` is C++ streaming a corpus
+  that is 137 GB on this machine, launched by a shell script, with no
+  container, no unit and no host named; `DraisServer` is C++ and today a
+  device-local systemd unit that Sam is refactoring server-side. Those share
+  no runtime, host shape, scaling axis, secrets posture or change cadence —
+  identity changes when code changes, the atlas when a corpus is rebuilt,
+  drAIs when a model or prompt does — so one server deployment would tie each
+  to the others' cadence and have this tool invent a topology no member
+  declares. Consolidation refused. Three rulings. **(1) `device` and `server`
+  remain the only terminals.** They name the two kinds of delivery — an image
+  that lands on a bike, bytes handed to an estate — not places. A terminal per
+  estate (`cloud`, an atlas host) was rejected: where bytes land is each
+  member's declaration (Terraform names Cloud Run; nothing yet names
+  AtlasServer's host), and a terminal restating it would drift from it — D-10,
+  and the spirit of D-12: this repository does not own a member's topology.
+  **(2) A profile groups what is deployed together — by one operation, to one
+  place.** That is the test that already makes `device` one profile (one
+  image), and by it the server side is at least three: `identity`
+  (`IdentityServer` + `InsightsServer`: one runtime, one cloud, one
+  Terraform), `atlas` (`AtlasServer`), and `drais` once `DraisServer` has a
+  server to land on. D-16 is narrowed, not overturned: posture is chosen by
+  the verb and never by a profile; the *number* of profiles per destination
+  is set by this test, not fixed at one. **(3) `AtlasCartographer` is not a
+  deployable.** It is the build machine that produces the corpus; its code
+  reaches no destination (D-17) — its product does, through `AtlasServer` —
+  and that product is the deferred content-selection axis. It leaves
+  `Profiles/server.json` and the HexAtlas leaf now, because listing a build
+  machine under `server` makes a pipeline look like a service. **Timing:**
+  the split itself waits for its trigger — a second server deployable with
+  bytes; `IdentityServer` is the only one that has any — so the ruling is
+  recorded ahead of the structure, which is the doctrine. **What it costs
+  when it lands:** `provision` takes a profile, or its build record, instead
+  of `<device|server>`; the `destination` enum and `TERMINALS` do not change.
+  **Revisit if** a member's own deployment surface names a shared host for
+  two of those groups — the test would then group them, and the profiles
+  would merge on that evidence rather than on a preference.

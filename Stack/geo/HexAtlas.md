@@ -12,10 +12,12 @@ implementation, HexAtlas source, or generated atlas data.
 ## Assembly Contract
 
 The adapter will invoke HexAtlas-owned build and validation commands and record
-the selected AtlasCartographer, AtlasServer, and AtlasClient artifacts. Atlas
-data inputs must identify their `AtlasManifest.json`, layout version, content
-revision, and immutable artifact location independently of executable
-revisions.
+the selected AtlasServer and AtlasClient artifacts. AtlasCartographer is not a
+deployable: it is the build machine that produces the corpus AtlasServer
+streams, and its product is named by the deferred content-selection axis, not
+by a profile (D-23). Atlas data inputs must identify their
+`AtlasManifest.json`, layout version, content revision, and immutable artifact
+location independently of executable revisions.
 
 ## Validation
 

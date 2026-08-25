@@ -5,9 +5,10 @@ and held by the fixtures under `tests/fixtures/profiles`.
 
 A profile names **deployables**, not whole repositories (D-11), so a
 development composition can take the device half of a contract and leave the
-estate half alone. One profile per destination: the verb chooses the posture,
-so a development run and a release run of the same product are the same
-document rather than two that must be kept in agreement (D-16).
+estate half alone. A profile groups what is deployed together — by one
+operation, to one place (D-23) — and the verb chooses the posture, so a
+development run and a release run of the same product are the same document
+rather than two that must be kept in agreement (D-16).
 
 What remains here is what a schema cannot say: `topology` may only key
 deployables *this profile* selects. Whether a selected deployable exists at

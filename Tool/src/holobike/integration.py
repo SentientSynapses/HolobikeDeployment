@@ -16,8 +16,9 @@ two paths ending in the same name would collide.
 
 A leaf may declare any number of deployables that build. It could not until
 records were keyed by deployable rather than by repository, which is what the
-server tier forced: HexAtlas produces both AtlasServer and AtlasCartographer,
-and a record naming only the repository would describe less than the run did.
+server tier forced: AthleteIdentity builds both IdentityClient and
+IdentityServer, and a record naming only the repository would describe less
+than the run did.
 """
 
 from __future__ import annotations

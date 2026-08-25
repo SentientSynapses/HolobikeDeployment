@@ -89,7 +89,7 @@ HolobikeDeployment/
 │       └── plugins/{HolobikeDevice,HolobikeRider,HolobikeWorlds,
 │                    HoloviewDisplay,OrielUI}.json .md
 │
-├── Profiles/            WHICH parts, and how they wire — one per destination
+├── Profiles/            WHICH parts, and how they wire — one per thing deployed together
 │   ├── device.json
 │   └── server.json
 │
@@ -617,7 +617,7 @@ tooling.
 
 ## Decisions this plan stands on
 
-The ledger lives in [`DECISIONS.md`](DECISIONS.md) — twenty entries, their
+The ledger lives in [`DECISIONS.md`](DECISIONS.md) — twenty-three entries, their
 status, and what would overturn each. The ones this plan leans on hardest:
 **D-10** (the specification spans both tiers; `build` stops at the bytes and
 `provision` is the separate verb that does not), **D-15** (the schemas are the
@@ -667,9 +667,16 @@ and **D-19** (destinations chain; the terminal is derived).
   copying stops being honest.
 - **Content as a selection axis** — `Revisions/` selects code, and nothing
   selects the MasterAtlas corpus a device actually rides. For a geography
-  product the content *is* the product. Trigger: when HexAtlas publishes a
-  corpus version this repository can name. If it lands, `Revisions/` stops
-  being a revision manifest and earns a broader name — not before.
+  product the content *is* the product. `AtlasCartographer` produces that
+  corpus and is not a deployable (D-23); this axis is where its product gets
+  named. Trigger: when HexAtlas publishes a corpus version this repository
+  can name. If it lands, `Revisions/` stops being a revision manifest and
+  earns a broader name — not before.
+- **Splitting `Profiles/server.json`** — into profiles that group what is
+  deployed together (D-23): `identity`, `atlas`, and `drais`. The single
+  document is not a claim that those share a host. Trigger: a second server
+  deployable with bytes; today only `IdentityServer` has any. `provision`
+  then takes a profile instead of a terminal.
 - **A `Compatibility/` tier** — when a cross-repository constraint cannot be
   expressed by revision selection.
 - **CI** — the timer (D-06) is the whole of it until an event a workstation
