@@ -2,8 +2,8 @@
 
 ## Source
 
-- Repository: `ue_kit/HolobikeExperience`
-- Project: `Unreal/HolobikeExperience.uproject`
+- Repository: `ue_kit/HolobikeExperience_uproject`
+- Project: `HolobikeExperience/HolobikeExperience.uproject`
 - Integration domain: `ue`
 - Source identity: an exact Git commit selected by a revision manifest under `Revisions/`
 

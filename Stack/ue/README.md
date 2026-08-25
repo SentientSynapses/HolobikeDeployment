@@ -16,20 +16,25 @@ Current source checkouts:
 
 | Role | Repository |
 |---|---|
-| Product project | [`HolobikeExperience/`](project/HolobikeExperience.md) |
-| Device transport | [`HolobikeDevice/`](plugins/HolobikeDevice.md) |
-| Rider systems | [`HolobikeRider/`](plugins/HolobikeRider.md) |
-| World composition | [`HolobikeWorlds/`](plugins/HolobikeWorlds.md) |
-| Stereoscopic display | [`HoloviewDisplay/`](plugins/HoloviewDisplay.md) |
+| Product project | [`HolobikeExperience_uproject/`](project/HolobikeExperience.md) |
+| Device transport | [`HolobikeDevice_uplugin/`](plugins/HolobikeDevice.md) |
+| Rider systems | [`HolobikeRider_uplugin/`](plugins/HolobikeRider.md) |
+| World composition | [`HolobikeWorlds_uplugin/`](plugins/HolobikeWorlds.md) |
+| Stereoscopic display | [`HoloviewDisplay_uplugin/`](plugins/HoloviewDisplay.md) |
+| Spatial UI | [`OrielUI_uplugin/`](plugins/OrielUI.md) |
 
-The corresponding project locations are:
+Each repository holds its Unreal descriptor under a directory of the
+descriptor's own name, and the project reaches the plugins as sibling
+checkouts through `AdditionalPluginDirectories` (D-08) rather than through
+copies under `Plugins/`:
 
 ```text
-HolobikeExperience/Unreal/HolobikeExperience.uproject
-HolobikeExperience/Unreal/Plugins/HolobikeDevice
-HolobikeExperience/Unreal/Plugins/HolobikeRider
-HolobikeExperience/Unreal/Plugins/HolobikeWorlds
-HolobikeExperience/Unreal/Plugins/HoloviewDisplay
+HolobikeExperience_uproject/HolobikeExperience/HolobikeExperience.uproject
+HolobikeDevice_uplugin/HolobikeDevice/HolobikeDevice.uplugin
+HolobikeRider_uplugin/HolobikeRider/HolobikeRider.uplugin
+HolobikeWorlds_uplugin/HolobikeWorlds/HolobikeWorlds.uplugin
+HoloviewDisplay_uplugin/HoloviewDisplay/HoloviewDisplay.uplugin
+OrielUI_uplugin/OrielUI/OrielUI.uplugin
 ```
 
 This integration owns revision compatibility, plugin synchronization checks,

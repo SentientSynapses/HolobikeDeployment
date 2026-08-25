@@ -8,5 +8,5 @@
       "destination": "device"
     }
   },
-  "unreal_project": "Unreal/HolobikeExperience.uplugin"
+  "unreal_project": "HolobikeExperience/HolobikeExperience.uplugin"
 }

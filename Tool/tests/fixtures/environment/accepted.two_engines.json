@@ -3,7 +3,7 @@
   "host": "workstation",
   "os": "linux",
   "checkouts": {
-    "HolobikeExperience": "/srv/ue/HolobikeExperience"
+    "HolobikeExperience": "/srv/ue/HolobikeExperience_uproject"
   },
   "toolchains": {
     "unreal_engine": {

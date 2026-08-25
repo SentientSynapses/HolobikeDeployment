@@ -449,7 +449,7 @@ cannot leave its own prose behind.
 **Deferred to Phase 5, on a real dependency:** the canonical workstation tree
 (D-09) and `checkouts` → `root`. These are this repository's own work, but
 deriving `<root>/<domain>/<repository>` requires the checkouts to be in the
-tree it describes, and today they are at `ue_kit/HolobikeExperience`. The move
+tree it describes, and today they are at `ue_kit/HolobikeExperience_uproject`. The move
 is an announced operation — absolute paths live in scripts, IDE configuration
 and every host document — and it belongs with the phase that first writes a
 host document on a second machine.

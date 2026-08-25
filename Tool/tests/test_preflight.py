@@ -267,17 +267,17 @@ class EngineAssociation(PreflightFixtures):
     wrong one looked healthy — which is precisely how it drifted.
     """
 
-    PROJECT = "Unreal/HolobikeExperience.uproject"
+    PROJECT = "HolobikeExperience/HolobikeExperience.uproject"
 
     def experience(self, association, engine_minor):
-        checkout = self.root / "HolobikeExperience"
+        checkout = self.root / "HolobikeExperience_uproject"
         make_git_checkout(checkout)
         self.make_unreal_project(checkout, self.PROJECT, association)
         engine = self.make_engine(f"UE-5.{engine_minor}", 5, engine_minor)
         environment = self.write_environment(
             {"HolobikeExperience": str(checkout)},
             {"unreal_engine": {"5.3": str(engine)}})
-        leaf = minimal_leaf("HolobikeExperience")
+        leaf = minimal_leaf("HolobikeExperience", repository="HolobikeExperience_uproject")
         leaf["unreal_project"] = self.PROJECT
         return self.report_for(
             environment, self.full_stack({"HolobikeExperience": leaf}))
@@ -331,7 +331,7 @@ class EngineAssociation(PreflightFixtures):
         environment = self.write_environment(
             {"HolobikeExperience": str(checkout)},
             {"unreal_engine": {"5.3": str(engine)}})
-        leaf = minimal_leaf("HolobikeExperience")
+        leaf = minimal_leaf("HolobikeExperience", repository="HolobikeExperience_uproject")
         leaf["unreal_project"] = self.PROJECT
         result, report = self.report_for(
             environment, self.full_stack({"HolobikeExperience": leaf}))
@@ -341,7 +341,7 @@ class EngineAssociation(PreflightFixtures):
         self.assertEqual(result.returncode, 1)
 
     def test_an_engine_without_a_version_is_said_so_not_assumed(self):
-        checkout = self.root / "HolobikeExperience"
+        checkout = self.root / "HolobikeExperience_uproject"
         make_git_checkout(checkout)
         self.make_unreal_project(checkout, self.PROJECT, "5.3")
         engine = self.root / "UE-unlabelled"
@@ -349,7 +349,7 @@ class EngineAssociation(PreflightFixtures):
         environment = self.write_environment(
             {"HolobikeExperience": str(checkout)},
             {"unreal_engine": {"5.3": str(engine)}})
-        leaf = minimal_leaf("HolobikeExperience")
+        leaf = minimal_leaf("HolobikeExperience", repository="HolobikeExperience_uproject")
         leaf["unreal_project"] = self.PROJECT
         result, report = self.report_for(
             environment, self.full_stack({"HolobikeExperience": leaf}))

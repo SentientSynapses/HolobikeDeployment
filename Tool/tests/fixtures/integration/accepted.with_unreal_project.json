@@ -2,11 +2,11 @@
   "schema_version": 2,
   "integration": "HolobikeExperience",
   "domain": "ue",
-  "repository": "HolobikeExperience",
+  "repository": "HolobikeExperience_uproject",
   "deployables": {
     "HolobikeExperience": {
       "destination": "device"
     }
   },
-  "unreal_project": "Unreal/HolobikeExperience.uproject"
+  "unreal_project": "HolobikeExperience/HolobikeExperience.uproject"
 }

@@ -2,9 +2,9 @@
   "schema_version": 2,
   "integration": "HolobikeExperience",
   "domain": "ue",
-  "repository": "HolobikeExperience",
-  "origin": "git@github.com:Saga-Holographic/HolobikeExperience.git",
-  "unreal_project": "Unreal/HolobikeExperience.uproject",
+  "repository": "HolobikeExperience_uproject",
+  "origin": "git@github.com:Saga-Holographic/HolobikeExperience_uproject.git",
+  "unreal_project": "HolobikeExperience/HolobikeExperience.uproject",
   "deployables": {
     "HolobikeExperience": {
       "destination": "device"
