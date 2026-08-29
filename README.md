@@ -106,7 +106,10 @@ evidence of agreement.
   consumer of the declarations and of repository-owned entry points.
 - Validation ownership is tiered: each repository proves its own behavior
   in-repo; this repository proves only the composition; the transitional
-  `*-Lab` repositories are scaffolding, never load-bearing.
+  `*-Lab` repositories are scaffolding, never load-bearing. Each repository's
+  one non-shipping fence is named for its contents (`validation/` for uroborOS
+  contract validation, `Testing/` for component regression proofs); the shared
+  ecosystem contract is the `prove` verb and the fence rules.
 - Schemas are canonical; a validator in any language is a binding that must
   agree with them, proven by fixtures under `Tool/tests/fixtures/`.
 - "Manifest" names exactly one declared kind — the revision manifest. A
